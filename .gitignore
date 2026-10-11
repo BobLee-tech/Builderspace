@@ -1,0 +1,30 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# env
+.env
+.env.*
+!.env.example
+
+# misc
+.DS_Store
+*.log
+coverage/
+.vercel
+
+# Local working material kept beside the code but not published:
+# PRD drafts, promo images, and the prototype (its own repo: BobLee-tech/builderspace-demo)
+*.pages
+*.docx
+Weixin Image_*
+promo/
+site/
+demo/
+.claude/
