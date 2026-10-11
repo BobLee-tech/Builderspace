@@ -963,6 +963,13 @@ main {
   font-size: 12px;
 }
 
+img.qr {
+  width: 220px;
+  height: auto;
+  padding: 0;
+  background: none;
+}
+
 /* ---------- project detail ---------- */
 .crumb {
   display: inline-flex;

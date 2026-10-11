@@ -28,7 +28,11 @@ export default function JoinPage() {
               <span>可随时要求删除</span>
             </div>
           </div>
-          <JoinForm adminQr={process.env.NEXT_PUBLIC_ADMIN_WECHAT_QR ?? null} />
+          <JoinForm
+            adminQr={
+              process.env.NEXT_PUBLIC_ADMIN_WECHAT_QR || "/admin-wechat-qr.jpg"
+            }
+          />
         </div>
       </div>
     </section>
