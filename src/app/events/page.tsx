@@ -4,10 +4,9 @@ import { SampleNotice } from "@/components/sample-notice";
 import { getEventSchedule } from "@/lib/data";
 import { formatShortDate, formatTimeRange } from "@/lib/format";
 import { EVENT_KIND_LABEL, type SiteEvent } from "@/lib/types";
+import { siteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = { title: "活动" };
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export default async function EventsPage() {
   const { upcoming, past } = await getEventSchedule();
