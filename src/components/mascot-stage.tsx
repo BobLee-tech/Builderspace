@@ -420,8 +420,8 @@ export function MascotStage() {
           </p>
           <p className="mute stage-cap">
             <T
-              zh="每一个点都取自 logo 原图。靠近它们会躲开，点一下会眨眼。"
-              en="Every dot is sampled from the logo. Get close and they shy away; tap and they blink."
+              zh="靠近会躲开，点一下会眨眼。"
+              en="Get close and they scatter. Tap and they blink."
             />
           </p>
         </div>

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { PageTransition } from "@/components/page-transition";
 import { getTutorials, getWeeklyPicks } from "@/lib/data";
 import { formatDate } from "@/lib/format";
 import { T } from "@/components/t";
 
-export const metadata: Metadata = { title: "教程资料" };
+export const metadata: Metadata = { title: "资源" };
 
 export default async function LearnPage() {
   const [tutorials, picks] = await Promise.all([
@@ -12,11 +13,11 @@ export default async function LearnPage() {
   ]);
 
   return (
-    <>
+    <PageTransition>
       <section className="sec first">
         <div className="wrap">
           <p className="eyebrow mono">
-            <T zh="教程资料 / Learn" en="Learn" />
+            <T zh="资源 / Resources" en="Resources" />
           </p>
           <h1 className="display page-title">
             <span className="line">
@@ -50,7 +51,7 @@ export default async function LearnPage() {
                       {formatDate(t.publishedAt)}
                     </span>
                   )}
-                  <h3 style={{ fontSize: 20 }}>{t.title}</h3>
+                  <h3>{t.title}</h3>
                   {t.summary && <p className="mute">{t.summary}</p>}
                   <div className="links">
                     {t.slidesUrl && (
@@ -106,7 +107,7 @@ export default async function LearnPage() {
                     )}{" "}
                     · {p.pickedOn}
                   </span>
-                  <h3 style={{ fontSize: 18 }}>{p.title}</h3>
+                  <h3>{p.title}</h3>
                   <p className="mute">{p.summary}</p>
                   <ExtLink href={p.sourceUrl}>
                     <T zh="来源：" en="Source: " />
@@ -118,7 +119,7 @@ export default async function LearnPage() {
           )}
         </div>
       </section>
-    </>
+    </PageTransition>
   );
 }
 

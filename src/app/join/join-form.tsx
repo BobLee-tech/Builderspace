@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { NAV_TRANSITION } from "@/components/nav-links";
 import { useActionState, type ReactNode } from "react";
 import { SpamGuard } from "@/components/spam-guard";
 import { Msg, T } from "@/components/t";
@@ -57,6 +58,7 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
           </div>
         )}
         <Link
+          transitionTypes={NAV_TRANSITION}
           href="/events"
           className="btn ghost"
           style={{ alignSelf: "start" }}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NAV_TRANSITION } from "@/components/nav-links";
 import { T } from "@/components/t";
 
 export default function NotFound() {
@@ -14,7 +15,12 @@ export default function NotFound() {
             <span className="outline">yet.</span>
           </span>
         </h1>
-        <Link href="/" className="btn ghost" style={{ marginTop: 32 }}>
+        <Link
+          transitionTypes={NAV_TRANSITION}
+          href="/"
+          className="btn ghost"
+          style={{ marginTop: 32 }}
+        >
           <T zh="回首页" en="Back home" /> <span className="arr">→</span>
         </Link>
       </div>

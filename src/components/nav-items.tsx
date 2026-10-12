@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
-import { NAV_LINKS, isActive } from "./nav-links";
+import { NAV_LINKS, isActive, NAV_TRANSITION } from "./nav-links";
 import { T } from "./t";
 
 /**
@@ -31,6 +31,7 @@ function Items({
 }) {
   return NAV_LINKS.map((link) => (
     <Link
+      transitionTypes={NAV_TRANSITION}
       key={link.href}
       href={link.href}
       aria-current={

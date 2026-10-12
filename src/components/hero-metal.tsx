@@ -81,6 +81,11 @@ void main(){
 
 const VERT = `attribute vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }`;
 
+// Contexts waiting to be released after unmount. In development React runs the
+// effect, cleans up, and runs it again on the same canvas; releasing the
+// context straight away left that second run with a dead canvas.
+const pendingRelease = new WeakMap<HTMLCanvasElement, number>();
+
 export function HeroMetal() {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -88,6 +93,7 @@ export function HeroMetal() {
     const canvas = ref.current;
     const hero = canvas?.parentElement;
     if (!canvas || !hero) return;
+    window.clearTimeout(pendingRelease.get(canvas));
     const gl = canvas.getContext("webgl", {
       antialias: false,
       powerPreference: "high-performance",
@@ -148,6 +154,16 @@ export function HeroMetal() {
     draw();
     canvas.dataset.on = "";
 
+    // Weak or software GPUs can drop the context under this shader. Fade the
+    // canvas out then, so the hero falls back to plain black instead of
+    // showing a dead canvas.
+    let lost = false;
+    const onLost = () => {
+      lost = true;
+      delete canvas.dataset.on;
+    };
+    canvas.addEventListener("webglcontextlost", onLost);
+
     const onMove = (e: PointerEvent) => {
       const r = hero.getBoundingClientRect();
       target.x = (e.clientX - r.left) / r.width;
@@ -168,7 +184,7 @@ export function HeroMetal() {
       raf = requestAnimationFrame(loop);
       const raw = now - last;
       last = now;
-      if (!visible || document.hidden) return;
+      if (!visible || lost || document.hidden) return;
       // Adaptive resolution: keep dropping detail while frames run long.
       if (raw > 26 && raw < 200) {
         if (++slow > 45 && pr > 0.3) {
@@ -189,7 +205,13 @@ export function HeroMetal() {
       ro.disconnect();
       io.disconnect();
       hero.removeEventListener("pointermove", onMove);
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
+      canvas.removeEventListener("webglcontextlost", onLost);
+      pendingRelease.set(
+        canvas,
+        window.setTimeout(() => {
+          gl.getExtension("WEBGL_lose_context")?.loseContext();
+        }, 0),
+      );
     };
   }, []);
 

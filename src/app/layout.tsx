@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Noto_Sans_SC, Unbounded } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Dock } from "@/components/dock";
-import { MascotStage } from "@/components/mascot-stage";
+import { Motion } from "@/components/motion";
 import { langBootScript } from "@/components/t";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -30,8 +30,7 @@ export const metadata: Metadata = {
     default: "BuilderSpace · Bring an idea. Leave with something that works.",
     template: "%s · BuilderSpace",
   },
-  description:
-    "一个从 UNSW 起步的中英双语创客社团：学 Vibe Coding、找队友、每周一起把项目做出来。",
+  description: "从 UNSW 起步的中英双语创客社：找队友，每周一起把项目做上线。",
   icons: { icon: "/favicon.png", apple: "/apple-touch-icon.png" },
   openGraph: {
     type: "website",
@@ -51,6 +50,8 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
+      // Lets Next switch smooth scrolling off while it changes route.
+      data-scroll-behavior="smooth"
       className={`${unbounded.variable} ${geist.variable} ${geistMono.variable} ${notoSc.variable}`}
       // The boot script may set data-lang/lang before React hydrates.
       suppressHydrationWarning
@@ -62,9 +63,9 @@ export default function RootLayout({
         <div className="backdrop" aria-hidden />
         <SiteHeader />
         <main>{children}</main>
-        <MascotStage />
         <SiteFooter />
         <Dock />
+        <Motion />
       </body>
     </html>
   );

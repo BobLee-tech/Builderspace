@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { NAV_TRANSITION } from "@/components/nav-links";
 import { useActionState } from "react";
 import { SpamGuard } from "@/components/spam-guard";
 import { Msg, T } from "@/components/t";
@@ -50,6 +51,7 @@ export function ProjectForm() {
           />
         </p>
         <Link
+          transitionTypes={NAV_TRANSITION}
           href="/projects"
           className="btn ghost"
           style={{ alignSelf: "start" }}

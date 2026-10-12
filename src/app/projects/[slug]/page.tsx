@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { NAV_TRANSITION } from "@/components/nav-links";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { PageTransition } from "@/components/page-transition";
 import { getProject } from "@/lib/data";
 import { formatDate } from "@/lib/format";
 import { ROLE_LABEL, STATUS_LABEL, UPDATE_KIND_LABEL } from "@/lib/types";
@@ -19,24 +21,30 @@ export async function generateMetadata({
 
 export default function ProjectPage({ params }: PageProps<"/projects/[slug]">) {
   return (
-    <section className="sec first">
-      <div className="wrap">
-        <Link href="/projects" className="crumb mono">
-          ← <T zh="项目广场" en="Projects" />
-        </Link>
-        <Suspense
-          fallback={
-            <p className="mute">
-              <T zh="加载中…" en="Loading…" />
-            </p>
-          }
-        >
-          {params.then(({ slug }) => (
-            <ProjectDetail slug={slug} />
-          ))}
-        </Suspense>
-      </div>
-    </section>
+    <PageTransition>
+      <section className="sec first">
+        <div className="wrap">
+          <Link
+            transitionTypes={NAV_TRANSITION}
+            href="/projects"
+            className="crumb mono"
+          >
+            ← <T zh="项目广场" en="Projects" />
+          </Link>
+          <Suspense
+            fallback={
+              <p className="mute">
+                <T zh="加载中…" en="Loading…" />
+              </p>
+            }
+          >
+            {params.then(({ slug }) => (
+              <ProjectDetail slug={slug} />
+            ))}
+          </Suspense>
+        </div>
+      </section>
+    </PageTransition>
   );
 }
 

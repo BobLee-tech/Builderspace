@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { NAV_TRANSITION } from "@/components/nav-links";
 import { useState, type ReactNode } from "react";
 import {
   ROLES,
@@ -75,13 +76,18 @@ export function ProjectPlaza({
         <T zh="显示" en="Showing" /> {visible.length} / {projects.length}
       </p>
 
-      <div className="pgrid">
+      <div className="pgrid" data-stagger>
         {visible.map((p) => (
           <div key={p.slug} style={{ display: "contents" }}>
             {cards[p.slug]}
           </div>
         ))}
-        <Link href="/projects/new" className="pcard-add">
+        <Link
+          transitionTypes={NAV_TRANSITION}
+          href="/projects/new"
+          className="pcard-add"
+          data-rv
+        >
           <span className="plus" aria-hidden>
             +
           </span>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NAV_TRANSITION } from "./nav-links";
 import { formatShortDate } from "@/lib/format";
 import { ROLE_LABEL, STATUS_LABEL, type Project } from "@/lib/types";
 import { T } from "./t";
@@ -6,8 +7,10 @@ import { T } from "./t";
 export function ProjectCard({ project }: { project: Project }) {
   return (
     <Link
+      transitionTypes={NAV_TRANSITION}
       href={`/projects/${project.slug}`}
       className={`pcard ${project.status === "paused" ? "paused" : ""}`}
+      data-rv
     >
       <div className="pcard-top">
         <span
