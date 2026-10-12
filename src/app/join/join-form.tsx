@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import type { FormState } from "@/lib/forms";
+import { channelFromSearch, type FormState } from "@/lib/forms";
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 import {
+  BLOCKERS,
+  BLOCKER_LABEL,
   HOURS_LABEL,
   REFERRAL_LABEL,
   REFERRAL_SOURCES,
@@ -51,7 +53,15 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
   const err = state.status === "error" ? (state.fieldErrors ?? {}) : {};
 
   return (
-    <form onSubmit={submitWithoutReset(action)} className="form" noValidate>
+    <form
+      onSubmit={submitWithoutReset((data) => {
+        // Channel tag from the link this visitor came in on (?ref= / utm_source).
+        data.set("channel", channelFromSearch(window.location.search) ?? "");
+        action(data);
+      })}
+      className="form"
+      noValidate
+    >
       <div className="row2">
         <TextField name="nickname" label="昵称" error={err.nickname} max={40} />
         <TextField
@@ -92,6 +102,30 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
           placeholder="一个帮留学生合租找室友的小工具，上学期想做但一直没开始。"
         />
       </label>
+
+      <ChoiceGroup
+        name="stalledProject"
+        legend="上学期有没有想做、但没做成的项目"
+        options={[
+          ["yes", "有"],
+          ["no", "没有"],
+        ]}
+        error={err.stalledProject}
+      />
+
+      <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
+        <legend className="mono mute" style={{ marginBottom: 8 }}>
+          做项目时卡在哪（可多选）
+        </legend>
+        <div className="filters">
+          {BLOCKERS.map((b) => (
+            <label key={b} className="chip">
+              <input type="checkbox" name="blockers" value={b} />
+              {BLOCKER_LABEL[b]}
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <ChoiceGroup
         name="weeklyHours"

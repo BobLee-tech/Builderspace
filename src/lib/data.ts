@@ -188,12 +188,16 @@ export async function getTutorials(): Promise<Tutorial[]> {
 
   const { data, error } = await db
     .from("tutorials")
-    .select("title,summary,slides_url,repo_url,recording_url,published_at")
+    .select(
+      "title,summary,slides_url,repo_url,recording_url,published_at,events(slug)",
+    )
     .eq("published", true)
     .order("published_at", { ascending: false });
   if (error) throw error;
 
   return data.map((t) => ({
+    // Many-to-one embed; null when unlinked or the event is unpublished.
+    eventSlug: (t.events as unknown as { slug: string } | null)?.slug ?? null,
     title: t.title,
     summary: t.summary,
     slidesUrl: t.slides_url,

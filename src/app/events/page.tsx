@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SampleNotice } from "@/components/sample-notice";
-import { getEventSchedule } from "@/lib/data";
+import { getEventSchedule, getTutorials } from "@/lib/data";
 import { formatShortDate, formatTimeRange } from "@/lib/format";
 import { EVENT_KIND_LABEL, type SiteEvent } from "@/lib/types";
 import { siteUrl } from "@/lib/site-url";
@@ -9,7 +9,11 @@ import { siteUrl } from "@/lib/site-url";
 export const metadata: Metadata = { title: "活动" };
 
 export default async function EventsPage() {
-  const { upcoming, past } = await getEventSchedule();
+  const [{ upcoming, past }, tutorials] = await Promise.all([
+    getEventSchedule(),
+    getTutorials(),
+  ]);
+  const withMaterials = new Set(tutorials.map((t) => t.eventSlug));
   const calendarUrl = `${siteUrl.replace(/^https?:/, "webcal:")}/events.ics`;
 
   return (
@@ -57,7 +61,12 @@ export default async function EventsPage() {
           <div className="ev-list" style={{ marginTop: 56 }}>
             <p className="mono mute">往期</p>
             {past.map((event) => (
-              <EventRow key={event.slug} event={event} past />
+              <EventRow
+                key={event.slug}
+                event={event}
+                past
+                materials={withMaterials.has(event.slug)}
+              />
             ))}
           </div>
         )}
@@ -74,7 +83,15 @@ export default async function EventsPage() {
   );
 }
 
-function EventRow({ event, past }: { event: SiteEvent; past?: boolean }) {
+function EventRow({
+  event,
+  past,
+  materials,
+}: {
+  event: SiteEvent;
+  past?: boolean;
+  materials?: boolean;
+}) {
   const body = (
     <>
       <div className="ev-date">
@@ -88,15 +105,23 @@ function EventRow({ event, past }: { event: SiteEvent; past?: boolean }) {
           <span className="tag">{EVENT_KIND_LABEL[event.kind]}</span>
         </div>
         <h3>{event.title}</h3>
+        {materials && <span className="mono mute">讲义 · 示例仓库 · 录屏</span>}
       </div>
       <p className="ev-where mute">{event.location}</p>
       <span className="ev-go" aria-hidden>
-        {event.signupUrl ? "↗" : "·"}
+        {materials ? "→" : event.signupUrl && !past ? "↗" : "·"}
       </span>
     </>
   );
 
-  const className = `ev ${past ? "past" : ""}`;
+  const className = `ev ${past && !materials ? "past" : ""}`;
+  if (materials) {
+    return (
+      <Link id={event.slug} href={`/learn#${event.slug}`} className={className}>
+        {body}
+      </Link>
+    );
+  }
   return event.signupUrl && !past ? (
     <a
       id={event.slug}

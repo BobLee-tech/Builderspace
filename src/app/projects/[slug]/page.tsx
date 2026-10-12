@@ -4,9 +4,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getProject } from "@/lib/data";
 import { formatDate } from "@/lib/format";
-import { ROLE_LABEL, STATUS_LABEL } from "@/lib/types";
-
-const UPDATE_LABEL = { commit: "代码提交", demo: "Demo", post: "更新帖" };
+import { ROLE_LABEL, STATUS_LABEL, UPDATE_KIND_LABEL } from "@/lib/types";
+import { UpdateForm } from "./update-form";
 
 export async function generateMetadata({
   params,
@@ -115,7 +114,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
           {updates.map((u) => (
             <li key={`${u.occurredAt}-${u.body}`}>
               <span className="mono mute">
-                {formatDate(u.occurredAt)} · {UPDATE_LABEL[u.kind]}
+                {formatDate(u.occurredAt)} · {UPDATE_KIND_LABEL[u.kind]}
               </span>
               <p>
                 {u.body}
@@ -137,6 +136,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
           ))}
         </ol>
       )}
+      <UpdateForm slug={project.slug} />
     </>
   );
 }

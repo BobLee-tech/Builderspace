@@ -26,6 +26,19 @@ export type Skill = (typeof SKILLS)[number];
 export const WEEKLY_HOURS = ["lt2", "2to5", "gt5"] as const;
 export type WeeklyHours = (typeof WEEKLY_HOURS)[number];
 
+export const BLOCKERS = [
+  "teammates",
+  "coding",
+  "time",
+  "idea",
+  "deploy",
+  "other",
+] as const;
+export type Blocker = (typeof BLOCKERS)[number];
+
+export const UPDATE_KINDS = ["commit", "demo", "post"] as const;
+export type UpdateKind = (typeof UPDATE_KINDS)[number];
+
 export const REFERRAL_SOURCES = [
   "xiaohongshu",
   "wechat",
@@ -62,13 +75,15 @@ export type Project = {
 };
 
 export type ProjectUpdate = {
-  kind: "commit" | "demo" | "post";
+  kind: UpdateKind;
   body: string;
   url: string | null;
   occurredAt: string;
 };
 
 export type Tutorial = {
+  /** Workshop the materials belong to, if ops linked one. */
+  eventSlug: string | null;
   title: string;
   summary: string | null;
   slidesUrl: string | null;
@@ -121,6 +136,21 @@ export const HOURS_LABEL: Record<WeeklyHours, string> = {
   lt2: "2h 以内",
   "2to5": "2–5h",
   gt5: "5h 以上",
+};
+
+export const BLOCKER_LABEL: Record<Blocker, string> = {
+  teammates: "没有队友",
+  coding: "不会写代码",
+  time: "没时间",
+  idea: "没想好做什么",
+  deploy: "不会部署上线",
+  other: "其他",
+};
+
+export const UPDATE_KIND_LABEL: Record<UpdateKind, string> = {
+  commit: "代码提交",
+  demo: "Demo",
+  post: "更新帖",
 };
 
 export const REFERRAL_LABEL: Record<(typeof REFERRAL_SOURCES)[number], string> =

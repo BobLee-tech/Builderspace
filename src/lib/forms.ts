@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { REFERRAL_SOURCES, ROLES, SKILLS, WEEKLY_HOURS } from "./types";
+import {
+  BLOCKERS,
+  REFERRAL_SOURCES,
+  ROLES,
+  SKILLS,
+  UPDATE_KINDS,
+  WEEKLY_HOURS,
+} from "./types";
 
 const text = (max: number) => z.string().trim().min(1, "必填").max(max);
 const optionalText = (max: number) =>
@@ -16,15 +23,34 @@ const optionalUrl = z
     z.url({ protocol: /^https?$/, error: "请填写 http(s) 链接" }).nullable(),
   );
 
+/**
+ * Channel tag from the join link (PRD §6.5 归因): `?ref=xhs-w1` or
+ * `utm_source=…`. Anything malformed is dropped rather than blocking signup.
+ */
+export function normalizeChannel(value: string | null | undefined) {
+  const v = value?.trim().toLowerCase() ?? "";
+  return /^[a-z0-9_-]{1,40}$/.test(v) ? v : null;
+}
+
+export function channelFromSearch(search: string): string | null {
+  const params = new URLSearchParams(search);
+  return normalizeChannel(params.get("ref") ?? params.get("utm_source"));
+}
+
 // Only the fields ops need (PRD §4.3 隐私). No zID, no student card.
+// stalledProject + blockers + weeklyHours are the three W1 validation
+// questions from PRD §1.4.
 export const joinSchema = z.object({
   nickname: text(40),
   schoolDegree: text(80),
   major: text(80),
   skills: z.array(z.enum(SKILLS)).max(SKILLS.length),
   idea: optionalText(500),
+  stalledProject: z.enum(["yes", "no"], { error: "请选择" }),
+  blockers: z.array(z.enum(BLOCKERS)).max(BLOCKERS.length),
   weeklyHours: z.enum(WEEKLY_HOURS, { error: "请选择每周可投入时间" }),
   referralSource: z.enum(REFERRAL_SOURCES, { error: "请选择从哪里知道我们" }),
+  channel: z.string().transform(normalizeChannel),
   showcaseConsent: z.boolean(),
 });
 export type JoinInput = z.infer<typeof joinSchema>;
@@ -42,6 +68,15 @@ export const projectSubmissionSchema = z.object({
 });
 export type ProjectSubmission = z.infer<typeof projectSubmissionSchema>;
 
+export const projectUpdateSchema = z.object({
+  slug: z.string().regex(/^[a-z0-9-]+$/),
+  kind: z.enum(UPDATE_KINDS, { error: "请选择进展类型" }),
+  body: text(500),
+  url: optionalUrl,
+  submittedBy: text(40),
+});
+export type ProjectUpdateSubmission = z.infer<typeof projectUpdateSchema>;
+
 export function parseJoinForm(form: FormData) {
   return joinSchema.safeParse({
     nickname: form.get("nickname") ?? "",
@@ -49,8 +84,11 @@ export function parseJoinForm(form: FormData) {
     major: form.get("major") ?? "",
     skills: form.getAll("skills"),
     idea: form.get("idea") ?? "",
+    stalledProject: form.get("stalledProject") ?? undefined,
+    blockers: form.getAll("blockers"),
     weeklyHours: form.get("weeklyHours") ?? undefined,
     referralSource: form.get("referralSource") ?? undefined,
+    channel: form.get("channel") ?? "",
     showcaseConsent: form.get("showcaseConsent") === "on",
   });
 }
@@ -66,6 +104,16 @@ export function parseProjectForm(form: FormData) {
     contact: form.get("contact") ?? "",
     repoUrl: form.get("repoUrl") ?? "",
     demoUrl: form.get("demoUrl") ?? "",
+  });
+}
+
+export function parseProjectUpdateForm(form: FormData) {
+  return projectUpdateSchema.safeParse({
+    slug: form.get("slug") ?? "",
+    kind: form.get("kind") ?? undefined,
+    body: form.get("body") ?? "",
+    url: form.get("url") ?? "",
+    submittedBy: form.get("submittedBy") ?? "",
   });
 }
 

@@ -1020,6 +1020,28 @@ img.qr {
   background: var(--paper);
 }
 
+.update-form {
+  margin-top: 32px;
+  gap: 0;
+}
+.update-form summary {
+  cursor: pointer;
+  list-style: none;
+  width: fit-content;
+}
+.update-form summary::-webkit-details-marker {
+  display: none;
+}
+.update-form .form {
+  padding: 20px 0 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.update-form.form {
+  gap: 12px;
+}
+
 /* ---------- learn ---------- */
 .lgrid {
   display: grid;

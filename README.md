@@ -41,7 +41,7 @@ pnpm check   # lint + typecheck + format + test + build
 | ------------------ | ------------------ | -------------------- |
 | `events`           | `published = true` | —                    |
 | `projects`         | 审核通过的         | 只能投稿为 `pending` |
-| `project_updates`  | 审核通过项目的     | —                    |
+| `project_updates`  | 审核通过的         | 只能投稿为 `pending` |
 | `tutorials`        | `published = true` | —                    |
 | `weekly_picks`     | `published = true` | —                    |
 | `join_submissions` | —                  | 可提交，不可读回     |
@@ -52,10 +52,13 @@ pnpm check   # lint + typecheck + format + test + build
 
 - **新增活动**：`events` 加一行，填好后勾选 `published`。报名链接用 Luma / Google Forms。
 - **审核项目**：`projects` 里把 `review_status` 改成 `approved` 即公开。
-- **记录进展**：`project_updates` 加一行（代码提交 / Demo / 更新帖）。首页的「双周活跃项目数」来自视图 `biweekly_active_projects`。
+- **记录进展**：`project_updates` 加一行（代码提交 / Demo / 更新帖），默认就是 `approved`。首页的「双周活跃项目数」来自视图 `biweekly_active_projects`。
+- **审核进展**：发起人在项目页「提交进展」投稿的行是 `pending`，核对后改成 `approved` 才会上时间线并计入指标。
+- **导出双周活跃项目数**：视图 `biweekly_active_projects_history`（每周一行），Export → CSV。视图 `project_activity` 列出每个项目最近一次进展，超过 14 天没动静的排在最前，用来回访；两个视图只在后台可见。
 - **上线教程资料**：`tutorials` 加一行并勾选 `published`（工作坊后 48 小时内）。
 - **每周精选**：`weekly_picks`，每条必须有来源链接和日期，只写摘要。
 - **导出报名**：`join_submissions` 右上角 Export → CSV。成员要求删除数据时直接删对应行。
+- **渠道归因**：每个渠道发不同的加入链接，如 `/join?ref=xhs-w1`、`/join?ref=poster-qr`（也认 `utm_source`），记在 `join_submissions.channel`。只用小写字母、数字、`-`、`_`。
 
 页面缓存几分钟，改完稍等即可看到。
 

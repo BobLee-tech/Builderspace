@@ -32,8 +32,11 @@ export async function submitJoin(
     major: v.major,
     skills: v.skills,
     idea: v.idea,
+    stalled_project: v.stalledProject === "yes",
+    blockers: v.blockers,
     weekly_hours: v.weeklyHours,
     referral_source: v.referralSource,
+    channel: v.channel,
     showcase_consent: v.showcaseConsent,
   });
   if (error) {

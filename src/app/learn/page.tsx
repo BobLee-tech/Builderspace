@@ -33,7 +33,11 @@ export default async function LearnPage() {
           ) : (
             <div className="lgrid">
               {tutorials.map((t) => (
-                <article key={t.title} className="box">
+                <article
+                  key={t.title}
+                  id={t.eventSlug ?? undefined}
+                  className="box"
+                >
                   {t.publishedAt && (
                     <span className="mono mute">
                       {formatDate(t.publishedAt)}
