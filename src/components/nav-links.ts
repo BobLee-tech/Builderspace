@@ -1,9 +1,9 @@
 export const NAV_LINKS = [
-  { href: "/", label: "首页", ico: "◎" },
-  { href: "/events", label: "活动", ico: "▦" },
-  { href: "/projects", label: "项目广场", ico: "◫" },
-  { href: "/learn", label: "教程资料", ico: "≡" },
-  { href: "/join", label: "加入", ico: "+" },
+  { href: "/", zh: "首页", en: "Home", ico: "◎" },
+  { href: "/events", zh: "活动", en: "Events", ico: "▦" },
+  { href: "/projects", zh: "项目广场", en: "Projects", ico: "◫" },
+  { href: "/learn", zh: "教程资料", en: "Learn", ico: "≡" },
+  { href: "/join", zh: "加入", en: "Join", ico: "+" },
 ] as const;
 
 export function isActive(pathname: string, href: string): boolean {

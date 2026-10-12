@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { LangToggle } from "./lang-toggle";
 import { NavItems } from "./nav-items";
 
 export function SiteHeader() {
@@ -19,6 +20,7 @@ export function SiteHeader() {
         <nav className="nav" aria-label="主导航">
           <NavItems />
         </nav>
+        <LangToggle />
       </div>
     </header>
   );

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import { NAV_LINKS, isActive } from "./nav-links";
+import { T } from "./t";
 
 /**
  * The pathname is runtime data on dynamic routes, so the highlighted links
@@ -41,7 +42,7 @@ function Items({
           {link.ico}
         </span>
       )}
-      {link.label}
+      <T zh={link.zh} en={link.en} />
     </Link>
   ));
 }

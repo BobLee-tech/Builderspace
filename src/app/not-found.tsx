@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { T } from "@/components/t";
 
 export default function NotFound() {
   return (
@@ -14,7 +15,7 @@ export default function NotFound() {
           </span>
         </h1>
         <Link href="/" className="btn ghost" style={{ marginTop: 32 }}>
-          回首页 <span className="arr">→</span>
+          <T zh="回首页" en="Back home" /> <span className="arr">→</span>
         </Link>
       </div>
     </section>

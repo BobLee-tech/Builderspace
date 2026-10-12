@@ -5,6 +5,7 @@ import { getEventSchedule, getTutorials } from "@/lib/data";
 import { formatShortDate, formatTimeRange } from "@/lib/format";
 import { EVENT_KIND_LABEL, type SiteEvent } from "@/lib/types";
 import { siteUrl } from "@/lib/site-url";
+import { T } from "@/components/t";
 
 export const metadata: Metadata = { title: "活动" };
 
@@ -19,7 +20,9 @@ export default async function EventsPage() {
   return (
     <section className="sec first">
       <div className="wrap">
-        <p className="eyebrow mono">活动 / Events · T3 2026</p>
+        <p className="eyebrow mono">
+          <T zh="活动 / Events · T3 2026" en="Events · T3 2026" />
+        </p>
         <h1 className="display page-title">
           <span className="line">
             <span>Every week,</span>
@@ -29,17 +32,26 @@ export default async function EventsPage() {
           </span>
         </h1>
         <p className="lede" style={{ marginTop: 28 }}>
-          每周 1 场固定 Build Night，隔周 1 场 Demo
-          或主题活动。考试期只做线上答疑。
+          <T
+            zh="每周 1 场固定 Build Night，隔周 1 场 Demo 或主题活动。考试期只做线上答疑。"
+            en="A Build Night every week, plus a demo or themed session every other week. Online Q&A only during exams."
+          />
         </p>
 
         <div className="ev-list">
           <div className="filters">
-            <span className="mono mute label">接下来</span>
+            <span className="mono mute label">
+              <T zh="接下来" en="Upcoming" />
+            </span>
             <SampleNotice />
           </div>
           {upcoming.length === 0 && (
-            <p className="empty">下一场活动筹备中，进群第一时间收到通知。</p>
+            <p className="empty">
+              <T
+                zh="下一场活动筹备中，进群第一时间收到通知。"
+                en="The next event is being planned — join the group to hear first."
+              />
+            </p>
           )}
           {upcoming.map((event) => (
             <EventRow key={event.slug} event={event} />
@@ -48,18 +60,27 @@ export default async function EventsPage() {
 
         <div className="box subscribe">
           <div>
-            <h3 style={{ fontSize: 18 }}>订阅活动日历</h3>
-            <p className="mute">导入 Google 或 Apple 日历，新活动自动出现。</p>
+            <h3 style={{ fontSize: 18 }}>
+              <T zh="订阅活动日历" en="Subscribe to the calendar" />
+            </h3>
+            <p className="mute">
+              <T
+                zh="导入 Google 或 Apple 日历，新活动自动出现。"
+                en="Add it to Google or Apple Calendar; new events show up automatically."
+              />
+            </p>
             <code>{calendarUrl}</code>
           </div>
           <a href={calendarUrl} className="btn ghost">
-            订阅 <span className="arr">→</span>
+            <T zh="订阅" en="Subscribe" /> <span className="arr">→</span>
           </a>
         </div>
 
         {past.length > 0 && (
           <div className="ev-list" style={{ marginTop: 56 }}>
-            <p className="mono mute">往期</p>
+            <p className="mono mute">
+              <T zh="往期" en="Past" />
+            </p>
             {past.map((event) => (
               <EventRow
                 key={event.slug}
@@ -72,11 +93,14 @@ export default async function EventsPage() {
         )}
 
         <p className="empty" style={{ marginTop: 56 }}>
-          每场工作坊结束后 48 小时内，讲义、示例仓库和录屏会出现在{" "}
+          <T
+            zh="每场工作坊结束后 48 小时内，讲义、示例仓库和录屏会出现在"
+            en="Within 48 hours of each workshop, slides, example repos and recordings go up on"
+          />{" "}
           <Link href="/learn" className="text-link">
-            教程资料
+            <T zh="教程资料" en="Learn" />
           </Link>
-          。
+          <T zh="。" en="." />
         </p>
       </div>
     </section>
@@ -102,10 +126,16 @@ function EventRow({
       </div>
       <div className="ev-main">
         <div className="need">
-          <span className="tag">{EVENT_KIND_LABEL[event.kind]}</span>
+          <span className="tag">
+            <T {...EVENT_KIND_LABEL[event.kind]} />
+          </span>
         </div>
         <h3>{event.title}</h3>
-        {materials && <span className="mono mute">讲义 · 示例仓库 · 录屏</span>}
+        {materials && (
+          <span className="mono mute">
+            <T zh="讲义 · 示例仓库 · 录屏" en="Slides · repo · recording" />
+          </span>
+        )}
       </div>
       <p className="ev-where mute">{event.location}</p>
       <span className="ev-go" aria-hidden>

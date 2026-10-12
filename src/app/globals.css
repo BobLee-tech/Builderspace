@@ -1261,3 +1261,232 @@ img.qr {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------- language ---------- */
+/* Both languages are rendered (see components/t.tsx); <html data-lang> picks one. */
+html:not([data-lang="en"]) [data-l="en"],
+html[data-lang="en"] [data-l="zh"] {
+  display: none;
+}
+.lang {
+  display: flex;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  overflow: hidden;
+  flex: none;
+}
+.lang button {
+  background: none;
+  border: 0;
+  padding: 5px 10px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--mute);
+  cursor: pointer;
+}
+.lang button[aria-pressed="true"] {
+  background: var(--paper);
+  color: var(--ink);
+}
+@media (max-width: 900px) {
+  .top .lang {
+    margin-left: auto;
+  }
+}
+
+/* ---------- hero: liquid metal (components/hero-metal.tsx) ---------- */
+.hero-gl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  display: block;
+  image-rendering: pixelated;
+  opacity: 0;
+  transition: opacity 1.2s var(--ease);
+}
+.hero-gl[data-on] {
+  opacity: 0.75;
+}
+/* Keeps the headline readable over the blobs. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      var(--ink) 0%,
+      rgba(5, 5, 5, 0.75) 32%,
+      transparent 62%
+    ),
+    linear-gradient(0deg, var(--ink), transparent 30%);
+}
+.hero .wrap {
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- mascot stage (components/mascot-stage.tsx) ---------- */
+.stage {
+  position: relative;
+  z-index: 1;
+  min-height: min(860px, 100svh);
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+  background: radial-gradient(
+    60% 50% at 50% 44%,
+    rgba(255, 255, 255, 0.035),
+    transparent 70%
+  );
+  touch-action: pan-y;
+}
+.stage-gl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.stage-mark {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: min(52vw, 720px);
+  height: auto;
+  translate: -50% -50%;
+  pointer-events: none;
+}
+.stage.pm-on .stage-mark {
+  display: none;
+}
+.stage-frame {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s var(--ease);
+}
+.stage.pm-on .stage-frame {
+  opacity: 0.35;
+}
+.stage.formed .stage-frame {
+  opacity: 1;
+}
+.stage-frame > .c {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--paper);
+  border-style: solid;
+  opacity: 0.8;
+}
+.stage-frame > .tl {
+  top: 0;
+  left: 0;
+  border-width: 1px 0 0 1px;
+}
+.stage-frame > .tr {
+  top: 0;
+  right: 0;
+  border-width: 1px 1px 0 0;
+}
+.stage-frame > .bl {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 1px 1px;
+}
+.stage-frame > .br {
+  bottom: 0;
+  right: 0;
+  border-width: 0 1px 1px 0;
+}
+.sf-l,
+.sf-r {
+  position: absolute;
+  font-size: 10px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.sf-l {
+  left: 0;
+  top: -20px;
+  color: var(--mute);
+}
+.sf-r {
+  right: 0;
+  bottom: -20px;
+  color: var(--paper);
+}
+.stage-in {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding-block: clamp(32px, 5vw, 56px);
+  pointer-events: none;
+}
+.stage-in button {
+  pointer-events: auto;
+}
+.stage-cap {
+  max-width: 34ch;
+  font-size: 13.5px;
+  margin-top: 10px;
+}
+.seg {
+  display: flex;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  padding: 2px;
+  gap: 2px;
+  flex: none;
+}
+.seg button {
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--mute);
+  cursor: pointer;
+}
+.seg button[aria-pressed="true"] {
+  background: var(--paper);
+  color: var(--ink);
+}
+@media (max-width: 720px) {
+  .hero::before {
+    background: linear-gradient(
+      0deg,
+      var(--ink) 10%,
+      rgba(5, 5, 5, 0.55) 60%,
+      rgba(5, 5, 5, 0.2)
+    );
+  }
+  .stage {
+    min-height: 78svh;
+  }
+  .stage-mark {
+    width: 86vw;
+    top: 42%;
+  }
+  .stage-in {
+    flex-direction: column;
+  }
+}
+
+/* Honeypot (components/spam-guard.tsx): off-screen, not display:none, so bots fill it. */
+.hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

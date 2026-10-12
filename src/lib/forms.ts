@@ -8,7 +8,8 @@ import {
   WEEKLY_HOURS,
 } from "./types";
 
-const text = (max: number) => z.string().trim().min(1, "必填").max(max);
+const text = (max: number) =>
+  z.string().trim().min(1, "必填|Required").max(max);
 const optionalText = (max: number) =>
   z
     .string()
@@ -20,7 +21,12 @@ const optionalUrl = z
   .trim()
   .transform((v) => v || null)
   .pipe(
-    z.url({ protocol: /^https?$/, error: "请填写 http(s) 链接" }).nullable(),
+    z
+      .url({
+        protocol: /^https?$/,
+        error: "请填写 http(s) 链接|Use an http(s) link",
+      })
+      .nullable(),
   );
 
 /**
@@ -46,10 +52,14 @@ export const joinSchema = z.object({
   major: text(80),
   skills: z.array(z.enum(SKILLS)).max(SKILLS.length),
   idea: optionalText(500),
-  stalledProject: z.enum(["yes", "no"], { error: "请选择" }),
+  stalledProject: z.enum(["yes", "no"], { error: "请选择|Pick one" }),
   blockers: z.array(z.enum(BLOCKERS)).max(BLOCKERS.length),
-  weeklyHours: z.enum(WEEKLY_HOURS, { error: "请选择每周可投入时间" }),
-  referralSource: z.enum(REFERRAL_SOURCES, { error: "请选择从哪里知道我们" }),
+  weeklyHours: z.enum(WEEKLY_HOURS, {
+    error: "请选择每周可投入时间|Pick your weekly hours",
+  }),
+  referralSource: z.enum(REFERRAL_SOURCES, {
+    error: "请选择从哪里知道我们|Tell us how you found us",
+  }),
   channel: z.string().transform(normalizeChannel),
   showcaseConsent: z.boolean(),
 });
@@ -70,7 +80,7 @@ export type ProjectSubmission = z.infer<typeof projectSubmissionSchema>;
 
 export const projectUpdateSchema = z.object({
   slug: z.string().regex(/^[a-z0-9-]+$/),
-  kind: z.enum(UPDATE_KINDS, { error: "请选择进展类型" }),
+  kind: z.enum(UPDATE_KINDS, { error: "请选择进展类型|Pick an update type" }),
   body: text(500),
   url: optionalUrl,
   submittedBy: text(40),

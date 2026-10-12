@@ -6,6 +6,7 @@ import { getProject } from "@/lib/data";
 import { formatDate } from "@/lib/format";
 import { ROLE_LABEL, STATUS_LABEL, UPDATE_KIND_LABEL } from "@/lib/types";
 import { UpdateForm } from "./update-form";
+import { T } from "@/components/t";
 
 export async function generateMetadata({
   params,
@@ -21,9 +22,15 @@ export default function ProjectPage({ params }: PageProps<"/projects/[slug]">) {
     <section className="sec first">
       <div className="wrap">
         <Link href="/projects" className="crumb mono">
-          ← 项目广场
+          ← <T zh="项目广场" en="Projects" />
         </Link>
-        <Suspense fallback={<p className="mute">加载中…</p>}>
+        <Suspense
+          fallback={
+            <p className="mute">
+              <T zh="加载中…" en="Loading…" />
+            </p>
+          }
+        >
           {params.then(({ slug }) => (
             <ProjectDetail slug={slug} />
           ))}
@@ -41,7 +48,9 @@ async function ProjectDetail({ slug }: { slug: string }) {
   return (
     <>
       <div className="need" style={{ margin: "32px 0 16px" }}>
-        <span className="tag fill">{STATUS_LABEL[project.status]}</span>
+        <span className="tag fill">
+          <T {...STATUS_LABEL[project.status]} />
+        </span>
         <span className="tag">{project.targetUser}</span>
       </div>
       <h1 className="display page-title">{project.name}</h1>
@@ -51,31 +60,45 @@ async function ProjectDetail({ slug }: { slug: string }) {
 
       <div className="fields">
         <div>
-          <span className="mono mute">缺的角色</span>
+          <span className="mono mute">
+            <T zh="缺的角色" en="Roles needed" />
+          </span>
           <div className="need">
-            {project.neededRoles.length === 0 && <span>暂不缺人</span>}
+            {project.neededRoles.length === 0 && (
+              <span>
+                <T zh="暂不缺人" en="Team is complete" />
+              </span>
+            )}
             {project.neededRoles.map((r) => (
               <span key={r} className="tag dash">
-                {ROLE_LABEL[r]}
+                <T {...ROLE_LABEL[r]} />
               </span>
             ))}
           </div>
         </div>
         <div>
-          <span className="mono mute">下一步</span>
+          <span className="mono mute">
+            <T zh="下一步" en="Next step" />
+          </span>
           <span>{project.nextStep ?? "—"}</span>
         </div>
         <div>
-          <span className="mono mute">发起人</span>
+          <span className="mono mute">
+            <T zh="发起人" en="Owner" />
+          </span>
           <span>{project.ownerName}</span>
         </div>
         <div>
-          <span className="mono mute">联系方式</span>
+          <span className="mono mute">
+            <T zh="联系方式" en="Contact" />
+          </span>
           <span>{project.contact}</span>
         </div>
         {(project.repoUrl || project.demoUrl) && (
           <div>
-            <span className="mono mute">链接</span>
+            <span className="mono mute">
+              <T zh="链接" en="Links" />
+            </span>
             <div className="links">
               {project.repoUrl && (
                 <a
@@ -84,7 +107,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
                   rel="noreferrer"
                   className="text-link"
                 >
-                  仓库 ↗
+                  <T zh="仓库 ↗" en="Repo ↗" />
                 </a>
               )}
               {project.demoUrl && (
@@ -103,18 +126,22 @@ async function ProjectDetail({ slug }: { slug: string }) {
       </div>
 
       <h2 className="h2" style={{ fontSize: 26, marginTop: 56 }}>
-        进展时间线
+        <T zh="进展时间线" en="Progress timeline" />
       </h2>
       {updates.length === 0 ? (
         <p className="empty" style={{ marginTop: 20 }}>
-          还没有进展记录。发起人每两周更新一次。
+          <T
+            zh="还没有进展记录。发起人每两周更新一次。"
+            en="No updates yet. Owners post one every two weeks."
+          />
         </p>
       ) : (
         <ol className="timeline">
           {updates.map((u) => (
             <li key={`${u.occurredAt}-${u.body}`}>
               <span className="mono mute">
-                {formatDate(u.occurredAt)} · {UPDATE_KIND_LABEL[u.kind]}
+                {formatDate(u.occurredAt)} ·{" "}
+                <T {...UPDATE_KIND_LABEL[u.kind]} />
               </span>
               <p>
                 {u.body}
@@ -127,7 +154,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
                       rel="noreferrer"
                       className="text-link"
                     >
-                      查看 ↗
+                      <T zh="查看 ↗" en="View ↗" />
                     </a>
                   </>
                 )}

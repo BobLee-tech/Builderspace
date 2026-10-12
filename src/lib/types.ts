@@ -101,63 +101,65 @@ export type WeeklyPick = {
   pickedOn: string;
 };
 
-export const EVENT_KIND_LABEL: Record<EventKind, string> = {
-  workshop: "工作坊",
-  build_night: "Build Night",
-  demo_night: "Demo Night",
-  online: "线上",
-  other: "其他",
+// Display labels in both languages; render with <T {...LABEL[key]} />.
+type Bi = { zh: string; en: string };
+
+export const EVENT_KIND_LABEL: Record<EventKind, Bi> = {
+  workshop: { zh: "工作坊", en: "Workshop" },
+  build_night: { zh: "Build Night", en: "Build Night" },
+  demo_night: { zh: "Demo Night", en: "Demo Night" },
+  online: { zh: "线上", en: "Online" },
+  other: { zh: "其他", en: "Other" },
 };
 
-export const STATUS_LABEL: Record<ProjectStatus, string> = {
-  recruiting: "招募中",
-  building: "进行中",
-  demoed: "已 Demo",
-  paused: "暂停",
+export const STATUS_LABEL: Record<ProjectStatus, Bi> = {
+  recruiting: { zh: "招募中", en: "Recruiting" },
+  building: { zh: "进行中", en: "Building" },
+  demoed: { zh: "已 Demo", en: "Demoed" },
+  paused: { zh: "暂停", en: "Paused" },
 };
 
-export const ROLE_LABEL: Record<Role, string> = {
-  frontend: "前端",
-  backend: "后端",
-  design: "设计",
-  product: "产品/商科",
-  tester: "试用者",
+export const ROLE_LABEL: Record<Role, Bi> = {
+  frontend: { zh: "前端", en: "Frontend" },
+  backend: { zh: "后端", en: "Backend" },
+  design: { zh: "设计", en: "Design" },
+  product: { zh: "产品/商科", en: "Product / Business" },
+  tester: { zh: "试用者", en: "Testers" },
 };
 
-export const SKILL_LABEL: Record<Skill, string> = {
-  frontend: "前端",
-  backend: "后端",
-  design: "设计",
-  product: "产品/商科",
-  beginner: "零基础",
+export const SKILL_LABEL: Record<Skill, Bi> = {
+  frontend: { zh: "前端", en: "Frontend" },
+  backend: { zh: "后端", en: "Backend" },
+  design: { zh: "设计", en: "Design" },
+  product: { zh: "产品/商科", en: "Product / Business" },
+  beginner: { zh: "零基础", en: "Total beginner" },
 };
 
-export const HOURS_LABEL: Record<WeeklyHours, string> = {
-  lt2: "2h 以内",
-  "2to5": "2–5h",
-  gt5: "5h 以上",
+export const HOURS_LABEL: Record<WeeklyHours, Bi> = {
+  lt2: { zh: "2h 以内", en: "Under 2h" },
+  "2to5": { zh: "2–5h", en: "2–5h" },
+  gt5: { zh: "5h 以上", en: "5h+" },
 };
 
-export const BLOCKER_LABEL: Record<Blocker, string> = {
-  teammates: "没有队友",
-  coding: "不会写代码",
-  time: "没时间",
-  idea: "没想好做什么",
-  deploy: "不会部署上线",
-  other: "其他",
+export const BLOCKER_LABEL: Record<Blocker, Bi> = {
+  teammates: { zh: "没有队友", en: "No teammates" },
+  coding: { zh: "不会写代码", en: "Couldn't code it" },
+  time: { zh: "没时间", en: "No time" },
+  idea: { zh: "没想好做什么", en: "Unsure what to build" },
+  deploy: { zh: "不会部署上线", en: "Couldn't ship it" },
+  other: { zh: "其他", en: "Other" },
 };
 
-export const UPDATE_KIND_LABEL: Record<UpdateKind, string> = {
-  commit: "代码提交",
-  demo: "Demo",
-  post: "更新帖",
+export const UPDATE_KIND_LABEL: Record<UpdateKind, Bi> = {
+  commit: { zh: "代码提交", en: "Commit" },
+  demo: { zh: "Demo", en: "Demo" },
+  post: { zh: "更新帖", en: "Update post" },
 };
 
-export const REFERRAL_LABEL: Record<(typeof REFERRAL_SOURCES)[number], string> =
-  {
-    xiaohongshu: "小红书",
-    wechat: "微信群 / 朋友圈",
-    friend: "朋友推荐",
-    poster: "校园海报",
-    other: "其他",
-  };
+export const REFERRAL_LABEL: Record<(typeof REFERRAL_SOURCES)[number], Bi> = {
+  xiaohongshu: { zh: "小红书", en: "Xiaohongshu" },
+  wechat: { zh: "微信群 / 朋友圈", en: "WeChat" },
+  friend: { zh: "朋友推荐", en: "A friend" },
+  poster: { zh: "校园海报", en: "Campus poster" },
+  other: { zh: "其他", en: "Other" },
+};

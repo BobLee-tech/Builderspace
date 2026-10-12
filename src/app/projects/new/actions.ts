@@ -6,17 +6,20 @@ import {
   projectSlug,
   type FormState,
 } from "@/lib/forms";
+import { looksAutomated } from "@/lib/spam";
 import { getSupabase } from "@/lib/supabase/client";
 
 export async function submitProject(
   _prev: FormState,
   form: FormData,
 ): Promise<FormState> {
+  if (looksAutomated(form)) return { status: "ok" };
+
   const parsed = parseProjectForm(form);
   if (!parsed.success) {
     return {
       status: "error",
-      message: "有几项还没填好",
+      message: "有几项还没填好|A few fields need attention",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
@@ -24,7 +27,10 @@ export async function submitProject(
   const db = getSupabase();
   if (!db) {
     if (process.env.NODE_ENV === "production") {
-      return { status: "error", message: "投稿暂未开放，请稍后再试" };
+      return {
+        status: "error",
+        message: "投稿暂未开放，请稍后再试|Submissions aren't open yet",
+      };
     }
     console.info("[project] Supabase not configured, dropped:", parsed.data);
     return { status: "ok" };
@@ -47,7 +53,10 @@ export async function submitProject(
   });
   if (error) {
     console.error("[project] insert failed", error);
-    return { status: "error", message: "提交失败，请稍后再试" };
+    return {
+      status: "error",
+      message: "提交失败，请稍后再试|Couldn't submit, please try again",
+    };
   }
   return { status: "ok" };
 }

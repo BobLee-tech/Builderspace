@@ -75,6 +75,26 @@ pnpm check   # lint + typecheck + format + test + build
 | `/learn`           | 教程资料 + 每周精选                                | P0/P1 |
 | `/join`            | 加入表单，提交后显示管理员微信                     | P0    |
 
+## 中英双语
+
+页面上的文案两种语言都会渲染，`<html data-lang>` 决定显示哪一种（见 `src/components/t.tsx`），右上角「中 / EN」切换并记在浏览器里。页面因此仍是静态缓存的，切换语言不用刷新。
+
+- 新文案用 `<T zh="…" en="…" />`；状态、角色等标签在 `src/lib/types.ts`，是 `{ zh, en }` 对象。
+- 表单校验和提交提示写成 `"中文|English"`，用 `<Msg s={…} />` 渲染。
+- 运营在 Supabase 里填的内容（活动标题、项目卡）按原样显示，不翻译。
+
+## 防刷
+
+- 表单带隐藏的蜜罐字段和填写用时检查（`src/lib/spam.ts`）。像机器人的提交照样显示“成功”，但不入库。
+- 数据库触发器限制公开提交速度：加入表单每分钟 20 条，项目卡和进展每分钟各 10 条（迁移 `20261012030000`）。运营在后台操作不受限。
+- 没用验证码：多数验证码在国内打不开。
+
+## 视觉效果
+
+- 首页首屏：液态金属 + Bayer 1-bit 抖动（`src/components/hero-metal.tsx`），原生 WebGL，不依赖 three.js。
+- 每页页尾：1.76 万个取自 logo 的粒子吉祥物（`src/components/mascot-stage.tsx`），数据 `public/mascot-particles.json` 只在滚动到附近时才加载。
+- 两者都在“减少动态效果”时静止，WebGL 不可用时退回静态图，并按帧率自动降分辨率。
+
 ## 合规提醒
 
 - 附属 Arc 前不出现 UNSW / Arc logo，不写「官方」「首个」「唯一」。

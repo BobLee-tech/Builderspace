@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatShortDate } from "@/lib/format";
 import { ROLE_LABEL, STATUS_LABEL, type Project } from "@/lib/types";
+import { T } from "./t";
 
 export function ProjectCard({ project }: { project: Project }) {
   return (
@@ -12,7 +13,7 @@ export function ProjectCard({ project }: { project: Project }) {
         <span
           className={`tag ${project.status === "recruiting" ? "fill" : ""}`}
         >
-          {STATUS_LABEL[project.status]}
+          <T {...STATUS_LABEL[project.status]} />
         </span>
         <span className="mono mute">{project.targetUser}</span>
       </div>
@@ -20,11 +21,13 @@ export function ProjectCard({ project }: { project: Project }) {
       <p className="prob">{project.problem}</p>
       {project.neededRoles.length > 0 && (
         <div>
-          <span className="mono mute">缺</span>
+          <span className="mono mute">
+            <T zh="缺" en="Needs" />
+          </span>
           <div className="need">
             {project.neededRoles.map((role) => (
               <span key={role} className="tag dash">
-                {ROLE_LABEL[role]}
+                <T {...ROLE_LABEL[role]} />
               </span>
             ))}
           </div>
@@ -33,7 +36,7 @@ export function ProjectCard({ project }: { project: Project }) {
       <div className="pcard-foot">
         <span>{project.ownerName}</span>
         <span className="mono">
-          更新于 {formatShortDate(project.updatedAt)}
+          <T zh="更新于" en="Updated" /> {formatShortDate(project.updatedAt)}
         </span>
       </div>
     </Link>

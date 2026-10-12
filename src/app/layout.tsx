@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Noto_Sans_SC, Unbounded } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Dock } from "@/components/dock";
+import { MascotStage } from "@/components/mascot-stage";
+import { langBootScript } from "@/components/t";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -50,11 +52,17 @@ export default function RootLayout({
     <html
       lang="zh-CN"
       className={`${unbounded.variable} ${geist.variable} ${geistMono.variable} ${notoSc.variable}`}
+      // The boot script may set data-lang/lang before React hydrates.
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: langBootScript }} />
+      </head>
       <body>
         <div className="backdrop" aria-hidden />
         <SiteHeader />
         <main>{children}</main>
+        <MascotStage />
         <SiteFooter />
         <Dock />
       </body>
