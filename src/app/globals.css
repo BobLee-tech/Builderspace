@@ -847,6 +847,16 @@ main {
   margin-top: 4px;
   accent-color: var(--paper);
 }
+.support {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.support-note {
+  font-size: var(--fs-sm);
+}
 .form-status {
   font-size: var(--fs-sm);
 }

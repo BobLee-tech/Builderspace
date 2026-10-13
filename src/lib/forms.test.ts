@@ -74,9 +74,109 @@ describe("parseJoinForm", () => {
     expect(bad.data?.channel).toBeNull();
   });
 
-  it("never collects fields outside the schema", () => {
-    const result = parseJoinForm(form([...validJoin, ["zid", "z1234567"]]));
-    expect(result.data).not.toHaveProperty("zid");
+  it("treats the event questions as optional", () => {
+    const result = parseJoinForm(form(validJoin));
+    expect(result.data).toMatchObject({
+      eventInterest: null,
+      availability: [],
+    });
+  });
+
+  it("keeps event interest and availability, and rejects unknown values", () => {
+    const ok = parseJoinForm(
+      form([
+        ...validJoin,
+        ["eventInterest", "yes"],
+        ["availability", "weekday_evening"],
+        ["availability", "online"],
+      ]),
+    );
+    expect(ok.data).toMatchObject({
+      eventInterest: "yes",
+      availability: ["weekday_evening", "online"],
+    });
+
+    const bad = parseJoinForm(
+      form([
+        ...validJoin,
+        ["eventInterest", "definitely"],
+        ["availability", "midnight"],
+      ]),
+    );
+    const paths = bad.error!.issues.map((i) => i.path[0]);
+    expect(paths).toEqual(
+      expect.arrayContaining(["eventInterest", "availability"]),
+    );
+  });
+
+  it("never keeps a name or zID unless the member opted in", () => {
+    const result = parseJoinForm(
+      form([
+        ...validJoin,
+        ["fullName", "Yuki Tanaka"],
+        ["zid", "z1234567"],
+        ["affiliationConsent", "on"],
+      ]),
+    );
+    expect(result.success).toBe(true);
+    expect(result.data).toMatchObject({
+      affiliationSupport: false,
+      fullName: null,
+      zid: null,
+      affiliationConsent: false,
+    });
+  });
+
+  it("records an opted-in supporter and normalises the zID", () => {
+    const supporter: [string, string][] = [
+      ...validJoin,
+      ["affiliationSupport", "on"],
+      ["fullName", " Yuki Tanaka "],
+      ["affiliationConsent", "on"],
+    ];
+    for (const typed of ["z1234567", "Z1234567", " 1234567 "]) {
+      const result = parseJoinForm(form([...supporter, ["zid", typed]]));
+      expect(result.data).toMatchObject({
+        affiliationSupport: true,
+        fullName: "Yuki Tanaka",
+        zid: "z1234567",
+        affiliationConsent: true,
+      });
+    }
+  });
+
+  it("asks an opted-in supporter for a name, a valid zID and consent", () => {
+    const result = parseJoinForm(
+      form([
+        ...validJoin,
+        ["affiliationSupport", "on"],
+        ["fullName", "  "],
+        ["zid", "z12345"],
+      ]),
+    );
+    expect(result.success).toBe(false);
+    const paths = result.error!.issues.map((i) => i.path[0]);
+    expect(paths).toEqual(
+      expect.arrayContaining(["fullName", "zid", "affiliationConsent"]),
+    );
+  });
+
+  it("reports supporter problems alongside other missing answers", () => {
+    const result = parseJoinForm(
+      form([
+        ...validJoin.filter(([k]) => k !== "weeklyHours"),
+        ["affiliationSupport", "on"],
+      ]),
+    );
+    const paths = result.error!.issues.map((i) => i.path[0]);
+    expect(paths).toEqual(
+      expect.arrayContaining([
+        "weeklyHours",
+        "fullName",
+        "zid",
+        "affiliationConsent",
+      ]),
+    );
   });
 });
 

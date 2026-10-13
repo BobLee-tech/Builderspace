@@ -50,7 +50,15 @@ export default function JoinPage() {
                   <T zh="我们不收" en="We never ask for" />
                 </span>
                 <span>
-                  <T zh="zID · 学生证" en="zID · student card" />
+                  <T zh="学生证" en="Student card" />
+                </span>
+              </div>
+              <div>
+                <span className="mono mute" style={{ textTransform: "none" }}>
+                  zID
+                </span>
+                <span>
+                  <T zh="仅自愿登记时填写" en="Only if you opt in" />
                 </span>
               </div>
               <div>

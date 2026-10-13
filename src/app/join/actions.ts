@@ -30,7 +30,13 @@ export async function submitJoin(
         message: "报名暂未开放，请稍后再试|Sign-up isn't open yet",
       };
     }
-    console.info("[join] Supabase not configured, dropped:", parsed.data);
+    // Never log the name or zID, even in development.
+    const { fullName, zid, ...loggable } = parsed.data;
+    console.info("[join] Supabase not configured, dropped:", {
+      ...loggable,
+      fullName: fullName && "[redacted]",
+      zid: zid && "[redacted]",
+    });
     return { status: "ok", nickname: parsed.data.nickname };
   }
 
@@ -47,6 +53,12 @@ export async function submitJoin(
     referral_source: v.referralSource,
     channel: v.channel,
     showcase_consent: v.showcaseConsent,
+    next_event_interest: v.eventInterest,
+    availability: v.availability,
+    affiliation_support: v.affiliationSupport,
+    full_name: v.fullName,
+    zid: v.zid,
+    affiliation_consent: v.affiliationConsent,
   });
   if (error) {
     console.error("[join] insert failed", error);
