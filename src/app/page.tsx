@@ -7,7 +7,8 @@ import {
 import Link from "next/link";
 import { Arr } from "@/components/fx/arr";
 import { TickerFx } from "@/components/fx/scroll-fx";
-import { Scramble } from "@/components/fx/text-fx";
+import { HeroHeadline } from "@/components/hero-headline";
+import { MapPin } from "@phosphor-icons/react/dist/ssr";
 import { HeroMetal } from "@/components/hero-metal";
 import { MascotStage } from "@/components/mascot-stage";
 import { SampleNotice } from "@/components/sample-notice";
@@ -20,39 +21,28 @@ import { Plaza } from "./projects/plaza";
 export default function Home() {
   return (
     <>
-      <section className="hero">
+      <section className="hero hero-poster">
         <HeroMetal />
+        <div className="headline-hud" aria-hidden>
+          <i className="hud-x" />
+          <i className="hud-y" />
+          <span className="hud-c mono tnum">X 0000 · Y 0000</span>
+        </div>
         <div className="wrap">
-          <div className="hero-meta mono mute stagger">
-            <span className="live">
-              <T {...CYCLE.status} />
-            </span>
-            <span>Sydney · Kensington</span>
-            <span>T3 2026</span>
-          </div>
-          <h1
-            className="display"
-            aria-label="Bring an idea. Leave with something that works."
-          >
-            <span className="line" aria-hidden>
-              <span>
-                <Scramble text="Bring an idea." />
-              </span>
-            </span>
-            <span className="line" aria-hidden>
-              <span className="outline">Leave with</span>
-            </span>
-            <span className="line" aria-hidden>
-              <span>
-                <span className="chrome">something that </span>
-                <span style={{ whiteSpace: "nowrap" }}>
-                  <span className="chrome">works</span>
-                  <span className="cursor" />
+          <HeroHeadline
+            meta={
+              <>
+                <span className="live">
+                  <T {...CYCLE.status} />
                 </span>
-              </span>
-            </span>
-          </h1>
-          <div className="hero-sub stagger">
+                <span className="mute">
+                  <MapPin weight="light" size={14} aria-hidden />
+                  Sydney · Kensington
+                </span>
+                <span className="mute">T3 2026</span>
+              </>
+            }
+          >
             <div>
               <p className="hero-zh">
                 <T
@@ -78,13 +68,14 @@ export default function Home() {
             </div>
             <div className="hero-cta">
               <Link href="/join" className="btn solid">
-                <T zh="加入 BuilderSpace" en="Join BuilderSpace" /> <Arr />
+                <T zh="加入 BuilderSpace" en="Join BuilderSpace" />
+                <Arr />
               </Link>
               <a href="#plaza" className="btn ghost">
                 <T zh="看项目广场" en="See projects" />
               </a>
             </div>
-          </div>
+          </HeroHeadline>
         </div>
       </section>
 
