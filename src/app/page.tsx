@@ -151,16 +151,20 @@ function Ticker() {
       <TickerFx>
         <div>
           <div className="ticker-track big">
-            {[...TICKER_BIG, ...TICKER_BIG].map((t, i) => (
-              <span key={i}>{t}</span>
-            ))}
+            {Array.from({ length: 4 }, () => TICKER_BIG)
+              .flat()
+              .map((t, i) => (
+                <span key={i}>{t}</span>
+              ))}
           </div>
         </div>
         <div className="mono">
           <div className="ticker-track rev">
-            {[...TICKER_SMALL, ...TICKER_SMALL].map((t, i) => (
-              <span key={i}>{t}</span>
-            ))}
+            {Array.from({ length: 4 }, () => TICKER_SMALL)
+              .flat()
+              .map((t, i) => (
+                <span key={i}>{t}</span>
+              ))}
           </div>
         </div>
       </TickerFx>

@@ -3,3 +3,5 @@ node_modules
 coverage
 pnpm-lock.yaml
 public
+# Untracked reference stylesheet; preserve it outside the application changes.
+src/app/prototype.css

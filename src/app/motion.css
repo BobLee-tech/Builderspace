@@ -118,13 +118,23 @@
   pointer-events: none;
   z-index: 0;
   opacity: 0;
-  transition: opacity 0.5s;
+  transition: opacity var(--dur-2);
   will-change: transform;
+  mask-image: radial-gradient(circle, #000, transparent 68%);
+  overflow: hidden;
+  contain: strict;
+}
+.gridspot > i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 640px;
+  height: 640px;
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px);
   background-size: 120px 120px;
-  mask-image: radial-gradient(circle, #000, transparent 68%);
+  will-change: transform;
 }
 .gridspot.on {
   opacity: 1;
@@ -305,8 +315,8 @@ html.booted .boot {
 }
 .top.scrolled {
   background: rgba(9, 9, 10, 0.6);
-  backdrop-filter: blur(18px) saturate(1.5);
-  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .top.scrolled::before {
   opacity: 1;
@@ -731,7 +741,6 @@ html.fx .top {
   from {
     opacity: 0.15;
     translate: 0 0.6em;
-    filter: blur(6px);
   }
 }
 
@@ -911,7 +920,7 @@ html.fx .top {
   display: inline-flex;
   gap: 48px;
   padding-block: 14px;
-  animation: marquee 46s linear infinite;
+  will-change: transform;
 }
 .ticker:hover .ticker-track {
   animation-play-state: paused;
@@ -957,8 +966,6 @@ html.fx .top {
   border: 1px solid var(--paper);
 }
 .ticker-track.rev {
-  animation-direction: reverse;
-  animation-duration: 60s;
   padding-block: 8px 14px;
   color: var(--mute);
 }
@@ -2659,4 +2666,31 @@ html.fx:not(.booted) .top {
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
+}
+
+.ticker {
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+.ticker.drag {
+  cursor: grabbing;
+}
+.ticker-track span {
+  transition:
+    opacity var(--dur-2),
+    color var(--dur-2);
+}
+.ticker.hov .ticker-track.big span {
+  opacity: 0.45;
+}
+.ticker.hov .ticker-track.big span.hit {
+  opacity: 1;
+  color: transparent;
+  -webkit-text-stroke-color: transparent;
+  background: var(--mat-chrome);
+  background-clip: text;
+}
+.ticker.hov .ticker-track.rev span.hit {
+  color: var(--paper);
 }

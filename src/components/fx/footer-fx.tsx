@@ -113,6 +113,14 @@ export function FootNext() {
 }
 
 const CH = ".,-~:;=!*#$@";
+const TORUS_J = Array.from({ length: 90 }, (_, i) => [
+  Math.cos(i * 0.07),
+  Math.sin(i * 0.07),
+]);
+const TORUS_I = Array.from({ length: 314 }, (_, i) => [
+  Math.cos(i * 0.02),
+  Math.sin(i * 0.02),
+]);
 
 function torus(A: number, B: number, w: number, h: number) {
   const out = new Array<string>(w * h).fill(" ");
@@ -121,13 +129,9 @@ function torus(A: number, B: number, w: number, h: number) {
     sA = Math.sin(A),
     cB = Math.cos(B),
     sB = Math.sin(B);
-  for (let j = 0; j < 6.28; j += 0.07) {
-    const ct = Math.cos(j),
-      st = Math.sin(j);
-    for (let i = 0; i < 6.28; i += 0.02) {
-      const sp = Math.sin(i),
-        cp = Math.cos(i),
-        hh = ct + 2;
+  for (const [ct, st] of TORUS_J) {
+    for (const [cp, sp] of TORUS_I) {
+      const hh = ct + 2;
       const D = 1 / (sp * hh * sA + st * cA + 5);
       const t = sp * hh * cA - st * sA;
       const x = 0 | (w / 2 + w * 0.38 * D * (cp * hh * cB - t * sB));
@@ -160,22 +164,42 @@ export function AsciiTorus() {
     if (!el) return;
     let A = 1,
       B = 1,
-      id = 0;
+      raf = 0,
+      visible = false,
+      last = 0;
     el.textContent = torus(A, B, 64, 30);
     if (prefersReducedMotion()) return;
-    const io = new IntersectionObserver(([en]) => {
-      clearInterval(id);
-      if (!en.isIntersecting) return;
-      id = window.setInterval(() => {
-        A += 0.05;
-        B += 0.03;
+    const paint = (now: number) => {
+      raf = 0;
+      if (!visible || document.hidden) return;
+      if (now - last >= 1000 / 30) {
+        const dt = Math.min(0.1, (now - last) / 1000 || 1 / 30);
+        A += dt;
+        B += dt * 0.6;
         el.textContent = torus(A, B, 64, 30);
-      }, 50);
+        last = now;
+      }
+      raf = requestAnimationFrame(paint);
+    };
+    const start = () => {
+      if (!visible || document.hidden) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      } else if (!raf) {
+        last = performance.now();
+        raf = requestAnimationFrame(paint);
+      }
+    };
+    const io = new IntersectionObserver(([en]) => {
+      visible = en.isIntersecting;
+      start();
     });
     io.observe(el);
+    document.addEventListener("visibilitychange", start);
     return () => {
       io.disconnect();
-      clearInterval(id);
+      cancelAnimationFrame(raf);
+      document.removeEventListener("visibilitychange", start);
     };
   }, []);
 

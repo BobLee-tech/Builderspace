@@ -3,6 +3,9 @@
    chrome; the mascot is the only colour on the page. */
 
 :root {
+  --dur-1: 180ms;
+  --dur-2: 360ms;
+  --dur-3: 720ms;
   --ink: #050505;
   --panel: #0c0c0d;
   --line: #232325;
@@ -1394,4 +1397,8 @@ html[data-lang="en"] [data-l="zh"] {
   width: 1px;
   height: 1px;
   overflow: hidden;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
 }
