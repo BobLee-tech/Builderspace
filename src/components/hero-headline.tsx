@@ -288,6 +288,7 @@ export function HeroHeadline({
       timers.forEach(clearTimeout);
       ro.disconnect();
       io.disconnect();
+      fit.cancel();
       removeEventListener("resize", fit);
       document.removeEventListener("visibilitychange", visibility);
       hero.removeEventListener("pointermove", move);

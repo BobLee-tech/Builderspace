@@ -183,7 +183,9 @@ export function MascotStage() {
           })
           .catch(() => {});
       },
-      { rootMargin: "100% 0px" },
+      // Keep the first screen to HeroMetal, works and the background contexts.
+      // The static mascot remains visible until its own section enters.
+      { rootMargin: "0px" },
     );
     nearIo.observe(stage);
 

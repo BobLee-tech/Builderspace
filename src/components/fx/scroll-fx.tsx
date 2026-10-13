@@ -31,6 +31,7 @@ function useScrollProgress(
     addEventListener("resize", update);
     update();
     return () => {
+      update.cancel();
       removeEventListener("scroll", update);
       removeEventListener("resize", update);
     };

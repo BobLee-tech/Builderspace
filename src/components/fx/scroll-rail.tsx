@@ -23,6 +23,7 @@ export function ScrollRail() {
     ro.observe(document.documentElement);
     return () => {
       ro.disconnect();
+      update.cancel();
       removeEventListener("scroll", update);
       removeEventListener("resize", update);
     };

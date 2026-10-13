@@ -49,6 +49,7 @@ export function GlobalFx() {
     on("scroll", onScroll);
     on("resize", onScroll);
     onScroll();
+    cleanups.push(() => onScroll.cancel());
     if (!hasFinePointer() || prefersReducedMotion())
       return () => cleanups.forEach((f) => f());
 
@@ -181,6 +182,7 @@ export function GlobalFx() {
     root.addEventListener("pointerleave", leave);
     cleanups.push(() => {
       root.removeEventListener("pointerleave", leave);
+      frame.cancel();
       stopCursor?.();
       surfaces.forEach((s) => {
         s.stop?.();

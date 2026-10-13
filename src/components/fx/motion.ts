@@ -29,17 +29,24 @@ export function scrollProgress(
 
 /** Runs `fn` at most once per animation frame, for scroll / pointer handlers. */
 export function rafThrottle<A extends unknown[]>(fn: (...args: A) => void) {
-  let queued = false;
+  let raf = 0;
   let last: A;
-  return (...args: A) => {
-    last = args;
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      fn(...last);
-    });
-  };
+  return Object.assign(
+    (...args: A) => {
+      last = args;
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        fn(...last);
+      });
+    },
+    {
+      cancel() {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      },
+    },
+  );
 }
 
 const GLYPHS = "!<>-_\\/[]{}—=+*^?#01";

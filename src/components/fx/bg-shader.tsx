@@ -24,11 +24,20 @@ export function BgShader() {
         r &&
         Math.min(innerHeight, r.bottom) - Math.max(0, r.top) >
           innerHeight * 0.55;
-      const pause = reduce.matches || document.hidden || heroDominates;
+      // The existing particle mascot can enter while the hero is leaving.
+      // Keep this material static while works is visible too: at most three
+      // WebGL renderers animate even during that overlap.
+      const works = [
+        ...document.querySelectorAll<HTMLElement>(".works-wrap"),
+      ].find((w) => w.getClientRects().length);
+      const wr = works?.getBoundingClientRect();
+      const worksVisible = wr && wr.bottom > 0 && wr.top < innerHeight;
+      const pause =
+        reduce.matches || document.hidden || heroDominates || worksVisible;
       mount.setSpeed(pause ? 0 : 0.18);
       el.dataset.paused = String(Boolean(pause));
       // Reduced motion retains a single static frame, including while scrolling.
-      if (!reduce.matches && !heroDominates)
+      if (!reduce.matches && !heroDominates && !worksVisible)
         mount.setUniforms({ u_offsetY: (-scrollY / innerHeight) * 0.18 });
     });
     const onLost = () => {
@@ -93,18 +102,20 @@ export function BgShader() {
       mo.observe(main, {
         childList: true,
         subtree: true,
-        attributeFilter: ["style", "hidden"],
       });
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
       mo.disconnect();
+      update.cancel();
       removeEventListener("scroll", update);
       removeEventListener("resize", update);
       document.removeEventListener("visibilitychange", update);
       reduce.removeEventListener("change", update);
       mount?.canvasElement.removeEventListener("webglcontextlost", onLost);
+      const gl = mount?.canvasElement.getContext("webgl2");
       mount?.dispose();
+      gl?.getExtension("WEBGL_lose_context")?.loseContext();
       el.classList.remove("on");
     };
   }, []);

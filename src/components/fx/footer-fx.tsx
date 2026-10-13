@@ -4,6 +4,7 @@ import { ArrowRight, ArrowUp } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { scrollToTop } from "@/lib/smooth-scroll";
 import { NAV_LINKS, isActive } from "../nav-links";
 import { T } from "../t";
 import { prefersReducedMotion, rafThrottle } from "./motion";
@@ -224,7 +225,10 @@ export function ToTop() {
     });
     addEventListener("scroll", update, { passive: true });
     update();
-    return () => removeEventListener("scroll", update);
+    return () => {
+      update.cancel();
+      removeEventListener("scroll", update);
+    };
   }, []);
 
   return (
@@ -232,12 +236,13 @@ export function ToTop() {
       className="totop"
       type="button"
       aria-label="Back to top / 回到顶部"
-      onClick={() =>
-        scrollTo({
-          top: 0,
-          behavior: prefersReducedMotion() ? "auto" : "smooth",
-        })
-      }
+      onClick={() => {
+        if (!scrollToTop())
+          scrollTo({
+            top: 0,
+            behavior: prefersReducedMotion() ? "auto" : "smooth",
+          });
+      }}
     >
       <svg viewBox="0 0 44 44" aria-hidden>
         <circle cx="22" cy="22" r="20" className="tt-bg" />
