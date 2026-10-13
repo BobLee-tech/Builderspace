@@ -44,7 +44,7 @@ export default async function EventsPage() {
             },
             {
               k: { zh: "Build Night", en: "Build Night" },
-              v: { zh: "每周三晚", en: "Wed nights" },
+              v: { zh: "时间待定", en: "Time TBA" },
             },
             {
               k: { zh: "本学期线下", en: "In person this term" },
@@ -161,7 +161,7 @@ const RHYTHM = [
     },
   },
   {
-    when: { zh: "周三 18:30 · 线下", en: "Wednesday 18:30 · in person" },
+    when: { zh: "每周 · 线下 · 时间待定", en: "Weekly · in person · time TBA" },
     what: { zh: "一起写两小时", en: "Two hours of building" },
     body: {
       zh: "按项目坐，卡住就举手。讲解用中文，提交记录用英文。",

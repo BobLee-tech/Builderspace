@@ -12,6 +12,7 @@ import { HeroMetal } from "@/components/hero-metal";
 import { MascotStage } from "@/components/mascot-stage";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
+import { CYCLE } from "@/lib/cycle";
 import { getProjects } from "@/lib/data";
 import { Plaza } from "./projects/plaza";
 
@@ -24,7 +25,7 @@ export default function Home() {
         <div className="wrap">
           <div className="hero-meta mono mute stagger">
             <span className="live">
-              <T zh="Cycle 01 组队报名中" en="Cycle 01 · teams forming" />
+              <T {...CYCLE.status} />
             </span>
             <span>Sydney · Kensington</span>
             <span>T3 2026</span>
