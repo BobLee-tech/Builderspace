@@ -1,14 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useState, type ReactNode } from "react";
+import { Arr, Hud } from "@/components/fx/arr";
 import { SpamGuard } from "@/components/spam-guard";
 import { Msg, T } from "@/components/t";
 import { channelFromSearch, type FormState } from "@/lib/forms";
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 import {
+  AVAILABILITY,
+  AVAILABILITY_LABEL,
   BLOCKERS,
   BLOCKER_LABEL,
+  EVENT_INTEREST,
+  EVENT_INTEREST_LABEL,
   HOURS_LABEL,
   REFERRAL_LABEL,
   REFERRAL_SOURCES,
@@ -17,6 +22,7 @@ import {
   WEEKLY_HOURS,
 } from "@/lib/types";
 import { submitJoin } from "./actions";
+import { MemberCard, readCard, type CardData } from "./member-card";
 
 type Bi = { zh: string; en: string };
 
@@ -26,49 +32,64 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
     { status: "idle" },
   );
 
-  if (state.status === "ok") {
-    return (
-      <div className="form" role="status">
-        <p className="mono mute">
-          <T zh="提交成功" en="You're in" />
-        </p>
-        <h2 className="h2" style={{ fontSize: 32 }}>
-          <T
-            zh={`欢迎，${state.nickname}。`}
-            en={`Welcome, ${state.nickname}.`}
-          />
-        </h2>
-        <p className="mute">
-          <T
-            zh="扫码加管理员微信，备注“BuilderSpace + 昵称”。管理员会拉你进群，并发下一场活动的报名链接。"
-            en='Scan to add the admin on WeChat with the note "BuilderSpace + your nickname". They will add you to the group and send the next sign-up link.'
-          />
-        </p>
-        {adminQr ? (
-          // eslint-disable-next-line @next/next/no-img-element -- ops-supplied QR, any host
-          <img
-            src={adminQr}
-            alt="Admin WeChat QR / 管理员微信二维码"
-            className="qr"
-          />
-        ) : (
-          <div className="qr">
-            <T zh="管理员二维码待上传" en="Admin QR coming soon" />
-          </div>
-        )}
-        <Link
-          href="/events"
-          className="btn ghost"
-          style={{ alignSelf: "start" }}
-        >
-          <T zh="看下一场活动" en="See the next event" />{" "}
-          <span className="arr">→</span>
-        </Link>
-      </div>
-    );
-  }
+  const [card, setCard] = useState<CardData | null>(null);
+  const done = state.status === "ok";
 
+  return (
+    <div className="join2">
+      <MemberCard data={card} flipped={done} adminQr={adminQr} />
+      {done ? (
+        <div className="form hud" role="status">
+          <Hud />
+          <p className="mono mute">
+            <T zh="提交成功" en="You're in" />
+          </p>
+          <h2 className="h2" style={{ fontSize: 32 }}>
+            <T
+              zh={`欢迎，${state.nickname}。`}
+              en={`Welcome, ${state.nickname}.`}
+            />
+          </h2>
+          <p className="mute">
+            <T
+              zh="成员卡已翻面：扫背面的二维码加管理员微信，备注“BuilderSpace + 昵称”。管理员会拉你进群，并发下一场活动的报名链接。"
+              en='Your card has flipped: scan the QR on the back to add the admin on WeChat, with the note "BuilderSpace + your nickname". They will add you to the group and send the next sign-up link.'
+            />
+          </p>
+          <Link
+            href="/events"
+            className="btn ghost"
+            style={{ alignSelf: "start" }}
+          >
+            <T zh="看下一场活动" en="See the next event" /> <Arr />
+          </Link>
+        </div>
+      ) : (
+        <Form
+          state={state}
+          action={action}
+          pending={pending}
+          onCard={setCard}
+        />
+      )}
+    </div>
+  );
+}
+
+function Form({
+  state,
+  action,
+  pending,
+  onCard,
+}: {
+  state: FormState;
+  action: (data: FormData) => void;
+  pending: boolean;
+  onCard: (c: CardData) => void;
+}) {
   const err = state.status === "error" ? (state.fieldErrors ?? {}) : {};
+  // Name and zID fields exist only while this box is ticked.
+  const [supporting, setSupporting] = useState(false);
 
   return (
     <form
@@ -77,9 +98,11 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
         data.set("channel", channelFromSearch(window.location.search) ?? "");
         action(data);
       })}
-      className="form"
+      className="form hud"
       noValidate
+      onChange={(e) => onCard(readCard(e.currentTarget))}
     >
+      <Hud />
       <SpamGuard />
       <div className="row2">
         <TextField
@@ -160,6 +183,29 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
         error={err.referralSource}
       />
 
+      <ChoiceGroup
+        name="eventInterest"
+        legend={
+          <T
+            zh="下一场线下活动想来吗（选填）"
+            en="Would you come to the next in-person event? (optional)"
+          />
+        }
+        options={EVENT_INTEREST.map((e) => [e, EVENT_INTEREST_LABEL[e]])}
+        error={err.eventInterest}
+        optional
+      />
+      <CheckGroup
+        name="availability"
+        legend={
+          <T
+            zh="哪些时间方便（选填，可多选）"
+            en="When could you make it? (optional, pick any)"
+          />
+        }
+        options={AVAILABILITY.map((a) => [a, AVAILABILITY_LABEL[a]])}
+      />
+
       <label className="consent">
         <input type="checkbox" name="showcaseConsent" />
         <span>
@@ -169,6 +215,67 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
           />
         </span>
       </label>
+
+      <div className="support">
+        <label className="consent">
+          <input
+            type="checkbox"
+            name="affiliationSupport"
+            checked={supporting}
+            onChange={(e) => setSupporting(e.target.checked)}
+          />
+          <span>
+            <T
+              zh="我是 UNSW 在读学生，愿意登记支持 BuilderSpace 申请成为正式社团（选填）"
+              en="I'm a current UNSW student and I'd like to back BuilderSpace's application to become an official club (optional)"
+            />
+          </span>
+        </label>
+        {supporting && (
+          <>
+            <p className="mute support-note">
+              <T
+                zh="申请需要一份支持者名单。下面两项只会提交给 Arc 用于这次申请，不公开，也不用于其他用途；想撤回随时告诉管理员。"
+                en="The application needs a list of supporters. These two fields go only to Arc for this application. They are never public or used for anything else, and you can ask an admin to remove them at any time."
+              />
+            </p>
+            <div className="row2">
+              <TextField
+                name="fullName"
+                label={
+                  <T
+                    zh="全名（与学生证一致）"
+                    en="Full name (as on your student card)"
+                  />
+                }
+                error={err.fullName}
+                max={80}
+              />
+              <TextField
+                name="zid"
+                label={<span style={{ textTransform: "none" }}>zID</span>}
+                placeholder="z1234567"
+                error={err.zid}
+                max={8}
+              />
+            </div>
+            <label className="consent">
+              <input type="checkbox" name="affiliationConsent" />
+              <span>
+                <T
+                  zh="我同意把以上姓名和 zID 提交给 Arc，仅用于 BuilderSpace 的社团申请"
+                  en="I agree to my name and zID being passed to Arc, only for BuilderSpace's club application"
+                />
+              </span>
+            </label>
+            {err.affiliationConsent && (
+              <span className="form-status err">
+                <Msg s={err.affiliationConsent} />
+              </span>
+            )}
+          </>
+        )}
+      </div>
 
       {state.status === "error" && (
         <p className="form-status err" role="alert">
@@ -186,7 +293,7 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
         ) : (
           <T zh="提交，获取管理员微信" en="Submit & get the admin's WeChat" />
         )}{" "}
-        <span className="arr">→</span>
+        <Arr />
       </button>
     </form>
   );
@@ -230,11 +337,13 @@ function ChoiceGroup({
   legend,
   options,
   error,
+  optional,
 }: {
   name: string;
   legend: ReactNode;
   options: [string, Bi][];
   error?: string;
+  optional?: boolean;
 }) {
   return (
     <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
@@ -244,7 +353,12 @@ function ChoiceGroup({
       <div className="filters">
         {options.map(([value, label]) => (
           <label key={value} className="chip">
-            <input type="radio" name={name} value={value} required />
+            <input
+              type="radio"
+              name={name}
+              value={value}
+              required={!optional}
+            />
             <T {...label} />
           </label>
         ))}

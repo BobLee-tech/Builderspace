@@ -1,5 +1,6 @@
 "use client";
 
+import { Arr } from "@/components/fx/arr";
 import { useActionState } from "react";
 import { SpamGuard } from "@/components/spam-guard";
 import { Msg, T } from "@/components/t";
@@ -139,7 +140,7 @@ export function UpdateForm({ slug }: { slug: string }) {
           ) : (
             <T zh="提交进展" en="Post update" />
           )}{" "}
-          <span className="arr">→</span>
+          <Arr />
         </button>
       </form>
     </details>

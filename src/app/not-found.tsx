@@ -1,21 +1,19 @@
 import Link from "next/link";
+import { Arr } from "@/components/fx/arr";
+import { PageHead } from "@/components/page-head";
 import { T } from "@/components/t";
 
 export default function NotFound() {
   return (
     <section className="sec first">
       <div className="wrap">
-        <p className="eyebrow mono">404</p>
-        <h1 className="display page-title">
-          <span className="line">
-            <span>Nothing here</span>
-          </span>
-          <span className="line">
-            <span className="outline">yet.</span>
-          </span>
-        </h1>
-        <Link href="/" className="btn ghost" style={{ marginTop: 32 }}>
-          <T zh="回首页" en="Back home" /> <span className="arr">→</span>
+        <PageHead
+          path="404"
+          eyebrow={{ zh: "404 · 页面不存在", en: "404 · Not found" }}
+          title={["Nothing here", "yet."]}
+        />
+        <Link href="/" className="btn ghost" style={{ marginTop: 8 }}>
+          <T zh="回首页" en="Back home" /> <Arr />
         </Link>
       </div>
     </section>

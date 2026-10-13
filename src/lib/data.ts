@@ -161,23 +161,6 @@ export async function getProject(slug: string): Promise<{
   };
 }
 
-/** North star: approved projects with any update in the last 14 days. */
-export async function getActiveProjectCount(): Promise<number | null> {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("projects");
-
-  const db = getSupabase();
-  if (!db) return null;
-
-  const { data, error } = await db
-    .from("biweekly_active_projects")
-    .select("active_projects")
-    .single();
-  if (error) throw error;
-  return data.active_projects;
-}
-
 export async function getTutorials(): Promise<Tutorial[]> {
   "use cache";
   cacheLife("minutes");

@@ -1,0 +1,231 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { NAV_LINKS, isActive } from "../nav-links";
+import { T } from "../t";
+import { prefersReducedMotion, rafThrottle } from "./motion";
+
+// Every page hands you on to the next one.
+const NEXT: Record<string, [string, string, string, string]> = {
+  "/": [
+    "/events",
+    "Events",
+    "活动 · 每周同一时间见",
+    "Events · same time every week",
+  ],
+  "/events": [
+    "/projects",
+    "Projects",
+    "项目广场 · 找队友，做东西",
+    "Project plaza · find a team, ship a thing",
+  ],
+  "/projects": [
+    "/learn",
+    "Resources",
+    "资源 · 用 AI 写，逐行读懂",
+    "Resources · write with AI, read every line",
+  ],
+  "/learn": [
+    "/people",
+    "The builders",
+    "成员 · 谁在做这件事",
+    "People · who runs the club",
+  ],
+  "/people": [
+    "/join",
+    "Start here",
+    "加入 · 大约 1 分钟",
+    "Join · takes about a minute",
+  ],
+  "/join": [
+    "/events",
+    "See you there",
+    "活动 · 先来一场 Build Night",
+    "Events · come to a Build Night first",
+  ],
+};
+const BACK_TO_PLAZA: [string, string, string, string] = [
+  "/projects",
+  "Back to plaza",
+  "回到项目广场 · 看看其他项目",
+  "Project plaza · see what else is moving",
+];
+
+const pageIndex = (path: string) =>
+  NAV_LINKS.findIndex(
+    (l) => isActive(path, l.href) && (l.href !== "/" || path === "/"),
+  );
+
+/** Full-width band at the end of each page that links to the next one. */
+export function FootNext() {
+  const pathname = usePathname();
+  const section = NAV_LINKS.map((l) => l.href)
+    .filter((h) => h !== "/")
+    .find((h) => pathname.startsWith(h));
+  const [to, title, zh, en] =
+    pathname === "/"
+      ? NEXT["/"]
+      : section === "/projects" && pathname !== "/projects"
+        ? BACK_TO_PLAZA
+        : (NEXT[section ?? "/"] ?? NEXT["/"]);
+  const a = pageIndex(pathname);
+  const b = pageIndex(to);
+  const pad = (n: number) => String(n + 1).padStart(2, "0");
+
+  return (
+    <Link
+      href={to}
+      className="foot-next"
+      onPointerEnter={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty(
+          "--from",
+          e.clientY - r.top < r.height / 2 ? "0%" : "100%",
+        );
+      }}
+    >
+      <div className="wrap fn-in">
+        <div className="fn-meta mono mute">
+          <span>
+            <T zh="下一页 / Next" en="Next page" />
+          </span>
+          <span>{a >= 0 ? `${pad(a)} → ${pad(b)}` : `→ ${pad(b)}`}</span>
+        </div>
+        <div className="fn-row">
+          <span className="fn-title">
+            <span className="fn-roll">
+              <span>{title}</span>
+              <span aria-hidden>{title}</span>
+            </span>
+          </span>
+          <span className="fn-go" aria-hidden>
+            →
+          </span>
+        </div>
+        <span className="fn-sub">
+          <T zh={zh} en={en} />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+const CH = ".,-~:;=!*#$@";
+
+function torus(A: number, B: number, w: number, h: number) {
+  const out = new Array<string>(w * h).fill(" ");
+  const z = new Array<number>(w * h).fill(0);
+  const cA = Math.cos(A),
+    sA = Math.sin(A),
+    cB = Math.cos(B),
+    sB = Math.sin(B);
+  for (let j = 0; j < 6.28; j += 0.07) {
+    const ct = Math.cos(j),
+      st = Math.sin(j);
+    for (let i = 0; i < 6.28; i += 0.02) {
+      const sp = Math.sin(i),
+        cp = Math.cos(i),
+        hh = ct + 2;
+      const D = 1 / (sp * hh * sA + st * cA + 5);
+      const t = sp * hh * cA - st * sA;
+      const x = 0 | (w / 2 + w * 0.38 * D * (cp * hh * cB - t * sB));
+      const y = 0 | (h / 2 + h * 0.75 * D * (cp * hh * sB + t * cB));
+      const o = x + w * y;
+      const N =
+        0 |
+        (8 *
+          ((st * sA - sp * ct * cA) * cB -
+            sp * ct * sA -
+            st * cA -
+            cp * ct * sB));
+      if (y >= 0 && y < h && x >= 0 && x < w && D > z[o]) {
+        z[o] = D;
+        out[o] = CH[N > 0 ? N : 0];
+      }
+    }
+  }
+  let s = "";
+  for (let k = 0; k < h; k++) s += out.slice(k * w, k * w + w).join("") + "\n";
+  return s;
+}
+
+/** The classic spinning ASCII donut, only animated while on screen. */
+export function AsciiTorus() {
+  const ref = useRef<HTMLPreElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let A = 1,
+      B = 1,
+      id = 0;
+    el.textContent = torus(A, B, 64, 30);
+    if (prefersReducedMotion()) return;
+    const io = new IntersectionObserver(([en]) => {
+      clearInterval(id);
+      if (!en.isIntersecting) return;
+      id = window.setInterval(() => {
+        A += 0.05;
+        B += 0.03;
+        el.textContent = torus(A, B, 64, 30);
+      }, 50);
+    });
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      clearInterval(id);
+    };
+  }, []);
+
+  return <pre className="ascii" ref={ref} aria-hidden />;
+}
+
+const RING = 2 * Math.PI * 20;
+
+/** Back-to-top button whose ring fills with scroll progress. */
+export function ToTop() {
+  const ring = useRef<SVGCircleElement>(null);
+
+  useEffect(() => {
+    const update = rafThrottle(() => {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const k = max > 0 ? Math.min(1, scrollY / max) : 0;
+      ring.current?.style.setProperty(
+        "stroke-dashoffset",
+        String(RING * (1 - k)),
+      );
+    });
+    addEventListener("scroll", update, { passive: true });
+    update();
+    return () => removeEventListener("scroll", update);
+  }, []);
+
+  return (
+    <button
+      className="totop"
+      type="button"
+      aria-label="Back to top / 回到顶部"
+      onClick={() =>
+        scrollTo({
+          top: 0,
+          behavior: prefersReducedMotion() ? "auto" : "smooth",
+        })
+      }
+    >
+      <svg viewBox="0 0 44 44" aria-hidden>
+        <circle cx="22" cy="22" r="20" className="tt-bg" />
+        <circle
+          cx="22"
+          cy="22"
+          r="20"
+          className="tt-fg"
+          ref={ring}
+          style={{ strokeDasharray: RING, strokeDashoffset: RING }}
+        />
+      </svg>
+      <span aria-hidden>↑</span>
+    </button>
+  );
+}

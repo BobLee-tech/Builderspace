@@ -29,6 +29,11 @@ export function formatShortDate(iso: string): string {
   return shortDateFmt.format(new Date(iso));
 }
 
+/** 18:30 */
+export function formatTime(iso: string): string {
+  return timeFmt.format(new Date(iso));
+}
+
 /** 18:30 – 20:30 */
 export function formatTimeRange(startIso: string, endIso: string): string {
   return `${timeFmt.format(new Date(startIso))} – ${timeFmt.format(new Date(endIso))}`;

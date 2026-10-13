@@ -19,8 +19,8 @@ export default function NewProjectPage() {
         </h1>
         <p className="lede" style={{ marginBottom: 40 }}>
           <T
-            zh="写清楚问题、目标用户和缺的角色。人工审核后公开在项目广场；不需要已经写好代码。"
-            en="Describe the problem, who it is for and the roles you need. It goes live after review — no code required yet."
+            zh="写清楚问题、目标用户和缺的角色。人工审核后公开，不需要已经写好代码。项目归你和队友所有。"
+            en="Describe the problem, who it is for and the roles you need. It goes live after review, no code required. The project stays yours."
           />
         </p>
         <ProjectForm />

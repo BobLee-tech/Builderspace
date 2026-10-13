@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { createProgram } from "@/lib/webgl";
+import { Wordmark } from "./fx/wordmark";
 import { T } from "./t";
 
 // Ported from the prototype: ~17.5k particles sampled from the logo artwork
@@ -149,6 +150,8 @@ export function MascotStage() {
   const frameRef = useRef<HTMLDivElement>(null);
   const countRef = useRef<HTMLSpanElement>(null);
   const matrixRef = useRef(0);
+  // Kept across effect runs: coming back to a hidden page restarts instantly.
+  const dataRef = useRef<MascotData | null>(null);
   const [on, setOn] = useState(false);
   const [matrix, setMatrix] = useState(false);
 
@@ -168,9 +171,14 @@ export function MascotStage() {
       ([en]) => {
         if (!en.isIntersecting) return;
         nearIo.disconnect();
-        fetch("/mascot-particles.json")
-          .then((r) => r.json() as Promise<MascotData>)
+        const data = dataRef.current
+          ? Promise.resolve(dataRef.current)
+          : fetch("/mascot-particles.json").then(
+              (r) => r.json() as Promise<MascotData>,
+            );
+        data
           .then((D) => {
+            dataRef.current = D;
             if (!cancelled) cleanup = start(D);
           })
           .catch(() => {});
@@ -185,18 +193,23 @@ export function MascotStage() {
         premultipliedAlpha: true,
         powerPreference: "high-performance",
       });
-      if (!gl) return () => {};
-      const prog = createProgram(gl, VERT, FRAG);
-      if (!prog) return () => {};
+      const prog = gl && !gl.isContextLost() && createProgram(gl, VERT, FRAG);
+      if (!gl || !prog) {
+        // No WebGL: keep the static mark.
+        setOn(false);
+        return () => {};
+      }
       gl.useProgram(prog);
 
       const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
       const mobile = matchMedia("(max-width: 720px)").matches;
       const { N, attrs } = buildBuffers(D, mobile);
+      const bufs: WebGLBuffer[] = [];
       for (const [name, [data, size]] of Object.entries(attrs)) {
         const loc = gl.getAttribLocation(prog, name);
         if (loc < 0) continue;
         const buf = gl.createBuffer();
+        bufs.push(buf);
         gl.bindBuffer(gl.ARRAY_BUFFER, buf);
         gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
         gl.enableVertexAttribArray(loc);
@@ -377,7 +390,11 @@ export function MascotStage() {
         stage!.removeEventListener("pointermove", onMove);
         stage!.removeEventListener("pointerleave", onLeave);
         stage!.removeEventListener("pointerdown", onDown);
-        gl.getExtension("WEBGL_lose_context")?.loseContext();
+        // Free GPU objects but keep the context: Next hides visited pages
+        // instead of unmounting them (cacheComponents → <Activity>) and re-runs
+        // this effect on the same canvas when you come back.
+        bufs.forEach((b) => gl.deleteBuffer(b));
+        gl.deleteProgram(prog);
       };
     }
 
@@ -413,6 +430,7 @@ export function MascotStage() {
           0 / 17,561
         </span>
       </div>
+      <Wordmark />
       <div className="wrap stage-in">
         <div>
           <p className="eyebrow mono" style={{ margin: 0 }}>
@@ -420,8 +438,8 @@ export function MascotStage() {
           </p>
           <p className="mute stage-cap">
             <T
-              zh="每一个点都取自 logo 原图。靠近它们会躲开，点一下会眨眼。"
-              en="Every dot is sampled from the logo. Get close and they shy away; tap and they blink."
+              zh="靠近会躲开，点一下会眨眼。"
+              en="Get close and they scatter. Tap and they blink."
             />
           </p>
         </div>
