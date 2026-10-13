@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHead } from "@/components/page-head";
+import { T } from "@/components/t";
 import { JoinForm } from "./join-form";
 
 export const metadata: Metadata = { title: "加入" };
@@ -18,18 +19,24 @@ export default function JoinPage() {
           aside={[
             {
               k: { zh: "谁可以加入", en: "Who can join" },
-              v: { zh: "UNSW 本科 / 硕士", en: "UNSW students" },
+              v: { zh: "所有 UNSW 学生", en: "Any UNSW student" },
             },
             {
-              k: { zh: "我们不收", en: "Never asked" },
-              v: { zh: "zID · 学生证", en: "zID · student card" },
+              k: { zh: "费用", en: "Cost" },
+              v: { zh: "免费", en: "Free" },
             },
             {
-              k: { zh: "你的数据", en: "Your data" },
-              v: { zh: "可随时删除", en: "Deleted on request" },
+              k: { zh: "工作语言", en: "Languages" },
+              v: { zh: "English + 中文", en: "English + 中文" },
             },
           ]}
         />
+        <p className="lede" style={{ marginBottom: 32 }}>
+          <T
+            zh="零基础也行。我们不收 zID 或学生证，你的数据可随时要求删除。"
+            en="Beginners welcome. We never ask for your zID or student card, and your data is deleted on request."
+          />
+        </p>
         <JoinForm
           adminQr={
             process.env.NEXT_PUBLIC_ADMIN_WECHAT_QR || "/admin-wechat-qr.jpg"

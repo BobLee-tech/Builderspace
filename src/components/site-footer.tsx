@@ -16,8 +16,14 @@ export function SiteFooter() {
           </Link>
           <p className="foot-note mute">
             <T
-              zh="一个从 UNSW 起步的中英双语创客社团。学生自发组织，非 UNSW 或 Arc 官方社团。"
-              en="A bilingual builders community started at UNSW. Student-run; not an official UNSW or Arc club."
+              zh="从 UNSW 起步的中英双语创客社。学生自发组织，非 UNSW 或 Arc 官方社团。"
+              en="A bilingual builders club that started at UNSW. Student-run; not an official UNSW or Arc club."
+            />
+          </p>
+          <p className="foot-note mute">
+            <T
+              zh="免费加入 · 项目归作者所有 · 尊重学术诚信与隐私"
+              en="Free to join · Your project stays yours · Academic integrity and privacy respected"
             />
           </p>
           <AsciiTorus />
@@ -43,6 +49,11 @@ export function SiteFooter() {
           </h4>
           <ul>
             <li>
+              <Link href="/join">
+                <T zh="加入" en="Join" />
+              </Link>
+            </li>
+            <li>
               <Link href="/projects/new">
                 <T zh="提交项目卡" en="Submit a project" />
               </Link>
@@ -50,15 +61,6 @@ export function SiteFooter() {
             <li>
               <a href="/events.ics">
                 <T zh="订阅活动日历" en="Subscribe to events" />
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://github.com/BobLee-tech/Bulidspace"
-                target="_blank"
-                rel="noreferrer"
-              >
-                GitHub ↗
               </a>
             </li>
           </ul>

@@ -187,6 +187,9 @@ export function EventList({
       cancelAnimationFrame(raf);
       box.removeEventListener("pointermove", move);
       box.removeEventListener("pointerleave", leave);
+      // Leaving through a row link never fires pointerleave; don't let the
+      // card float over the page when it comes back.
+      card.classList.remove("on");
     };
   }, []);
 

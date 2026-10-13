@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
 import { PageHead } from "@/components/page-head";
-import { ProjectCard } from "@/components/project-card";
 import { SampleNotice } from "@/components/sample-notice";
 import { getProjects } from "@/lib/data";
 import { ROLE_LABEL, type Role } from "@/lib/types";
-import { ProjectPlaza } from "./project-plaza";
+import { Plaza } from "./plaza";
 import { T } from "@/components/t";
 
 export const metadata: Metadata = { title: "项目广场" };
 
 export default async function ProjectsPage() {
   const projects = await getProjects();
-  const cards = Object.fromEntries(
-    projects.map((p) => [p.slug, <ProjectCard key={p.slug} project={p} />]),
-  );
 
   const needed = new Map<Role, number>();
   for (const p of projects)
@@ -55,14 +51,7 @@ export default async function ProjectsPage() {
         <div style={{ marginTop: 16 }}>
           <SampleNotice />
         </div>
-        <ProjectPlaza
-          projects={projects.map(({ slug, status, neededRoles }) => ({
-            slug,
-            status,
-            neededRoles,
-          }))}
-          cards={cards}
-        />
+        <Plaza projects={projects} />
       </div>
     </section>
   );

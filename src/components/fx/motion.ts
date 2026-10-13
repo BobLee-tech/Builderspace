@@ -9,7 +9,6 @@ export const hasFinePointer = () => matchMedia("(pointer: fine)").matches;
 export const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 export const easeOutCubic = (k: number) => 1 - Math.pow(1 - k, 3);
-export const easeOutQuart = (k: number) => 1 - Math.pow(1 - k, 4);
 
 /**
  * 0 → 1 as `el` scrolls from `start` to `end`, each the fraction of the viewport

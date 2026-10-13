@@ -101,7 +101,7 @@ export function HeroMetal() {
       antialias: false,
       powerPreference: "high-performance",
     });
-    if (!gl) return;
+    if (!gl || gl.isContextLost()) return;
     const prog = createProgram(gl, VERT, FRAG);
     if (!prog) return;
 
@@ -162,6 +162,16 @@ export function HeroMetal() {
     draw();
     canvas.dataset.on = "";
 
+    // Weak or software GPUs can drop the context under this shader. Fade the
+    // canvas out then, so the hero falls back to plain black instead of
+    // showing a dead canvas.
+    let lost = false;
+    const onLost = () => {
+      lost = true;
+      delete canvas.dataset.on;
+    };
+    canvas.addEventListener("webglcontextlost", onLost);
+
     const onMove = (e: PointerEvent) => {
       const r = hero.getBoundingClientRect();
       target.x = (e.clientX - r.left) / r.width;
@@ -185,6 +195,8 @@ export function HeroMetal() {
       });
     };
     addEventListener("scroll", onScroll, { passive: true });
+    // Coming back to a hidden page restores its scroll, so place the copy now.
+    onScroll();
 
     let visible = true;
     const io = new IntersectionObserver(([en]) => {
@@ -201,7 +213,7 @@ export function HeroMetal() {
       raf = requestAnimationFrame(loop);
       const raw = now - last;
       last = now;
-      if (!visible || document.hidden) return;
+      if (!visible || lost || document.hidden) return;
       // Adaptive resolution: keep dropping detail while frames run long.
       if (raw > 26 && raw < 200) {
         if (++slow > 45 && pr > 0.3) {
@@ -233,8 +245,11 @@ export function HeroMetal() {
       io.disconnect();
       hero.removeEventListener("pointermove", onMove);
       removeEventListener("scroll", onScroll);
-      // Free GPU objects but keep the context: a remount of the same canvas
-      // (React StrictMode in dev) would otherwise get a lost context back.
+      canvas.removeEventListener("webglcontextlost", onLost);
+      // Free GPU objects but keep the context. Next keeps visited pages
+      // mounted but hidden (cacheComponents → <Activity>) and re-runs this
+      // effect on the same canvas when you come back, so a released context
+      // would leave the hero dead. The context goes when the canvas does.
       gl.deleteBuffer(buf);
       gl.deleteProgram(prog);
     };

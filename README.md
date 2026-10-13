@@ -52,10 +52,10 @@ pnpm check   # lint + typecheck + format + test + build
 
 - **新增活动**：`events` 加一行，填好后勾选 `published`。报名链接用 Luma / Google Forms。
 - **审核项目**：`projects` 里把 `review_status` 改成 `approved` 即公开。
-- **记录进展**：`project_updates` 加一行（代码提交 / Demo / 更新帖），默认就是 `approved`。首页的「双周活跃项目数」来自视图 `biweekly_active_projects`。
+- **记录进展**：`project_updates` 加一行（代码提交 / Demo / 更新帖），默认就是 `approved`。「双周活跃项目数」来自视图 `biweekly_active_projects`（目前只在后台看，首页不展示）。
 - **审核进展**：发起人在项目页「提交进展」投稿的行是 `pending`，核对后改成 `approved` 才会上时间线并计入指标。
 - **导出双周活跃项目数**：视图 `biweekly_active_projects_history`（每周一行），Export → CSV。视图 `project_activity` 列出每个项目最近一次进展，超过 14 天没动静的排在最前，用来回访；两个视图只在后台可见。
-- **上线教程资料**：`tutorials` 加一行并勾选 `published`（工作坊后 48 小时内）。
+- **上线资源（工作坊资料）**：`tutorials` 加一行并勾选 `published`（工作坊后 48 小时内）。
 - **每周精选**：`weekly_picks`，每条必须有来源链接和日期，只写摘要。
 - **导出报名**：`join_submissions` 右上角 Export → CSV。成员要求删除数据时直接删对应行。
 - **渠道归因**：每个渠道发不同的加入链接，如 `/join?ref=xhs-w1`、`/join?ref=poster-qr`（也认 `utm_source`），记在 `join_submissions.channel`。只用小写字母、数字、`-`、`_`。
@@ -66,14 +66,15 @@ pnpm check   # lint + typecheck + format + test + build
 
 | 路径               | 内容                                               | PRD   |
 | ------------------ | -------------------------------------------------- | ----- |
-| `/`                | 一句话定位、下一场活动倒计时、北极星指标、精选项目 | P0    |
+| `/`                | 社团介绍、粒子吉祥物、项目广场                     | P0    |
 | `/events`          | 活动列表、往期、日历订阅                           | P0    |
 | `/events.ics`      | ICS 订阅源（Google / Apple 日历）                  | P1    |
 | `/projects`        | 项目广场，按状态和所缺角色筛选                     | P0    |
 | `/projects/[slug]` | 项目卡详情 + 进展时间线                            | P0/P1 |
 | `/projects/new`    | 项目卡投稿（人工审核后公开）                       | P0    |
-| `/learn`           | 教程资料 + 每周精选                                | P0/P1 |
-| `/join`            | 加入表单，提交后显示管理员微信                     | P0    |
+| `/learn`           | 资源：工作坊资料 + 每周精选                        | P0/P1 |
+| `/people`          | 成员：筹备团队按职能介绍（不写人名）               | —     |
+| `/join`            | 加入表单，提交后显示管理员微信（入口在顶栏和首屏） | P0    |
 
 ## 中英双语
 
@@ -92,7 +93,7 @@ pnpm check   # lint + typecheck + format + test + build
 ## 视觉效果
 
 - 首页首屏：液态金属 + Bayer 1-bit 抖动（`src/components/hero-metal.tsx`），原生 WebGL，不依赖 three.js。
-- 每页页尾：1.76 万个取自 logo 的粒子吉祥物（`src/components/mascot-stage.tsx`），数据 `public/mascot-particles.json` 只在滚动到附近时才加载。
+- 首页第二屏：1.76 万个取自 logo 的粒子吉祥物（`src/components/mascot-stage.tsx`），数据 `public/mascot-particles.json` 只在滚动到附近时才加载。
 - 两者都在“减少动态效果”时静止，WebGL 不可用时退回静态图，并按帧率自动降分辨率。
 
 ## 合规提醒
@@ -105,7 +106,7 @@ pnpm check   # lint + typecheck + format + test + build
 
 ```
 src/app/            路由（页面、表单 server actions、ICS 路由）
-src/components/     共享组件（导航、项目卡、倒计时）
+src/components/     共享组件（导航、项目卡、动效）
 src/lib/            数据读取、表单校验、日期格式、ICS 生成
 supabase/migrations 数据库结构与 RLS
 public/             品牌资源（来自原型 assets/）

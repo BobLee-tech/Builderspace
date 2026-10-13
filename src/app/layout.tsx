@@ -3,7 +3,6 @@ import { Geist, Geist_Mono, Noto_Sans_SC, Unbounded } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Dock } from "@/components/dock";
-import { MascotStage } from "@/components/mascot-stage";
 import { Boot } from "@/components/fx/boot";
 import { fxBootScript } from "@/components/fx/boot-script";
 import { FootNext } from "@/components/fx/footer-fx";
@@ -36,8 +35,7 @@ export const metadata: Metadata = {
     default: "BuilderSpace · Bring an idea. Leave with something that works.",
     template: "%s · BuilderSpace",
   },
-  description:
-    "一个从 UNSW 起步的中英双语创客社团：学 Vibe Coding、找队友、每周一起把项目做出来。",
+  description: "从 UNSW 起步的中英双语创客社：找队友，每周一起把项目做上线。",
   icons: { icon: "/favicon.png", apple: "/apple-touch-icon.png" },
   openGraph: {
     type: "website",
@@ -57,6 +55,8 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
+      // Lets Next switch smooth scrolling off while it changes route.
+      data-scroll-behavior="smooth"
       className={`${unbounded.variable} ${geist.variable} ${geistMono.variable} ${notoSc.variable}`}
       // The boot script may set data-lang/lang before React hydrates.
       suppressHydrationWarning
@@ -64,6 +64,9 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{ __html: langBootScript + fxBootScript }}
+          // Extensions inject their own <script> at the top of <head>, and
+          // React then hydrates this one against theirs.
+          suppressHydrationWarning
         />
       </head>
       <body>
@@ -76,7 +79,6 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <FootNext />
         </Suspense>
-        <MascotStage />
         <SiteFooter />
         <Dock />
       </body>

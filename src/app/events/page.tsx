@@ -134,8 +134,8 @@ export default async function EventsPage() {
           </span>
           <p style={{ margin: "8px 0 16px", color: "var(--paper)" }}>
             <T
-              zh="每场工作坊结束后 48 小时内，讲义、示例仓库和录屏会出现在教程资料。"
-              en="Within 48 hours of each workshop, slides, example repos and recordings go up on Learn."
+              zh="每场工作坊结束后 48 小时内，讲义、示例仓库和录屏会出现在资源页。"
+              en="Within 48 hours of each workshop, slides, example repos and recordings go up on Resources."
             />
           </p>
           <Link
@@ -143,7 +143,7 @@ export default async function EventsPage() {
             className="btn ghost"
             style={{ "--h": "38px" } as React.CSSProperties}
           >
-            <T zh="先看教程资料" en="Browse Learn" /> <Arr />
+            <T zh="去资源页" en="Browse resources" /> <Arr />
           </Link>
         </div>
       </div>

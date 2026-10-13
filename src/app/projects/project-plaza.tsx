@@ -29,13 +29,15 @@ export function ProjectPlaza({
   const [role, setRole] = useState<Role | null>(null);
   const [list, setList] = useState(false);
 
-  // Remember grid vs list per visitor.
+  // Remember grid vs list per visitor. This re-runs when a hidden page comes
+  // back, so it also picks up a choice made in the other plaza (home vs /projects).
   useEffect(() => {
     let saved: string | null = null;
     try {
       saved = localStorage.getItem(LAYOUT_KEY);
     } catch {}
-    if (saved === "list") requestAnimationFrame(() => setList(true));
+    const id = requestAnimationFrame(() => setList(saved === "list"));
+    return () => cancelAnimationFrame(id);
   }, []);
   const pickLayout = (asList: boolean) => {
     setList(asList);
@@ -115,7 +117,7 @@ export function ProjectPlaza({
             <b style={{ color: "var(--paper)" }}>{visible.length}</b> /{" "}
             {projects.length}
           </span>
-          <div className="seg" role="group" aria-label="Layout / 视图">
+          <div className="seg icons" role="group" aria-label="Layout / 视图">
             <button
               type="button"
               aria-pressed={!list}

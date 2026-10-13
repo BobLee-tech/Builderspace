@@ -10,7 +10,7 @@ import { hasFinePointer, prefersReducedMotion, rafThrottle } from "./motion";
 // pure CSS (motion.css) and page-specific scroll effects live in their pages.
 
 /** Surfaces whose hairline edge lights up under the pointer. */
-const SPOT = ".next, .pcard, .box, .lcard, .form, .metrics, .pillars";
+const SPOT = ".pcard, .box, .lcard, .form, .pillars";
 
 export function GlobalFx() {
   const cur = useRef<HTMLDivElement>(null);

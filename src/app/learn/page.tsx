@@ -5,7 +5,7 @@ import { formatDate, formatShortDate } from "@/lib/format";
 import { T } from "@/components/t";
 import { Typewriter } from "./terminal";
 
-export const metadata: Metadata = { title: "教程资料" };
+export const metadata: Metadata = { title: "资源" };
 
 const PATH = [
   { zh: "需求拆解", en: "Break it down" },
@@ -28,7 +28,7 @@ export default async function LearnPage() {
         <div className="wrap">
           <PageHead
             path="learn"
-            eyebrow={{ zh: "教程资料 / Learn", en: "Learn" }}
+            eyebrow={{ zh: "资源 / Resources", en: "Resources" }}
             title={["Write with AI.", "Read every line."]}
             aside={[
               {

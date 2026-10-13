@@ -23,11 +23,17 @@ const NEXT: Record<string, [string, string, string, string]> = {
   ],
   "/projects": [
     "/learn",
-    "Learn",
-    "教程资料 · 用 AI 写，逐行读懂",
-    "Learn · write with AI, read every line",
+    "Resources",
+    "资源 · 用 AI 写，逐行读懂",
+    "Resources · write with AI, read every line",
   ],
   "/learn": [
+    "/people",
+    "The builders",
+    "成员 · 谁在做这件事",
+    "People · who runs the club",
+  ],
+  "/people": [
     "/join",
     "Start here",
     "加入 · 大约 1 分钟",
