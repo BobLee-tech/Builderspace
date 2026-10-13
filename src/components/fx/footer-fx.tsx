@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight, ArrowUp } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -101,7 +102,7 @@ export function FootNext() {
             </span>
           </span>
           <span className="fn-go" aria-hidden>
-            →
+            <ArrowRight weight="light" size="1em" />
           </span>
         </div>
         <span className="fn-sub">
@@ -249,7 +250,9 @@ export function ToTop() {
           style={{ strokeDasharray: RING, strokeDashoffset: RING }}
         />
       </svg>
-      <span aria-hidden>↑</span>
+      <span aria-hidden>
+        <ArrowUp weight="light" size={18} />
+      </span>
     </button>
   );
 }

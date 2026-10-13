@@ -1,3 +1,9 @@
+import {
+  UsersThree,
+  Translate,
+  Coin,
+  GitBranch,
+} from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { Arr } from "@/components/fx/arr";
 import { TickerFx } from "@/components/fx/scroll-fx";
@@ -88,6 +94,8 @@ export default function Home() {
           {FACTS.map((f) => (
             <div key={f.label.en}>
               <dt className="mono mute">
+                <f.icon weight="light" size={15} aria-hidden />
+                <b>{String(FACTS.indexOf(f) + 1).padStart(2, "0")}</b>
                 <T {...f.label} />
               </dt>
               <dd>
@@ -107,6 +115,7 @@ export default function Home() {
 
 const FACTS = [
   {
+    icon: UsersThree,
     label: { zh: "谁可以来", en: "Who" },
     value: {
       zh: "所有 UNSW 学生 · 零基础也行",
@@ -114,14 +123,17 @@ const FACTS = [
     },
   },
   {
+    icon: Translate,
     label: { zh: "工作语言", en: "Languages" },
     value: { zh: "English + 中文", en: "English + 中文" },
   },
   {
+    icon: Coin,
     label: { zh: "费用", en: "Cost" },
     value: { zh: "免费", en: "Free" },
   },
   {
+    icon: GitBranch,
     label: { zh: "作品归属", en: "Your work" },
     value: { zh: "归你和队友", en: "Stays yours" },
   },

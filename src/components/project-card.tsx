@@ -1,3 +1,4 @@
+import { User, ClockCounterClockwise } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { formatShortDate } from "@/lib/format";
 import { ROLE_LABEL, STATUS_LABEL, type Project } from "@/lib/types";
@@ -57,8 +58,12 @@ export function ProjectCard({ project }: { project: Project }) {
         </div>
       )}
       <div className="pcard-foot">
-        <span>{project.ownerName}</span>
+        <span>
+          <User weight="light" size={15} aria-hidden />
+          {project.ownerName}
+        </span>
         <span className="mono">
+          <ClockCounterClockwise weight="light" size={15} aria-hidden />
           <T zh="更新于" en="Updated" /> {formatShortDate(project.updatedAt)}
         </span>
       </div>
