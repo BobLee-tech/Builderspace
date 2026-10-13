@@ -39,7 +39,10 @@ export function Countdown({ to }: { to: string }) {
     >
       {UNITS.map(([zh, en], i) => (
         <div key={en}>
-          <b>{parts ? parts[i] : "--"}</b>
+          {/* Keyed by value so each change replays the tick animation. */}
+          <b key={parts?.[i]} className={i === 3 && parts ? "tick" : undefined}>
+            {parts ? parts[i] : "--"}
+          </b>
           <span className="mono mute">
             <T zh={zh} en={en} />
           </span>

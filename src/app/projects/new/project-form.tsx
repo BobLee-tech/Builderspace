@@ -1,5 +1,6 @@
 "use client";
 
+import { Arr } from "@/components/fx/arr";
 import Link from "next/link";
 import { useActionState } from "react";
 import { SpamGuard } from "@/components/spam-guard";
@@ -54,8 +55,7 @@ export function ProjectForm() {
           className="btn ghost"
           style={{ alignSelf: "start" }}
         >
-          <T zh="回项目广场" en="Back to projects" />{" "}
-          <span className="arr">→</span>
+          <T zh="回项目广场" en="Back to projects" /> <Arr />
         </Link>
       </div>
     );
@@ -169,7 +169,7 @@ export function ProjectForm() {
         ) : (
           <T zh="提交项目卡" en="Submit project" />
         )}{" "}
-        <span className="arr">→</span>
+        <Arr />
       </button>
     </form>
   );

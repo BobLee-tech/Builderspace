@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { createProgram } from "@/lib/webgl";
+import { Wordmark } from "./fx/wordmark";
 import { T } from "./t";
 
 // Ported from the prototype: ~17.5k particles sampled from the logo artwork
@@ -413,6 +414,7 @@ export function MascotStage() {
           0 / 17,561
         </span>
       </div>
+      <Wordmark />
       <div className="wrap stage-in">
         <div>
           <p className="eyebrow mono" style={{ margin: 0 }}>

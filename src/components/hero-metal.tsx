@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createProgram } from "@/lib/webgl";
+import { Clock } from "./fx/text-fx";
 
 // Ported from the prototype: ray-marched liquid-metal blobs, shaded with a
 // studio environment, then 1-bit Bayer 8×8 dithered. Rendered at half (or
@@ -12,7 +13,7 @@ precision highp float;
 #else
 precision mediump float;
 #endif
-uniform float uTime, uShift, uScroll;
+uniform float uTime, uShift, uScroll, uDither;
 uniform vec2 uRes, uMouse;
 float bayer2(vec2 a){ a = floor(a); return fract(dot(a, vec2(.5, a.y * .75))); }
 float bayer4(vec2 a){ return bayer2(.5 * a) * .25 + bayer2(a); }
@@ -75,7 +76,7 @@ void main(){
     c = g + (hash(gl_FragCoord.xy + floor(uTime * 12.)) - .5) * .03;
   }
   c = clamp(c, 0., 1.);
-  float o = step(bayer8(gl_FragCoord.xy), pow(c, 1.15));
+  float o = mix(c, step(bayer8(gl_FragCoord.xy), pow(c, 1.15)), uDither);
   gl_FragColor = vec4(vec3(o) * vec3(.957, .957, .949), 1.);
 }`;
 
@@ -83,6 +84,14 @@ const VERT = `attribute vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }`;
 
 export function HeroMetal() {
   const ref = useRef<HTMLCanvasElement>(null);
+  const fpsRef = useRef<HTMLElement>(null);
+  const resRef = useRef<HTMLElement>(null);
+  // 1 = 1-bit Bayer dither, 0 = smooth chrome; the shader eases between them.
+  const [dither, setDither] = useState(1);
+  const ditherRef = useRef(1);
+  useEffect(() => {
+    ditherRef.current = dither;
+  }, [dither]);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -113,7 +122,9 @@ export function HeroMetal() {
       uRes = u("uRes"),
       uMouse = u("uMouse"),
       uShift = u("uShift"),
-      uScroll = u("uScroll");
+      uScroll = u("uScroll"),
+      uDither = u("uDither");
+    let mix = ditherRef.current;
 
     let pr = 0.5;
     let time = 0;
@@ -127,6 +138,8 @@ export function HeroMetal() {
       canvas.height = Math.floor(r.height * pr);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.uniform2f(uRes, canvas.width, canvas.height);
+      if (resRef.current)
+        resRef.current.textContent = `${canvas.width}×${canvas.height}`;
       // Desktop pushes the blobs to the right of the headline; phones centre them.
       gl.uniform1f(
         uShift,
@@ -137,6 +150,7 @@ export function HeroMetal() {
       gl.uniform1f(uTime, time);
       gl.uniform2f(uMouse, mouse.x, mouse.y);
       gl.uniform1f(uScroll, Math.min(1, scrollY / innerHeight));
+      gl.uniform1f(uDither, mix);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     };
     const ro = new ResizeObserver(() => {
@@ -155,6 +169,23 @@ export function HeroMetal() {
     };
     hero.addEventListener("pointermove", onMove);
 
+    // Headline drifts up and fades as the hero scrolls away.
+    const copy = hero.querySelector<HTMLElement>(":scope > .wrap");
+    let parallaxQueued = false;
+    const onScroll = () => {
+      if (parallaxQueued || reduce || !copy) return;
+      parallaxQueued = true;
+      requestAnimationFrame(() => {
+        parallaxQueued = false;
+        const k = Math.min(1, scrollY / hero.offsetHeight);
+        copy.style.transform = k
+          ? `translate3d(0,${(-18 * k).toFixed(2)}%,0)`
+          : "";
+        copy.style.opacity = k ? String(1 - 0.8 * k) : "";
+      });
+    };
+    addEventListener("scroll", onScroll, { passive: true });
+
     let visible = true;
     const io = new IntersectionObserver(([en]) => {
       visible = en.isIntersecting;
@@ -164,6 +195,8 @@ export function HeroMetal() {
     let raf = 0;
     let last = performance.now();
     let slow = 0;
+    let frames = 0;
+    let fpsT = last;
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop);
       const raw = now - last;
@@ -180,7 +213,17 @@ export function HeroMetal() {
       time += Math.min(0.05, raw / 1000);
       mouse.x += (target.x - mouse.x) * 0.06;
       mouse.y += (target.y - mouse.y) * 0.06;
+      mix += (ditherRef.current - mix) * 0.08;
       draw();
+      frames++;
+      if (now - fpsT > 500) {
+        if (fpsRef.current)
+          fpsRef.current.textContent = String(
+            Math.round((frames * 1000) / (now - fpsT)),
+          );
+        frames = 0;
+        fpsT = now;
+      }
     };
     if (!reduce) raf = requestAnimationFrame(loop);
 
@@ -189,9 +232,52 @@ export function HeroMetal() {
       ro.disconnect();
       io.disconnect();
       hero.removeEventListener("pointermove", onMove);
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
+      removeEventListener("scroll", onScroll);
+      // Free GPU objects but keep the context: a remount of the same canvas
+      // (React StrictMode in dev) would otherwise get a lost context back.
+      gl.deleteBuffer(buf);
+      gl.deleteProgram(prog);
     };
   }, []);
 
-  return <canvas ref={ref} className="hero-gl" aria-hidden />;
+  return (
+    <>
+      <canvas ref={ref} className="hero-gl" aria-hidden />
+      <div className="readout tr mono" aria-hidden>
+        <span>
+          LAT <b>-33.9173</b> · LNG <b>151.2313</b>
+        </span>
+        <span>
+          SYD <Clock tz="Australia/Sydney" seconds /> · BJ{" "}
+          <Clock tz="Asia/Shanghai" />
+        </span>
+      </div>
+      <div className="readout br mono">
+        <span aria-hidden>
+          FPS <b ref={fpsRef}>--</b> · RES <b ref={resRef}>--</b>
+        </span>
+        <div className="rmode" role="group" aria-label="Render mode / 渲染模式">
+          {(
+            [
+              [1, "Dither"],
+              [0, "Chrome"],
+            ] as const
+          ).map(([v, label]) => (
+            <button
+              key={label}
+              type="button"
+              aria-pressed={dither === v}
+              onClick={() => setDither(v)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="scrollcue mono" aria-hidden>
+        <i />
+        Scroll
+      </div>
+    </>
+  );
 }

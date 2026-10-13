@@ -853,21 +853,6 @@ main {
     background 0.3s,
     color 0.3s;
 }
-.subscribe {
-  margin-top: 40px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px 24px;
-  align-items: center;
-  justify-content: space-between;
-  padding: clamp(20px, 3vw, 28px);
-}
-.subscribe code {
-  font-family: var(--f-mono);
-  font-size: 12.5px;
-  color: var(--mute);
-  word-break: break-all;
-}
 
 /* ---------- forms ---------- */
 .form {
@@ -931,43 +916,6 @@ main {
 }
 .form-status.err {
   color: #ff8a80;
-}
-.join-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-  gap: clamp(24px, 4vw, 56px);
-  align-items: start;
-}
-.facts {
-  display: flex;
-  flex-direction: column;
-  border-top: 1px solid var(--line);
-}
-.facts > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line);
-}
-.qr {
-  width: 180px;
-  height: 180px;
-  border-radius: 14px;
-  background: var(--paper);
-  display: grid;
-  place-items: center;
-  color: var(--ink);
-  text-align: center;
-  padding: 12px;
-  font-size: 12px;
-}
-
-img.qr {
-  width: 220px;
-  height: auto;
-  padding: 0;
-  background: none;
 }
 
 /* ---------- project detail ---------- */
@@ -1143,8 +1091,7 @@ img.qr {
     display: none;
   }
   .hero-sub,
-  .next,
-  .join-grid {
+  .next {
     grid-template-columns: 1fr;
   }
   .hero-cta {

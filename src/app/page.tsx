@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { Countdown } from "@/components/countdown";
+import { Arr, Hud } from "@/components/fx/arr";
+import { CycleFx, PiecesFx, TickerFx } from "@/components/fx/scroll-fx";
+import { CountUp, Scramble } from "@/components/fx/text-fx";
 import { HeroMetal } from "@/components/hero-metal";
 import { ProjectCard } from "@/components/project-card";
 import { SampleNotice } from "@/components/sample-notice";
@@ -10,7 +13,7 @@ import {
   getProjects,
 } from "@/lib/data";
 import { formatDate, formatTimeRange } from "@/lib/format";
-import { EVENT_KIND_LABEL } from "@/lib/types";
+import { EVENT_KIND_LABEL, type SiteEvent } from "@/lib/types";
 
 const ACTIVE_PROJECT_TARGET = 8;
 
@@ -20,28 +23,39 @@ export default function Home() {
       <section className="hero">
         <HeroMetal />
         <div className="wrap">
-          <div className="hero-meta mono mute">
+          <div className="hero-meta mono mute stagger">
             <span className="live">
               <T zh="Cycle 01 组队报名中" en="Cycle 01 · teams forming" />
             </span>
             <span>Sydney · Kensington</span>
             <span>T3 2026</span>
+            <span>
+              <T zh="中英双语创客社团" en="Bilingual maker club" />
+            </span>
           </div>
           <h1
             className="display"
             aria-label="Bring an idea. Leave with something that works."
           >
-            <span className="line">
-              <span>Bring an idea.</span>
+            <span className="line" aria-hidden>
+              <span>
+                <Scramble text="Bring an idea." />
+              </span>
             </span>
-            <span className="line">
+            <span className="line" aria-hidden>
               <span className="outline">Leave with</span>
             </span>
-            <span className="line">
-              <span>something that works</span>
+            <span className="line" aria-hidden>
+              <span>
+                <span className="chrome">something that </span>
+                <span style={{ whiteSpace: "nowrap" }}>
+                  <span className="chrome">works</span>
+                  <span className="cursor" />
+                </span>
+              </span>
             </span>
           </h1>
-          <div className="hero-sub">
+          <div className="hero-sub stagger">
             <p className="hero-zh">
               <T
                 zh={
@@ -66,8 +80,7 @@ export default function Home() {
             </p>
             <div className="hero-cta">
               <Link href="/join" className="btn solid">
-                <T zh="加入 BuilderSpace" en="Join BuilderSpace" />{" "}
-                <span className="arr">→</span>
+                <T zh="加入 BuilderSpace" en="Join BuilderSpace" /> <Arr />
               </Link>
               <Link href="/projects" className="btn ghost">
                 <T zh="看项目广场" en="See projects" />
@@ -76,6 +89,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <Ticker />
 
       <NextEventSection />
 
@@ -118,6 +133,8 @@ export default function Home() {
         </div>
       </section>
 
+      <PiecesSection />
+
       <section className="sec">
         <div className="wrap">
           <p className="eyebrow mono">Build Cycle 01 · W3 – W6</p>
@@ -136,8 +153,7 @@ export default function Home() {
               }
             />
           </h2>
-          <div className="cycle">
-            <div className="cycle-rail" aria-hidden />
+          <CycleFx>
             {CYCLE.map((step, i) => (
               <div className="step" key={step.when + i}>
                 <div className="node">{String(i + 1).padStart(2, "0")}</div>
@@ -150,7 +166,7 @@ export default function Home() {
                 <span className="mono">{step.when}</span>
               </div>
             ))}
-          </div>
+          </CycleFx>
         </div>
       </section>
 
@@ -243,12 +259,19 @@ async function NextEventSection() {
               )}
             </h2>
           </div>
-          <Link href="/events" className="text-link">
-            <T zh="全部活动 →" en="All events →" />
+          <Link
+            href="/events"
+            className="btn ghost"
+            style={{ "--h": "40px" } as React.CSSProperties}
+          >
+            <T zh="全部活动" en="All events" /> <Arr />
           </Link>
         </div>
         {next && (
-          <div className="next">
+          <div className="next hud">
+            <Hud />
+            <i className="notch t" aria-hidden />
+            <i className="notch b" aria-hidden />
             <div className="next-l">
               <div className="need">
                 <span className="tag fill">
@@ -288,7 +311,7 @@ async function NextEventSection() {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <T zh="报名 ↗" en="Sign up ↗" />
+                    <T zh="报名" en="Sign up" /> <Arr diag />
                   </a>
                 ) : (
                   <span className="mono mute">
@@ -303,6 +326,10 @@ async function NextEventSection() {
                     />
                   </span>
                 )}
+              </div>
+              <div className="stub" aria-hidden>
+                <span>BS-{TICKET_CODE[next.kind]} · ADMIT ONE</span>
+                <span className="barcode" />
               </div>
             </div>
           </div>
@@ -347,7 +374,7 @@ async function MetricsSection() {
               />
             </span>
             <span className="big">
-              {active ?? "—"}
+              {active === null ? "—" : <CountUp to={active} />}
               <sup>/ {ACTIVE_PROJECT_TARGET}</sup>
             </span>
             <p className="mute">
@@ -356,12 +383,17 @@ async function MetricsSection() {
                 en="Member projects with a commit, demo or update in the last 14 days"
               />
             </p>
+            {active !== null && (
+              <Meter value={active / ACTIVE_PROJECT_TARGET} />
+            )}
           </div>
           <div className="metric">
             <span className="mono mute">
               <T zh="本学期目标" en="Term goal" />
             </span>
-            <span className="big">150</span>
+            <span className="big">
+              <CountUp to={150} />
+            </span>
             <p className="mute">
               <T zh="群成员" en="Community members" />
             </p>
@@ -370,7 +402,9 @@ async function MetricsSection() {
             <span className="mono mute">
               <T zh="本学期目标" en="Term goal" />
             </span>
-            <span className="big">60</span>
+            <span className="big">
+              <CountUp to={60} />
+            </span>
             <p className="mute">
               <T zh="到场成员" en="People at events" />
             </p>
@@ -380,6 +414,166 @@ async function MetricsSection() {
     </section>
   );
 }
+
+function Meter({ value }: { value: number }) {
+  return (
+    <div className="bar" aria-hidden>
+      <i style={{ "--w": Math.min(1, value) } as React.CSSProperties} />
+    </div>
+  );
+}
+
+const TICKER_BIG = [
+  "Build Night",
+  "Demo Night",
+  "Vibe Coding",
+  "Ship it",
+  "Pair up",
+  "Read every line",
+];
+const TICKER_SMALL = [
+  "Vibe Coding 入门",
+  "每周 Build Night",
+  "用中文提问，用英文展示",
+  "需求拆解 → 代码审阅 → 测试 → 部署",
+  "跨专业组队",
+  "4–6 周一个 Build Cycle",
+];
+
+/** Two marquee rows; each list is doubled so the loop is seamless. */
+function Ticker() {
+  return (
+    <div className="ticker" aria-hidden>
+      <TickerFx>
+        <div>
+          <div className="ticker-track big">
+            {[...TICKER_BIG, ...TICKER_BIG].map((t, i) => (
+              <span key={i}>{t}</span>
+            ))}
+          </div>
+        </div>
+        <div className="mono">
+          <div className="ticker-track rev">
+            {[...TICKER_SMALL, ...TICKER_SMALL].map((t, i) => (
+              <span key={i}>{t}</span>
+            ))}
+          </div>
+        </div>
+      </TickerFx>
+    </div>
+  );
+}
+
+const TICKET_CODE: Record<SiteEvent["kind"], string> = {
+  workshop: "WS",
+  build_night: "BN",
+  demo_night: "DN",
+  online: "ON",
+  other: "EV",
+};
+
+/** The logo is how teams form: an idea piece and a build piece snap together. */
+function PiecesSection() {
+  return (
+    <section className="sec">
+      <div className="wrap">
+        <div className="sec-head">
+          <div>
+            <p className="eyebrow mono">
+              <T zh="拼在一起 / Two pieces" en="Two pieces · one team" />
+            </p>
+            <h2 className="h2">
+              <T
+                zh={
+                  <>
+                    一块是想法，
+                    <br />
+                    <span className="dim">一块是动手的人。</span>
+                  </>
+                }
+                en={
+                  <>
+                    One piece brings the idea,
+                    <br />
+                    <span className="dim">the other builds it.</span>
+                  </>
+                }
+              />
+            </h2>
+          </div>
+          <p className="lede">
+            <T
+              zh="我们的 logo 就是组队方式：有问题想解决的人，和想把东西做出来的人，在 Build Night 拼成一个团队。"
+              en="Our logo is how teams form here: someone with a problem worth solving, and someone who wants to build, snapped together at Build Night."
+            />
+          </p>
+        </div>
+        <PiecesFx>
+          {PIECES.map((p) => (
+            <article key={p.k} className={`piece ${p.tone}`}>
+              <div className="piece-face" aria-hidden>
+                <i />
+                <i />
+              </div>
+              <span className="mono piece-k">{p.k}</span>
+              <h3>
+                <T {...p.title} />
+              </h3>
+              <p>
+                <T {...p.body} />
+              </p>
+              <ul className="piece-list">
+                {p.list.map((item) => (
+                  <li key={item.en}>
+                    <T {...item} />
+                  </li>
+                ))}
+              </ul>
+              <Link href={p.href} className="piece-cta">
+                <T {...p.cta} /> <span aria-hidden>→</span>
+              </Link>
+            </article>
+          ))}
+        </PiecesFx>
+      </div>
+    </section>
+  );
+}
+
+const PIECES = [
+  {
+    tone: "light",
+    k: "01 · The idea piece",
+    title: { zh: "我有一个想法", en: "I have an idea" },
+    body: {
+      zh: "商科、设计、任何专业。你知道用户痛在哪里，缺一个能把它做出来的人。",
+      en: "Business, design, any degree. You know where users hurt — you need someone to build it.",
+    },
+    list: [
+      { zh: "90 秒 Pitch", en: "90-second pitch" },
+      { zh: "写清楚缺什么角色", en: "List the roles you need" },
+      { zh: "带用户来试用", en: "Bring real users to test" },
+    ],
+    href: "/projects/new",
+    cta: { zh: "提交项目卡", en: "Submit a project card" },
+  },
+  {
+    tone: "dark",
+    k: "02 · The build piece",
+    title: { zh: "我想动手做", en: "I want to build" },
+    body: {
+      zh: "CS、IT、数据，或者刚学会写第一行代码。你想要一个真实的问题来练手。",
+      en: "CS, IT, data — or you just wrote your first line of code. You want a real problem to practise on.",
+    },
+    list: [
+      { zh: "挑一个项目加入", en: "Pick a project to join" },
+      { zh: "每周三一起写", en: "Build together every Wednesday" },
+      { zh: "Demo Night 上台", en: "Present at Demo Night" },
+    ],
+    href: "/projects",
+    cta: { zh: "看谁在招人", en: "See who's recruiting" },
+  },
+] as const;
 
 async function FeaturedProjectsSection() {
   const projects = (await getProjects())
@@ -397,8 +591,12 @@ async function FeaturedProjectsSection() {
               <T zh="正在做的东西。" en="Things being built." />
             </h2>
           </div>
-          <Link href="/projects" className="text-link">
-            <T zh="进入项目广场 →" en="Project plaza →" />
+          <Link
+            href="/projects"
+            className="btn ghost"
+            style={{ "--h": "40px" } as React.CSSProperties}
+          >
+            <T zh="进入项目广场" en="Project plaza" /> <Arr />
           </Link>
         </div>
         {projects.length === 0 ? (

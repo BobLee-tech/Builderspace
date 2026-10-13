@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useState, type ReactNode } from "react";
+import { Arr, Hud } from "@/components/fx/arr";
 import { SpamGuard } from "@/components/spam-guard";
 import { Msg, T } from "@/components/t";
 import { channelFromSearch, type FormState } from "@/lib/forms";
@@ -17,6 +18,7 @@ import {
   WEEKLY_HOURS,
 } from "@/lib/types";
 import { submitJoin } from "./actions";
+import { MemberCard, readCard, type CardData } from "./member-card";
 
 type Bi = { zh: string; en: string };
 
@@ -26,48 +28,61 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
     { status: "idle" },
   );
 
-  if (state.status === "ok") {
-    return (
-      <div className="form" role="status">
-        <p className="mono mute">
-          <T zh="提交成功" en="You're in" />
-        </p>
-        <h2 className="h2" style={{ fontSize: 32 }}>
-          <T
-            zh={`欢迎，${state.nickname}。`}
-            en={`Welcome, ${state.nickname}.`}
-          />
-        </h2>
-        <p className="mute">
-          <T
-            zh="扫码加管理员微信，备注“BuilderSpace + 昵称”。管理员会拉你进群，并发下一场活动的报名链接。"
-            en='Scan to add the admin on WeChat with the note "BuilderSpace + your nickname". They will add you to the group and send the next sign-up link.'
-          />
-        </p>
-        {adminQr ? (
-          // eslint-disable-next-line @next/next/no-img-element -- ops-supplied QR, any host
-          <img
-            src={adminQr}
-            alt="Admin WeChat QR / 管理员微信二维码"
-            className="qr"
-          />
-        ) : (
-          <div className="qr">
-            <T zh="管理员二维码待上传" en="Admin QR coming soon" />
-          </div>
-        )}
-        <Link
-          href="/events"
-          className="btn ghost"
-          style={{ alignSelf: "start" }}
-        >
-          <T zh="看下一场活动" en="See the next event" />{" "}
-          <span className="arr">→</span>
-        </Link>
-      </div>
-    );
-  }
+  const [card, setCard] = useState<CardData | null>(null);
+  const done = state.status === "ok";
 
+  return (
+    <div className="join2">
+      <MemberCard data={card} flipped={done} adminQr={adminQr} />
+      {done ? (
+        <div className="form hud" role="status">
+          <Hud />
+          <p className="mono mute">
+            <T zh="提交成功" en="You're in" />
+          </p>
+          <h2 className="h2" style={{ fontSize: 32 }}>
+            <T
+              zh={`欢迎，${state.nickname}。`}
+              en={`Welcome, ${state.nickname}.`}
+            />
+          </h2>
+          <p className="mute">
+            <T
+              zh="成员卡已翻面：扫背面的二维码加管理员微信，备注“BuilderSpace + 昵称”。管理员会拉你进群，并发下一场活动的报名链接。"
+              en='Your card has flipped: scan the QR on the back to add the admin on WeChat, with the note "BuilderSpace + your nickname". They will add you to the group and send the next sign-up link.'
+            />
+          </p>
+          <Link
+            href="/events"
+            className="btn ghost"
+            style={{ alignSelf: "start" }}
+          >
+            <T zh="看下一场活动" en="See the next event" /> <Arr />
+          </Link>
+        </div>
+      ) : (
+        <Form
+          state={state}
+          action={action}
+          pending={pending}
+          onCard={setCard}
+        />
+      )}
+    </div>
+  );
+}
+
+function Form({
+  state,
+  action,
+  pending,
+  onCard,
+}: {
+  state: FormState;
+  action: (data: FormData) => void;
+  pending: boolean;
+  onCard: (c: CardData) => void;
+}) {
   const err = state.status === "error" ? (state.fieldErrors ?? {}) : {};
 
   return (
@@ -77,9 +92,11 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
         data.set("channel", channelFromSearch(window.location.search) ?? "");
         action(data);
       })}
-      className="form"
+      className="form hud"
       noValidate
+      onChange={(e) => onCard(readCard(e.currentTarget))}
     >
+      <Hud />
       <SpamGuard />
       <div className="row2">
         <TextField
@@ -186,7 +203,7 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
         ) : (
           <T zh="提交，获取管理员微信" en="Submit & get the admin's WeChat" />
         )}{" "}
-        <span className="arr">→</span>
+        <Arr />
       </button>
     </form>
   );

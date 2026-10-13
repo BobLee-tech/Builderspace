@@ -3,25 +3,48 @@ import { formatShortDate } from "@/lib/format";
 import { ROLE_LABEL, STATUS_LABEL, type Project } from "@/lib/types";
 import { T } from "./t";
 
+/** Stable small hash so a project always gets the same generative cover. */
+function hash(s: string) {
+  return [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+}
+
+/** Monochrome pattern + outlined initials, picked by slug; see .cover in motion.css. */
+export function Cover({ seed, label }: { seed: string; label: string }) {
+  return (
+    <div className="cover" data-v={hash(seed) % 6} aria-hidden>
+      <span className="ini">{[...label].slice(0, 2).join("")}</span>
+      <span className="id">#{seed}</span>
+    </div>
+  );
+}
+
+export function StatusDot({ status }: { status: Project["status"] }) {
+  return <i className={`st-dot st-${status}`} aria-hidden />;
+}
+
 export function ProjectCard({ project }: { project: Project }) {
   return (
     <Link
       href={`/projects/${project.slug}`}
       className={`pcard ${project.status === "paused" ? "paused" : ""}`}
     >
-      <div className="pcard-top">
-        <span
-          className={`tag ${project.status === "recruiting" ? "fill" : ""}`}
-        >
-          <T {...STATUS_LABEL[project.status]} />
-        </span>
-        <span className="mono mute">{project.targetUser}</span>
+      <Cover seed={project.slug} label={project.name} />
+      <div className="pcard-head">
+        <div className="pcard-top">
+          <span
+            className={`tag ${project.status === "recruiting" ? "fill" : ""}`}
+          >
+            <StatusDot status={project.status} />
+            <T {...STATUS_LABEL[project.status]} />
+          </span>
+          <span className="mono mute">{project.targetUser}</span>
+        </div>
+        <h3>{project.name}</h3>
+        <p className="prob">{project.problem}</p>
       </div>
-      <h3>{project.name}</h3>
-      <p className="prob">{project.problem}</p>
       {project.neededRoles.length > 0 && (
-        <div>
-          <span className="mono mute">
+        <div className="pcard-need">
+          <span className="mono mute need-k">
             <T zh="缺" en="Needs" />
           </span>
           <div className="need">

@@ -4,9 +4,15 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Dock } from "@/components/dock";
 import { MascotStage } from "@/components/mascot-stage";
+import { Boot } from "@/components/fx/boot";
+import { fxBootScript } from "@/components/fx/boot-script";
+import { FootNext } from "@/components/fx/footer-fx";
+import { GlobalFx } from "@/components/fx/global-fx";
 import { langBootScript } from "@/components/t";
 import { siteUrl } from "@/lib/site-url";
+import { Suspense } from "react";
 import "./globals.css";
+import "./motion.css";
 
 // next/font self-hosts these, so visitors in mainland China never hit Google Fonts.
 const unbounded = Unbounded({
@@ -56,12 +62,20 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: langBootScript }} />
+        <script
+          dangerouslySetInnerHTML={{ __html: langBootScript + fxBootScript }}
+        />
       </head>
       <body>
+        <Boot />
         <div className="backdrop" aria-hidden />
+        <GlobalFx />
         <SiteHeader />
         <main>{children}</main>
+        {/* The pathname streams in on dynamic routes. */}
+        <Suspense fallback={null}>
+          <FootNext />
+        </Suspense>
         <MascotStage />
         <SiteFooter />
         <Dock />
