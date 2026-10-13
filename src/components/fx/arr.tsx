@@ -1,10 +1,16 @@
+import { ArrowRight, ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
+
 /** Button arrow in a round chip; two copies so hover can loop one out and one in. */
 export function Arr({ diag = false }: { diag?: boolean }) {
-  const c = diag ? "↗" : "→";
+  const Icon = diag ? ArrowUpRight : ArrowRight;
   return (
     <span className={diag ? "arr diag" : "arr"} aria-hidden>
-      <b>{c}</b>
-      <b>{c}</b>
+      <b>
+        <Icon weight="light" size="1.15em" />
+      </b>
+      <b>
+        <Icon weight="light" size="1.15em" />
+      </b>
     </span>
   );
 }

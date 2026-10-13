@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import { NAV_LINKS, isActive } from "./nav-links";
+import { NavIcon } from "./nav-icon";
 import { T } from "./t";
 
 /**
@@ -39,7 +40,7 @@ function Items({
     >
       {withIcons && (
         <span className="ico" aria-hidden>
-          {link.ico}
+          <NavIcon name={link.ico} />
         </span>
       )}
       <T zh={link.zh} en={link.en} />

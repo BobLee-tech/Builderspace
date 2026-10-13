@@ -6,6 +6,9 @@ import { Dock } from "@/components/dock";
 import { Boot } from "@/components/fx/boot";
 import { fxBootScript } from "@/components/fx/boot-script";
 import { FootNext } from "@/components/fx/footer-fx";
+import { BgShader } from "@/components/fx/bg-shader";
+import { ScrollRail } from "@/components/fx/scroll-rail";
+import { SmoothScroll } from "@/components/fx/smooth-scroll";
 import { GlobalFx } from "@/components/fx/global-fx";
 import { langBootScript } from "@/components/t";
 import { siteUrl } from "@/lib/site-url";
@@ -72,7 +75,12 @@ export default function RootLayout({
       <body>
         <Boot />
         <div className="backdrop" aria-hidden />
+        <BgShader />
+        <ScrollRail />
         <GlobalFx />
+        <Suspense fallback={null}>
+          <SmoothScroll />
+        </Suspense>
         <SiteHeader />
         <main>{children}</main>
         {/* The pathname streams in on dynamic routes. */}

@@ -1,11 +1,19 @@
+import {
+  UsersThree,
+  Translate,
+  Coin,
+  GitBranch,
+} from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { Arr } from "@/components/fx/arr";
 import { TickerFx } from "@/components/fx/scroll-fx";
-import { Scramble } from "@/components/fx/text-fx";
+import { HeroHeadline } from "@/components/hero-headline";
+import { MapPin } from "@phosphor-icons/react/dist/ssr";
 import { HeroMetal } from "@/components/hero-metal";
 import { MascotStage } from "@/components/mascot-stage";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
+import { CYCLE } from "@/lib/cycle";
 import { getProjects } from "@/lib/data";
 import { Plaza } from "./projects/plaza";
 
@@ -13,39 +21,28 @@ import { Plaza } from "./projects/plaza";
 export default function Home() {
   return (
     <>
-      <section className="hero">
+      <section className="hero hero-poster">
         <HeroMetal />
+        <div className="headline-hud" aria-hidden>
+          <i className="hud-x" />
+          <i className="hud-y" />
+          <span className="hud-c mono tnum">X 0000 · Y 0000</span>
+        </div>
         <div className="wrap">
-          <div className="hero-meta mono mute stagger">
-            <span className="live">
-              <T zh="Cycle 01 组队报名中" en="Cycle 01 · teams forming" />
-            </span>
-            <span>Sydney · Kensington</span>
-            <span>T3 2026</span>
-          </div>
-          <h1
-            className="display"
-            aria-label="Bring an idea. Leave with something that works."
-          >
-            <span className="line" aria-hidden>
-              <span>
-                <Scramble text="Bring an idea." />
-              </span>
-            </span>
-            <span className="line" aria-hidden>
-              <span className="outline">Leave with</span>
-            </span>
-            <span className="line" aria-hidden>
-              <span>
-                <span className="chrome">something that </span>
-                <span style={{ whiteSpace: "nowrap" }}>
-                  <span className="chrome">works</span>
-                  <span className="cursor" />
+          <HeroHeadline
+            meta={
+              <>
+                <span className="live">
+                  <T {...CYCLE.status} />
                 </span>
-              </span>
-            </span>
-          </h1>
-          <div className="hero-sub stagger">
+                <span className="mute">
+                  <MapPin weight="light" size={14} aria-hidden />
+                  Sydney · Kensington
+                </span>
+                <span className="mute">T3 2026</span>
+              </>
+            }
+          >
             <div>
               <p className="hero-zh">
                 <T
@@ -71,13 +68,14 @@ export default function Home() {
             </div>
             <div className="hero-cta">
               <Link href="/join" className="btn solid">
-                <T zh="加入 BuilderSpace" en="Join BuilderSpace" /> <Arr />
+                <T zh="加入 BuilderSpace" en="Join BuilderSpace" />
+                <Arr />
               </Link>
               <a href="#plaza" className="btn ghost">
                 <T zh="看项目广场" en="See projects" />
               </a>
             </div>
-          </div>
+          </HeroHeadline>
         </div>
       </section>
 
@@ -88,6 +86,8 @@ export default function Home() {
           {FACTS.map((f) => (
             <div key={f.label.en}>
               <dt className="mono mute">
+                <f.icon weight="light" size={15} aria-hidden />
+                <b>{String(FACTS.indexOf(f) + 1).padStart(2, "0")}</b>
                 <T {...f.label} />
               </dt>
               <dd>
@@ -107,6 +107,7 @@ export default function Home() {
 
 const FACTS = [
   {
+    icon: UsersThree,
     label: { zh: "谁可以来", en: "Who" },
     value: {
       zh: "所有 UNSW 学生 · 零基础也行",
@@ -114,14 +115,17 @@ const FACTS = [
     },
   },
   {
+    icon: Translate,
     label: { zh: "工作语言", en: "Languages" },
     value: { zh: "English + 中文", en: "English + 中文" },
   },
   {
+    icon: Coin,
     label: { zh: "费用", en: "Cost" },
     value: { zh: "免费", en: "Free" },
   },
   {
+    icon: GitBranch,
     label: { zh: "作品归属", en: "Your work" },
     value: { zh: "归你和队友", en: "Stays yours" },
   },
@@ -151,16 +155,20 @@ function Ticker() {
       <TickerFx>
         <div>
           <div className="ticker-track big">
-            {[...TICKER_BIG, ...TICKER_BIG].map((t, i) => (
-              <span key={i}>{t}</span>
-            ))}
+            {Array.from({ length: 4 }, () => TICKER_BIG)
+              .flat()
+              .map((t, i) => (
+                <span key={i}>{t}</span>
+              ))}
           </div>
         </div>
         <div className="mono">
           <div className="ticker-track rev">
-            {[...TICKER_SMALL, ...TICKER_SMALL].map((t, i) => (
-              <span key={i}>{t}</span>
-            ))}
+            {Array.from({ length: 4 }, () => TICKER_SMALL)
+              .flat()
+              .map((t, i) => (
+                <span key={i}>{t}</span>
+              ))}
           </div>
         </div>
       </TickerFx>

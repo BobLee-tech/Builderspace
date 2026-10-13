@@ -72,6 +72,7 @@ export function PageHeadFx({ children }: { children: ReactNode }) {
     return () => {
       clearTimeout(timer);
       cancelAnimationFrame(raf);
+      onMove.cancel();
       removeEventListener("pointermove", move);
     };
   }, []);

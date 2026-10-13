@@ -56,11 +56,14 @@ export function Clock({
 
   useEffect(() => {
     const fmt = clockFormat(tz, seconds);
-    const tick = () => setNow(fmt.format(new Date()));
+    let timer = 0;
+    const tick = () => {
+      setNow(fmt.format(new Date()));
+      timer = window.setTimeout(tick, 1000 - (Date.now() % 1000) + 5);
+    };
     tick();
-    const id = window.setInterval(tick, 1000);
-    return () => clearInterval(id);
+    return () => clearTimeout(timer);
   }, [tz, seconds]);
 
-  return <b>{now ?? (seconds ? "--:--:--" : "--:--")}</b>;
+  return <b className="tnum">{now ?? (seconds ? "--:--:--" : "--:--")}</b>;
 }
