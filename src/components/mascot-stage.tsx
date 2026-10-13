@@ -237,6 +237,8 @@ export function MascotStage() {
       gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
       gl.clearColor(0, 0, 0, 0);
 
+      const stageIn = stage!.querySelector<HTMLElement>(".stage-in")!;
+      const wordmark = stage!.querySelector<HTMLElement>(".wordmark")!;
       let PR = Math.min(2, devicePixelRatio || 1);
       let H = 1;
       let scale = 0.6;
@@ -250,10 +252,20 @@ export function MascotStage() {
         canvas!.height = Math.floor(H * PR);
         gl.viewport(0, 0, canvas!.width, canvas!.height);
         const small = W <= 720;
-        const wm = small ? W * 0.86 : Math.min(W * 0.54, H * 1.05, 900);
+        const pad = small ? 14 : 34;
+        // Fit the mascot and its HUD frame (labels sit 20px outside it)
+        // between the caption row and the wordmark, so neither is crossed.
+        const top = stageIn.offsetTop + stageIn.offsetHeight + 24 + pad;
+        const bottom =
+          (wordmark.offsetHeight ? wordmark.offsetTop : H) - 24 - pad;
+        const base = small ? W * 0.86 : Math.min(W * 0.54, H * 1.05, 900);
+        const wm = Math.max(
+          base * 0.6,
+          Math.min(base, (bottom - top) / D.aspect),
+        );
         const hm = wm * D.aspect;
         const cx = W / 2;
-        const cy = small ? H * 0.42 : H * 0.44;
+        const cy = (top + bottom) / 2;
         scale = wm / H;
         center.x = ((cx - W / 2) * 2) / H;
         center.y = (-(cy - H / 2) * 2) / H;
@@ -263,7 +275,6 @@ export function MascotStage() {
         gl.uniform1f(U.pxW, (H * PR) / 2);
         gl.uniform2f(U.res, W * PR, H * PR);
         gl.uniform1f(U.cell, (small ? 6 : 8) * PR);
-        const pad = small ? 14 : 34;
         Object.assign(frameRef.current!.style, {
           left: `${cx - wm / 2 - pad}px`,
           top: `${cy - hm / 2 - pad}px`,
@@ -273,6 +284,7 @@ export function MascotStage() {
       };
       const ro = new ResizeObserver(layout);
       ro.observe(canvas!);
+      ro.observe(stageIn);
       layout();
       setOn(true);
 

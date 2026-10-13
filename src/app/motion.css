@@ -2539,8 +2539,25 @@ html.fx .top {
     margin-inline: -12px;
     padding-inline: 12px;
   }
-  .toolbar .chip {
+  .toolbar .chip,
+  .toolbar .filters .label {
     flex: none;
+    white-space: nowrap;
+  }
+  /* Four proportional segments don't fit a phone: show them as a 2×2 grid. */
+  .dist {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: auto;
+  }
+  .dist > div {
+    height: 40px;
+  }
+  .dist > div:nth-child(2n) {
+    border-right: 0;
+  }
+  .dist > div:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
   }
   .tb-right {
     margin-left: 0;
