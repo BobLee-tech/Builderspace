@@ -8,8 +8,12 @@ import { Msg, T } from "@/components/t";
 import { channelFromSearch, type FormState } from "@/lib/forms";
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 import {
+  AVAILABILITY,
+  AVAILABILITY_LABEL,
   BLOCKERS,
   BLOCKER_LABEL,
+  EVENT_INTEREST,
+  EVENT_INTEREST_LABEL,
   HOURS_LABEL,
   REFERRAL_LABEL,
   REFERRAL_SOURCES,
@@ -84,6 +88,8 @@ function Form({
   onCard: (c: CardData) => void;
 }) {
   const err = state.status === "error" ? (state.fieldErrors ?? {}) : {};
+  // Name and zID fields exist only while this box is ticked.
+  const [supporting, setSupporting] = useState(false);
 
   return (
     <form
@@ -177,6 +183,29 @@ function Form({
         error={err.referralSource}
       />
 
+      <ChoiceGroup
+        name="eventInterest"
+        legend={
+          <T
+            zh="下一场线下活动想来吗（选填）"
+            en="Would you come to the next in-person event? (optional)"
+          />
+        }
+        options={EVENT_INTEREST.map((e) => [e, EVENT_INTEREST_LABEL[e]])}
+        error={err.eventInterest}
+        optional
+      />
+      <CheckGroup
+        name="availability"
+        legend={
+          <T
+            zh="哪些时间方便（选填，可多选）"
+            en="When could you make it? (optional, pick any)"
+          />
+        }
+        options={AVAILABILITY.map((a) => [a, AVAILABILITY_LABEL[a]])}
+      />
+
       <label className="consent">
         <input type="checkbox" name="showcaseConsent" />
         <span>
@@ -186,6 +215,67 @@ function Form({
           />
         </span>
       </label>
+
+      <div className="support">
+        <label className="consent">
+          <input
+            type="checkbox"
+            name="affiliationSupport"
+            checked={supporting}
+            onChange={(e) => setSupporting(e.target.checked)}
+          />
+          <span>
+            <T
+              zh="我是 UNSW 在读学生，愿意登记支持 BuilderSpace 申请成为正式社团（选填）"
+              en="I'm a current UNSW student and I'd like to back BuilderSpace's application to become an official club (optional)"
+            />
+          </span>
+        </label>
+        {supporting && (
+          <>
+            <p className="mute support-note">
+              <T
+                zh="申请需要一份支持者名单。下面两项只会提交给 Arc 用于这次申请，不公开，也不用于其他用途；想撤回随时告诉管理员。"
+                en="The application needs a list of supporters. These two fields go only to Arc for this application. They are never public or used for anything else, and you can ask an admin to remove them at any time."
+              />
+            </p>
+            <div className="row2">
+              <TextField
+                name="fullName"
+                label={
+                  <T
+                    zh="全名（与学生证一致）"
+                    en="Full name (as on your student card)"
+                  />
+                }
+                error={err.fullName}
+                max={80}
+              />
+              <TextField
+                name="zid"
+                label={<span style={{ textTransform: "none" }}>zID</span>}
+                placeholder="z1234567"
+                error={err.zid}
+                max={8}
+              />
+            </div>
+            <label className="consent">
+              <input type="checkbox" name="affiliationConsent" />
+              <span>
+                <T
+                  zh="我同意把以上姓名和 zID 提交给 Arc，仅用于 BuilderSpace 的社团申请"
+                  en="I agree to my name and zID being passed to Arc, only for BuilderSpace's club application"
+                />
+              </span>
+            </label>
+            {err.affiliationConsent && (
+              <span className="form-status err">
+                <Msg s={err.affiliationConsent} />
+              </span>
+            )}
+          </>
+        )}
+      </div>
 
       {state.status === "error" && (
         <p className="form-status err" role="alert">
@@ -247,11 +337,13 @@ function ChoiceGroup({
   legend,
   options,
   error,
+  optional,
 }: {
   name: string;
   legend: ReactNode;
   options: [string, Bi][];
   error?: string;
+  optional?: boolean;
 }) {
   return (
     <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
@@ -261,7 +353,12 @@ function ChoiceGroup({
       <div className="filters">
         {options.map(([value, label]) => (
           <label key={value} className="chip">
-            <input type="radio" name={name} value={value} required />
+            <input
+              type="radio"
+              name={name}
+              value={value}
+              required={!optional}
+            />
             <T {...label} />
           </label>
         ))}

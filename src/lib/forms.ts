@@ -1,6 +1,8 @@
 import { z } from "zod";
 import {
+  AVAILABILITY,
   BLOCKERS,
+  EVENT_INTEREST,
   REFERRAL_SOURCES,
   ROLES,
   SKILLS,
@@ -43,10 +45,9 @@ export function channelFromSearch(search: string): string | null {
   return normalizeChannel(params.get("ref") ?? params.get("utm_source"));
 }
 
-// Only the fields ops need (PRD §4.3 隐私). No zID, no student card.
-// stalledProject + blockers + weeklyHours are the three W1 validation
-// questions from PRD §1.4.
-export const joinSchema = z.object({
+const ZID = /^z?\d{7}$/i;
+
+const joinFields = {
   nickname: text(40),
   schoolDegree: text(80),
   major: text(80),
@@ -62,7 +63,44 @@ export const joinSchema = z.object({
   }),
   channel: z.string().transform(normalizeChannel),
   showcaseConsent: z.boolean(),
-});
+  // Both optional: they size the next event, nobody has to answer.
+  eventInterest: z.enum(EVENT_INTEREST).nullable(),
+  availability: z.array(z.enum(AVAILABILITY)).max(AVAILABILITY.length),
+};
+
+/** Whatever was typed into a field the member did not opt in to is dropped. */
+const dropped = <T>(value: T) => z.unknown().transform(() => value);
+
+// Only the fields ops need (PRD §4.3 隐私). No student card; a name and zID
+// are kept only when the member opts in to back the club's application to
+// become an official club, and consents to passing them on for that purpose.
+// stalledProject + blockers + weeklyHours are the three W1 validation
+// questions from PRD §1.4.
+//
+// Two plain objects rather than one object with a cross-field refinement, so
+// a supporter's missing name shows up in the same pass as any other error.
+export const joinSchema = z.discriminatedUnion("affiliationSupport", [
+  z.object({
+    ...joinFields,
+    affiliationSupport: z.literal(false),
+    fullName: dropped(null),
+    zid: dropped(null),
+    affiliationConsent: dropped(false),
+  }),
+  z.object({
+    ...joinFields,
+    affiliationSupport: z.literal(true),
+    fullName: text(80),
+    zid: z
+      .string()
+      .trim()
+      .regex(ZID, "zID 是 z 加 7 位数字|A zID is z followed by 7 digits")
+      .transform((v) => `z${v.replace(/^z/i, "")}`),
+    affiliationConsent: z.literal(true, {
+      error: "勾选同意后才能登记|Tick the box to register your support",
+    }),
+  }),
+]);
 export type JoinInput = z.infer<typeof joinSchema>;
 
 export const projectSubmissionSchema = z.object({
@@ -100,6 +138,12 @@ export function parseJoinForm(form: FormData) {
     referralSource: form.get("referralSource") ?? undefined,
     channel: form.get("channel") ?? "",
     showcaseConsent: form.get("showcaseConsent") === "on",
+    eventInterest: form.get("eventInterest") ?? null,
+    availability: form.getAll("availability"),
+    affiliationSupport: form.get("affiliationSupport") === "on",
+    fullName: form.get("fullName") ?? "",
+    zid: form.get("zid") ?? "",
+    affiliationConsent: form.get("affiliationConsent") === "on",
   });
 }
 

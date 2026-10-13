@@ -33,8 +33,8 @@ export default function JoinPage() {
         />
         <p className="lede" style={{ marginBottom: 32 }}>
           <T
-            zh="零基础也行。我们不收 zID 或学生证，你的数据可随时要求删除。"
-            en="Beginners welcome. We never ask for your zID or student card, and your data is deleted on request."
+            zh="零基础也行。我们不收学生证；zID 只在你自愿登记支持社团申请时填写。你的数据可随时要求删除。"
+            en="Beginners welcome. We never ask for your student card, and your zID only if you opt in to back our club application. Your data is deleted on request."
           />
         </p>
         <JoinForm
