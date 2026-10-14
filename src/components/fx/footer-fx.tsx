@@ -47,6 +47,12 @@ const NEXT: Record<string, [string, string, string, string]> = {
     "活动 · 先来一场 Build Night",
     "Events · come to a Build Night first",
   ],
+  "/volunteer": [
+    "/people",
+    "The builders",
+    "回成员页 · 看看现在的团队",
+    "People · meet the current team",
+  ],
 };
 const BACK_TO_PLAZA: [string, string, string, string] = [
   "/projects",
@@ -66,12 +72,11 @@ export function FootNext() {
   const section = NAV_LINKS.map((l) => l.href)
     .filter((h) => h !== "/")
     .find((h) => pathname.startsWith(h));
+  // Pages outside the nav (/join, /volunteer) have their own entry.
   const [to, title, zh, en] =
-    pathname === "/"
-      ? NEXT["/"]
-      : section === "/projects" && pathname !== "/projects"
-        ? BACK_TO_PLAZA
-        : (NEXT[section ?? "/"] ?? NEXT["/"]);
+    NEXT[pathname] ??
+    (section === "/projects" ? BACK_TO_PLAZA : NEXT[section ?? "/"]) ??
+    NEXT["/"];
   const a = pageIndex(pathname);
   const b = pageIndex(to);
   const pad = (n: number) => String(n + 1).padStart(2, "0");
@@ -84,36 +89,54 @@ export function FootNext() {
     const trigger = band.current;
     const target = titleRef.current;
     if (!trigger || !target) return;
-    if (
-      prefersReducedMotion() ||
-      !hasFinePointer() ||
-      !matchMedia("(min-width: 761px)").matches
-    )
-      return;
-    let cancelled = false;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+    const desk = matchMedia("(min-width: 761px)");
+    let revision = 0,
+      timer = 0;
     let revert = () => {};
-    void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(
-      ([{ gsap }, { ScrollTrigger }]) => {
-        if (cancelled) return;
-        gsap.registerPlugin(ScrollTrigger);
-        const ctx = gsap.context(() => {
-          gsap.from(target, {
-            yPercent: 35,
-            opacity: 0.2,
-            ease: "none",
-            scrollTrigger: {
-              trigger,
-              start: "top bottom",
-              end: "top 55%",
-              scrub: 0.6,
-            },
+    let refresh = () => {};
+    const setup = () => {
+      const run = ++revision;
+      revert();
+      revert = refresh = () => {};
+      if (reduce.matches || !desk.matches || !hasFinePointer()) return;
+      void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(
+        ([{ gsap }, { ScrollTrigger }]) => {
+          if (run !== revision) return;
+          gsap.registerPlugin(ScrollTrigger);
+          const ctx = gsap.context(() => {
+            gsap.from(target, {
+              yPercent: 35,
+              opacity: 0.2,
+              ease: "none",
+              scrollTrigger: {
+                trigger,
+                start: "top bottom",
+                end: "top 55%",
+                scrub: 0.6,
+              },
+            });
           });
-        });
-        revert = () => ctx.revert();
-      },
-    );
+          revert = () => ctx.revert();
+          refresh = () => ScrollTrigger.refresh();
+        },
+      );
+    };
+    // Content streamed into the page moves the band; re-measure once it settles.
+    const ro = new ResizeObserver(() => {
+      clearTimeout(timer);
+      timer = window.setTimeout(() => refresh(), 120);
+    });
+    ro.observe(document.body);
+    reduce.addEventListener("change", setup);
+    desk.addEventListener("change", setup);
+    setup();
     return () => {
-      cancelled = true;
+      revision++;
+      clearTimeout(timer);
+      ro.disconnect();
+      reduce.removeEventListener("change", setup);
+      desk.removeEventListener("change", setup);
       revert();
     };
   }, [to]);

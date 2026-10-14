@@ -110,9 +110,10 @@ export function VolunteerForm() {
             name="positions"
             legend={<T {...dept.name} />}
             options={dept.positions.map((p) => [p, POSITION_LABEL[p]])}
+            invalid={Boolean(err.positions)}
           />
         ))}
-        <FieldError error={err.positions} />
+        <FieldError name="positions" error={err.positions} />
       </fieldset>
 
       <ChoiceGroup
@@ -148,6 +149,7 @@ export function VolunteerForm() {
         error={err.portfolioUrl}
         max={300}
         optional
+        url
       />
 
       <label className="consent">

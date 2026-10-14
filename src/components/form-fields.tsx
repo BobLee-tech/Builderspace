@@ -1,10 +1,13 @@
 import type { ReactNode } from "react";
 import { Msg, T, type Bi } from "./t";
 
-export function FieldError({ error }: { error?: string }) {
+/** The id a field's inputs point `aria-describedby` at for its error. */
+export const errorId = (name: string) => `${name}-error`;
+
+export function FieldError({ name, error }: { name: string; error?: string }) {
   if (!error) return null;
   return (
-    <span className="err">
+    <span className="err" id={errorId(name)}>
       <Msg s={error} />
     </span>
   );
@@ -18,6 +21,7 @@ export function TextField({
   max,
   optional,
   multiline,
+  url,
 }: {
   name: string;
   label: ReactNode;
@@ -27,19 +31,27 @@ export function TextField({
   optional?: boolean;
   /** A textarea instead of a single-line input. */
   multiline?: boolean;
+  /** A link: brings up the URL keyboard on phones. Kept `type="text"` so
+   * bare `github.com/…` still submits and is completed server-side. */
+  url?: boolean;
 }) {
   const props = {
     name,
     placeholder,
     maxLength: max,
     "aria-invalid": Boolean(error),
+    "aria-describedby": error ? errorId(name) : undefined,
     required: !optional,
   };
   return (
     <label className="field">
       <span className="mono">{label}</span>
-      {multiline ? <textarea {...props} /> : <input type="text" {...props} />}
-      <FieldError error={error} />
+      {multiline ? (
+        <textarea {...props} />
+      ) : (
+        <input type="text" inputMode={url ? "url" : undefined} {...props} />
+      )}
+      <FieldError name={name} error={error} />
     </label>
   );
 }
@@ -70,12 +82,13 @@ export function ChoiceGroup({
               name={name}
               value={value}
               required={!optional}
+              aria-describedby={error ? errorId(name) : undefined}
             />
             <T {...label} />
           </label>
         ))}
       </div>
-      <FieldError error={error} />
+      <FieldError name={name} error={error} />
     </fieldset>
   );
 }
@@ -85,11 +98,14 @@ export function CheckGroup({
   legend,
   options,
   error,
+  invalid = Boolean(error),
 }: {
   name: string;
   legend: ReactNode;
   options: [string, Bi][];
   error?: string;
+  /** Set when the error for `name` is shown outside this group. */
+  invalid?: boolean;
 }) {
   return (
     <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
@@ -99,12 +115,18 @@ export function CheckGroup({
       <div className="filters">
         {options.map(([value, label]) => (
           <label key={value} className="chip">
-            <input type="checkbox" name={name} value={value} />
+            <input
+              type="checkbox"
+              name={name}
+              value={value}
+              aria-invalid={invalid}
+              aria-describedby={invalid ? errorId(name) : undefined}
+            />
             <T {...label} />
           </label>
         ))}
       </div>
-      <FieldError error={error} />
+      <FieldError name={name} error={error} />
     </fieldset>
   );
 }

@@ -145,11 +145,11 @@ begin
 end;
 $$;
 
-create trigger projects_notify_ops after insert on projects
+create or replace trigger projects_notify_ops after insert on projects
   for each row execute function notify_ops_on_submit();
-create trigger project_updates_notify_ops after insert on project_updates
+create or replace trigger project_updates_notify_ops after insert on project_updates
   for each row execute function notify_ops_on_submit();
-create trigger volunteer_applications_notify_ops after insert on volunteer_applications
+create or replace trigger volunteer_applications_notify_ops after insert on volunteer_applications
   for each row execute function notify_ops_on_submit();
 
 -- Daily digest ------------------------------------------------------------
