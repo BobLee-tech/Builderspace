@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Arr, Hud } from "@/components/fx/arr";
+import { useCelebration } from "@/components/fx/celebrate";
 import { CheckGroup, ChoiceGroup, TextField } from "@/components/form-fields";
 import { SpamGuard } from "@/components/spam-guard";
 import { useRevealResult } from "@/components/use-reveal-result";
@@ -35,12 +36,16 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
 
   const [card, setCard] = useState<CardData | null>(null);
   const done = state.status === "ok";
+  // The orange puff comes from the member card as it flips.
+  const celebrate = useCelebration("join", done, () =>
+    document.querySelector(".join2 .mcard"),
+  );
 
   return (
     <div ref={reveal} className="join2">
       <MemberCard data={card} flipped={done} adminQr={adminQr} />
       {done ? (
-        <div className="form hud" role="status">
+        <div ref={celebrate} className="form hud" role="status">
           <Hud />
           <p className="mono mute">
             <T zh="提交成功" en="You're in" />

@@ -9,6 +9,7 @@ import {
   TextField,
 } from "@/components/form-fields";
 import { Arr, Hud } from "@/components/fx/arr";
+import { useCelebration } from "@/components/fx/celebrate";
 import { SpamGuard } from "@/components/spam-guard";
 import { useRevealResult } from "@/components/use-reveal-result";
 import { Msg, T } from "@/components/t";
@@ -28,10 +29,18 @@ export function VolunteerForm() {
     { status: "idle" },
   );
   const reveal = useRevealResult(state);
+  const celebrate = useCelebration("join", state.status === "ok");
 
   if (state.status === "ok") {
     return (
-      <div ref={reveal} className="form hud" role="status">
+      <div
+        ref={(node) => {
+          reveal(node);
+          celebrate(node);
+        }}
+        className="form hud"
+        role="status"
+      >
         <Hud />
         <p className="mono mute">
           <T zh="已提交" en="Submitted" />
