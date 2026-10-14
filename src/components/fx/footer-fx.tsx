@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 import { scrollToTop } from "@/lib/smooth-scroll";
 import { NAV_LINKS, isActive } from "../nav-links";
 import { T } from "../t";
-import { prefersReducedMotion, rafThrottle } from "./motion";
+import { hasFinePointer, prefersReducedMotion, rafThrottle } from "./motion";
 
 // Every page hands you on to the next one.
 const NEXT: Record<string, [string, string, string, string]> = {
@@ -75,9 +75,52 @@ export function FootNext() {
   const a = pageIndex(pathname);
   const b = pageIndex(to);
   const pad = (n: number) => String(n + 1).padStart(2, "0");
+  const band = useRef<HTMLAnchorElement>(null);
+  const titleRef = useRef<HTMLSpanElement>(null);
+
+  // Lift the title in as the band scrolls up. Runs only after this boundary
+  // has hydrated, so the inline styles GSAP writes never reach hydration.
+  useEffect(() => {
+    const trigger = band.current;
+    const target = titleRef.current;
+    if (!trigger || !target) return;
+    if (
+      prefersReducedMotion() ||
+      !hasFinePointer() ||
+      !matchMedia("(min-width: 761px)").matches
+    )
+      return;
+    let cancelled = false;
+    let revert = () => {};
+    void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(
+      ([{ gsap }, { ScrollTrigger }]) => {
+        if (cancelled) return;
+        gsap.registerPlugin(ScrollTrigger);
+        const ctx = gsap.context(() => {
+          gsap.from(target, {
+            yPercent: 35,
+            opacity: 0.2,
+            ease: "none",
+            scrollTrigger: {
+              trigger,
+              start: "top bottom",
+              end: "top 55%",
+              scrub: 0.6,
+            },
+          });
+        });
+        revert = () => ctx.revert();
+      },
+    );
+    return () => {
+      cancelled = true;
+      revert();
+    };
+  }, [to]);
 
   return (
     <Link
+      ref={band}
       href={to}
       className="foot-next"
       onPointerEnter={(e) => {
@@ -96,7 +139,7 @@ export function FootNext() {
           <span>{a >= 0 ? `${pad(a)} → ${pad(b)}` : `→ ${pad(b)}`}</span>
         </div>
         <div className="fn-row">
-          <span className="fn-title">
+          <span className="fn-title" ref={titleRef}>
             <span className="fn-roll">
               <span>{title}</span>
               <span aria-hidden>{title}</span>

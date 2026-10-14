@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { ChoiceGroup, TextField } from "@/components/form-fields";
+import {
+  CheckGroup,
+  ChoiceGroup,
+  FieldError,
+  TextField,
+} from "@/components/form-fields";
 import { Arr, Hud } from "@/components/fx/arr";
 import { SpamGuard } from "@/components/spam-guard";
+import { useRevealResult } from "@/components/use-reveal-result";
 import { Msg, T } from "@/components/t";
 import { channelFromSearch, type FormState } from "@/lib/forms";
 import { submitWithoutReset } from "@/lib/submit-without-reset";
@@ -21,10 +27,11 @@ export function VolunteerForm() {
     submitVolunteer,
     { status: "idle" },
   );
+  const reveal = useRevealResult(state);
 
   if (state.status === "ok") {
     return (
-      <div className="form hud" role="status">
+      <div ref={reveal} className="form hud" role="status">
         <Hud />
         <p className="mono mute">
           <T zh="已提交" en="Submitted" />
@@ -56,6 +63,7 @@ export function VolunteerForm() {
 
   return (
     <form
+      ref={reveal}
       onSubmit={submitWithoutReset((data) => {
         // Channel tag from the link this visitor came in on (?ref= / utm_source).
         data.set("channel", channelFromSearch(window.location.search) ?? "");
@@ -97,25 +105,14 @@ export function VolunteerForm() {
           />
         </legend>
         {DEPARTMENTS.map((dept) => (
-          <div key={dept.positions[0]} style={{ marginBottom: 12 }}>
-            <p className="mono mute" style={{ marginBottom: 6 }}>
-              <T {...dept.name} />
-            </p>
-            <div className="filters">
-              {dept.positions.map((position) => (
-                <label key={position} className="chip">
-                  <input type="checkbox" name="positions" value={position} />
-                  <T {...POSITION_LABEL[position]} />
-                </label>
-              ))}
-            </div>
-          </div>
+          <CheckGroup
+            key={dept.positions[0]}
+            name="positions"
+            legend={<T {...dept.name} />}
+            options={dept.positions.map((p) => [p, POSITION_LABEL[p]])}
+          />
         ))}
-        {err.positions && (
-          <span className="err">
-            <Msg s={err.positions} />
-          </span>
-        )}
+        <FieldError error={err.positions} />
       </fieldset>
 
       <ChoiceGroup
@@ -125,47 +122,33 @@ export function VolunteerForm() {
         error={err.weeklyHours}
       />
 
-      <label className="field">
-        <span className="mono">
+      <TextField
+        name="about"
+        label={
           <T
             zh="为什么想加入，做过哪些相关的事"
             en="Why you want in, and what you've done that's related"
           />
-        </span>
-        <textarea
-          name="about"
-          maxLength={500}
-          aria-invalid={Boolean(err.about)}
-          required
-          placeholder="办过两场校内活动 / Ran two campus events"
-        />
-        {err.about && (
-          <span className="err">
-            <Msg s={err.about} />
-          </span>
-        )}
-      </label>
+        }
+        placeholder="办过两场校内活动 / Ran two campus events"
+        error={err.about}
+        max={500}
+        multiline
+      />
 
-      <label className="field">
-        <span className="mono">
+      <TextField
+        name="portfolioUrl"
+        label={
           <T
             zh="作品或主页链接（选填）"
             en="Portfolio or profile link (optional)"
           />
-        </span>
-        <input
-          type="text"
-          name="portfolioUrl"
-          maxLength={300}
-          placeholder="https://github.com/…"
-          aria-invalid={Boolean(err.portfolioUrl)}
-        />
-        {err.portfolioUrl && (
-          <span className="err">
-            <Msg s={err.portfolioUrl} />
-          </span>
-        )}
-      </label>
+        }
+        placeholder="github.com/…"
+        error={err.portfolioUrl}
+        max={300}
+        optional
+      />
 
       <label className="consent">
         <input type="checkbox" name="dataConsent" />

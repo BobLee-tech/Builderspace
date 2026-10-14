@@ -1,11 +1,7 @@
 "use server";
 
-import {
-  fieldErrors,
-  parseProjectForm,
-  projectSlug,
-  type FormState,
-} from "@/lib/forms";
+import { parseProjectForm, projectSlug, type FormState } from "@/lib/forms";
+import { invalidForm, submitFailed, withoutDatabase } from "@/lib/form-actions";
 import { looksAutomated } from "@/lib/spam";
 import { getSupabase } from "@/lib/supabase/client";
 
@@ -16,24 +12,16 @@ export async function submitProject(
   if (looksAutomated(form)) return { status: "ok" };
 
   const parsed = parseProjectForm(form);
-  if (!parsed.success) {
-    return {
-      status: "error",
-      message: "有几项还没填好|A few fields need attention",
-      fieldErrors: fieldErrors(parsed.error),
-    };
-  }
+  if (!parsed.success) return invalidForm(parsed.error);
 
   const db = getSupabase();
   if (!db) {
-    if (process.env.NODE_ENV === "production") {
-      return {
-        status: "error",
-        message: "投稿暂未开放，请稍后再试|Submissions aren't open yet",
-      };
-    }
-    console.info("[project] Supabase not configured, dropped:", parsed.data);
-    return { status: "ok" };
+    return withoutDatabase(
+      "project",
+      "投稿暂未开放，请稍后再试|Submissions aren't open yet",
+      parsed.data,
+      { status: "ok" },
+    );
   }
 
   const v = parsed.data;
@@ -51,12 +39,6 @@ export async function submitProject(
     demo_url: v.demoUrl,
     review_status: "pending",
   });
-  if (error) {
-    console.error("[project] insert failed", error);
-    return {
-      status: "error",
-      message: "提交失败，请稍后再试|Couldn't submit, please try again",
-    };
-  }
+  if (error) return submitFailed("project", error);
   return { status: "ok" };
 }

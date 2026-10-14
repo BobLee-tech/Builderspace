@@ -5,6 +5,7 @@ import { useActionState, useState } from "react";
 import { Arr, Hud } from "@/components/fx/arr";
 import { CheckGroup, ChoiceGroup, TextField } from "@/components/form-fields";
 import { SpamGuard } from "@/components/spam-guard";
+import { useRevealResult } from "@/components/use-reveal-result";
 import { Msg, T } from "@/components/t";
 import { channelFromSearch, type FormState } from "@/lib/forms";
 import { submitWithoutReset } from "@/lib/submit-without-reset";
@@ -30,12 +31,13 @@ export function JoinForm({ adminQr }: { adminQr: string | null }) {
     submitJoin,
     { status: "idle" },
   );
+  const reveal = useRevealResult(state);
 
   const [card, setCard] = useState<CardData | null>(null);
   const done = state.status === "ok";
 
   return (
-    <div className="join2">
+    <div ref={reveal} className="join2">
       <MemberCard data={card} flipped={done} adminQr={adminQr} />
       {done ? (
         <div className="form hud" role="status">

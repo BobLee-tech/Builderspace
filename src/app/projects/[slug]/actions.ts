@@ -1,10 +1,7 @@
 "use server";
 
-import {
-  fieldErrors,
-  parseProjectUpdateForm,
-  type FormState,
-} from "@/lib/forms";
+import { parseProjectUpdateForm, type FormState } from "@/lib/forms";
+import { invalidForm, submitFailed, withoutDatabase } from "@/lib/form-actions";
 import { looksAutomated } from "@/lib/spam";
 import { getSupabase } from "@/lib/supabase/client";
 
@@ -15,24 +12,16 @@ export async function submitProjectUpdate(
   if (looksAutomated(form)) return { status: "ok" };
 
   const parsed = parseProjectUpdateForm(form);
-  if (!parsed.success) {
-    return {
-      status: "error",
-      message: "有几项还没填好|A few fields need attention",
-      fieldErrors: fieldErrors(parsed.error),
-    };
-  }
+  if (!parsed.success) return invalidForm(parsed.error);
 
   const db = getSupabase();
   if (!db) {
-    if (process.env.NODE_ENV === "production") {
-      return {
-        status: "error",
-        message: "暂时无法提交，请稍后再试|Can't submit right now",
-      };
-    }
-    console.info("[update] Supabase not configured, dropped:", parsed.data);
-    return { status: "ok" };
+    return withoutDatabase(
+      "update",
+      "暂时无法提交，请稍后再试|Can't submit right now",
+      parsed.data,
+      { status: "ok" },
+    );
   }
 
   const v = parsed.data;
@@ -42,13 +31,7 @@ export async function submitProjectUpdate(
     .select("id")
     .eq("slug", v.slug)
     .maybeSingle();
-  if (lookupError) {
-    console.error("[update] project lookup failed", lookupError);
-    return {
-      status: "error",
-      message: "提交失败，请稍后再试|Couldn't submit, please try again",
-    };
-  }
+  if (lookupError) return submitFailed("update", lookupError);
   if (!project)
     return { status: "error", message: "找不到这个项目|Project not found" };
 
@@ -62,12 +45,6 @@ export async function submitProjectUpdate(
     submitted_by: v.submittedBy,
     review_status: "pending",
   });
-  if (error) {
-    console.error("[update] insert failed", error);
-    return {
-      status: "error",
-      message: "提交失败，请稍后再试|Couldn't submit, please try again",
-    };
-  }
+  if (error) return submitFailed("update", error);
   return { status: "ok" };
 }

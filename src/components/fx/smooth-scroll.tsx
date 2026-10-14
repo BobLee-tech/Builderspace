@@ -31,6 +31,9 @@ export function SmoothScroll() {
       const lenis: Lenis = new Lenis({
         lerp: 0.1,
         anchors: { offset: -80 },
+        // Otherwise a scroll still easing out when a link is clicked carries
+        // on into the next page and drags it down past the top.
+        stopInertiaOnNavigate: true,
         autoRaf: false,
       });
       const clear = setSmoothScroller(lenis);

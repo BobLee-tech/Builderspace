@@ -1,6 +1,7 @@
 "use server";
 
-import { fieldErrors, parseVolunteerForm, type FormState } from "@/lib/forms";
+import { parseVolunteerForm, type FormState } from "@/lib/forms";
+import { invalidForm, submitFailed, withoutDatabase } from "@/lib/form-actions";
 import { looksAutomated } from "@/lib/spam";
 import { getSupabase } from "@/lib/supabase/client";
 
@@ -14,29 +15,18 @@ export async function submitVolunteer(
   }
 
   const parsed = parseVolunteerForm(form);
-  if (!parsed.success) {
-    return {
-      status: "error",
-      message: "有几项还没填好|A few fields need attention",
-      fieldErrors: fieldErrors(parsed.error),
-    };
-  }
+  if (!parsed.success) return invalidForm(parsed.error);
 
   const db = getSupabase();
   if (!db) {
-    if (process.env.NODE_ENV === "production") {
-      return {
-        status: "error",
-        message: "申请暂未开放，请稍后再试|Applications aren't open yet",
-      };
-    }
     // Never log the contact details, even in development.
     const { contact, ...loggable } = parsed.data;
-    console.info("[volunteer] Supabase not configured, dropped:", {
-      ...loggable,
-      contact: contact && "[redacted]",
-    });
-    return { status: "ok", nickname: parsed.data.nickname };
+    return withoutDatabase(
+      "volunteer",
+      "申请暂未开放，请稍后再试|Applications aren't open yet",
+      { ...loggable, contact: contact && "[redacted]" },
+      { status: "ok", nickname: parsed.data.nickname },
+    );
   }
 
   const v = parsed.data;
@@ -53,12 +43,6 @@ export async function submitVolunteer(
     channel: v.channel,
     data_consent: v.dataConsent,
   });
-  if (error) {
-    console.error("[volunteer] insert failed", error);
-    return {
-      status: "error",
-      message: "提交失败，请稍后再试|Couldn't submit, please try again",
-    };
-  }
+  if (error) return submitFailed("volunteer", error);
   return { status: "ok", nickname: v.nickname };
 }

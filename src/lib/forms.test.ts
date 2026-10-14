@@ -7,6 +7,7 @@ import {
   parseVolunteerForm,
   projectSlug,
 } from "./forms";
+import { POSITION_LABEL, VOLUNTEER_POSITIONS } from "./types";
 
 function form(entries: [string, string][]): FormData {
   const data = new FormData();
@@ -268,6 +269,27 @@ describe("parseVolunteerForm", () => {
     );
   });
 
+  it("adds https:// to a link typed without it", () => {
+    const rest = base.filter(([k]) => k !== "portfolioUrl");
+    const cases: [string, string][] = [
+      ["github.com/yuki", "https://github.com/yuki"],
+      ["www.yuki.dev", "https://www.yuki.dev"],
+      ["//yuki.dev/a", "https://yuki.dev/a"],
+      ["http://yuki.dev", "http://yuki.dev"],
+      ["HTTPS://yuki.dev", "https://yuki.dev"],
+    ];
+    for (const [typed, stored] of cases) {
+      const result = parseVolunteerForm(
+        form([...rest, ["portfolioUrl", typed]]),
+      );
+      expect(result.data?.portfolioUrl).toBe(stored);
+    }
+    for (const bad of ["hello", "mailto:a@b.co", "ftp://yuki.dev"]) {
+      const result = parseVolunteerForm(form([...rest, ["portfolioUrl", bad]]));
+      expect(result.success).toBe(false);
+    }
+  });
+
   it("keeps an http(s) portfolio link and rejects anything else", () => {
     const rest = base.filter(([k]) => k !== "portfolioUrl");
     const ok = parseVolunteerForm(
@@ -279,6 +301,19 @@ describe("parseVolunteerForm", () => {
       form([...rest, ["portfolioUrl", "javascript:alert(1)"]]),
     );
     expect(bad.success).toBe(false);
+
+    // The column is capped at 300 characters; catch it here, not at insert.
+    const long = parseVolunteerForm(
+      form([...rest, ["portfolioUrl", `https://x.dev/${"a".repeat(290)}`]]),
+    );
+    expect(long.error!.issues.map((i) => i.path[0])).toContain("portfolioUrl");
+  });
+
+  it("offers every position on the form", () => {
+    expect(new Set(VOLUNTEER_POSITIONS).size).toBe(11);
+    expect(Object.keys(POSITION_LABEL).sort()).toEqual(
+      [...VOLUNTEER_POSITIONS].sort(),
+    );
   });
 
   it("keeps a clean channel tag and drops a malformed one", () => {

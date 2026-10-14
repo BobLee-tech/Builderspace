@@ -48,20 +48,31 @@ export const REFERRAL_SOURCES = [
 ] as const;
 
 // The eleven core-team positions, grouped into three departments. The keys are
-// stored in volunteer_applications.positions and checked by the database.
-export const VOLUNTEER_POSITIONS = [
-  "events",
-  "content",
-  "design_media",
-  "partnerships",
-  "recruiting",
-  "product",
-  "web_tools",
-  "teaching",
-  "tech_explore",
-  "secretary",
-  "finance",
-] as const;
+// stored in volunteer_applications.positions and checked by the database, so
+// keep the list there in step. Positions are listed only here so every one of
+// them shows up on the form.
+export const DEPARTMENTS = [
+  {
+    name: { zh: "市场运营部", en: "Marketing & Operations" },
+    positions: [
+      "events",
+      "content",
+      "design_media",
+      "partnerships",
+      "recruiting",
+    ],
+  },
+  {
+    name: { zh: "产品技术部", en: "Product & Technology" },
+    positions: ["product", "web_tools", "teaching", "tech_explore"],
+  },
+  {
+    name: { zh: "行政财务部", en: "Admin & Finance" },
+    positions: ["secretary", "finance"],
+  },
+] as const satisfies readonly { name: Bi; positions: readonly string[] }[];
+
+export const VOLUNTEER_POSITIONS = DEPARTMENTS.flatMap((d) => d.positions);
 export type VolunteerPosition = (typeof VOLUNTEER_POSITIONS)[number];
 
 export const EVENT_INTEREST = ["yes", "maybe", "no"] as const;
@@ -216,27 +227,3 @@ export const POSITION_LABEL: Record<VolunteerPosition, Bi> = {
   secretary: { zh: "秘书与行政", en: "Secretary & admin" },
   finance: { zh: "财务", en: "Finance" },
 };
-
-export const DEPARTMENTS: {
-  name: Bi;
-  positions: readonly VolunteerPosition[];
-}[] = [
-  {
-    name: { zh: "市场运营部", en: "Marketing & Operations" },
-    positions: [
-      "events",
-      "content",
-      "design_media",
-      "partnerships",
-      "recruiting",
-    ],
-  },
-  {
-    name: { zh: "产品技术部", en: "Product & Technology" },
-    positions: ["product", "web_tools", "teaching", "tech_explore"],
-  },
-  {
-    name: { zh: "行政财务部", en: "Admin & Finance" },
-    positions: ["secretary", "finance"],
-  },
-];

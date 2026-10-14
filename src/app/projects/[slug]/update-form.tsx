@@ -3,6 +3,7 @@
 import { Arr } from "@/components/fx/arr";
 import { useActionState } from "react";
 import { SpamGuard } from "@/components/spam-guard";
+import { useRevealResult } from "@/components/use-reveal-result";
 import { Msg, T } from "@/components/t";
 import type { FormState } from "@/lib/forms";
 import { submitWithoutReset } from "@/lib/submit-without-reset";
@@ -14,10 +15,11 @@ export function UpdateForm({ slug }: { slug: string }) {
     submitProjectUpdate,
     { status: "idle" },
   );
+  const reveal = useRevealResult(state);
 
   if (state.status === "ok") {
     return (
-      <div className="form box update-form" role="status">
+      <div ref={reveal} className="form box update-form" role="status">
         <p className="mono mute">
           <T zh="已提交" en="Submitted" />
         </p>
@@ -34,7 +36,7 @@ export function UpdateForm({ slug }: { slug: string }) {
   const err = state.status === "error" ? (state.fieldErrors ?? {}) : {};
 
   return (
-    <details className="box update-form">
+    <details ref={reveal} className="box update-form">
       <summary className="mono">
         <T zh="提交进展 →" en="Post an update →" />
       </summary>
@@ -94,7 +96,8 @@ export function UpdateForm({ slug }: { slug: string }) {
               <T zh="链接（可选）" en="Link (optional)" />
             </span>
             <input
-              type="url"
+              type="text"
+              inputMode="url"
               name="url"
               placeholder="Commit / Demo / post URL"
               aria-invalid={Boolean(err.url)}

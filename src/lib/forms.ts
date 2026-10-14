@@ -19,15 +19,32 @@ const optionalText = (max: number) =>
     .trim()
     .max(max)
     .transform((v) => v || null);
+// Matches the longest URL column in the database (volunteer portfolio_url).
+const URL_MAX = 300;
+// `github.com/me` and `www.x.dev` are links too: anything without a scheme
+// gets https://. A `host:port` start (digits after the colon) is not a scheme,
+// while `javascript:` / `mailto:` keep theirs and are then rejected.
+const SCHEME = /^[a-z][a-z0-9+.-]*:(?!\d)/i;
+export function withScheme(link: string) {
+  if (!link) return link;
+  // The database checks for a lower-case `http(s)://`.
+  if (SCHEME.test(link))
+    return link.replace(/^https?:/i, (m) => m.toLowerCase());
+  return `https://${link.replace(/^\/+/, "")}`;
+}
 const optionalUrl = z
   .string()
   .trim()
+  .transform(withScheme)
+  .pipe(z.string().max(URL_MAX, "链接太长了|That link is too long"))
   .transform((v) => v || null)
   .pipe(
     z
       .url({
         protocol: /^https?$/,
-        error: "请填写 http(s) 链接|Use an http(s) link",
+        // A real host has a dot in it (rules out `https://hello`).
+        hostname: /^[^.]+(\.[^.]+)+$/,
+        error: "请填写有效的链接|Enter a valid link",
       })
       .nullable(),
   );
