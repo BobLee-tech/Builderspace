@@ -1,6 +1,7 @@
 "use client";
 
 import { Arr } from "@/components/fx/arr";
+import { useCelebration } from "@/components/fx/celebrate";
 import Link from "next/link";
 import { useActionState } from "react";
 import { SpamGuard } from "@/components/spam-guard";
@@ -36,10 +37,32 @@ export function ProjectForm() {
     { status: "idle" },
   );
   const reveal = useRevealResult(state);
+  const celebrate = useCelebration("project", state.status === "ok");
 
   if (state.status === "ok") {
     return (
-      <div ref={reveal} className="form" role="status">
+      <div
+        ref={(node) => {
+          reveal(node);
+          celebrate(node);
+        }}
+        className="form"
+        role="status"
+      >
+        <div className="ship-head" aria-hidden>
+          <svg
+            data-celebrate="check"
+            className="ship-check"
+            viewBox="0 0 64 64"
+            fill="none"
+          >
+            <circle cx="32" cy="32" r="30" />
+            <path d="M20 33 l8 8 l16 -18" />
+          </svg>
+          <span data-celebrate="stamp" className="ship-stamp">
+            SHIPPED · 待审核
+          </span>
+        </div>
         <p className="mono mute">
           <T zh="已提交" en="Submitted" />
         </p>

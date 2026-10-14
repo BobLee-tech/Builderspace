@@ -3668,6 +3668,43 @@ html.lenis body {
 .scroll-char {
   display: inline-block;
 }
+/* Submit celebration (components/fx/celebrate.ts) ------------------------- */
+.celebrate-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+.ship-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.ship-check {
+  width: 48px;
+  height: 48px;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ship-check circle {
+  stroke: rgba(255, 255, 255, 0.2);
+}
+.ship-check path {
+  stroke: var(--paper);
+  stroke-dasharray: 40;
+}
+.ship-stamp {
+  font: 800 12px/1 var(--f-display);
+  letter-spacing: 0.12em;
+  padding: 9px 12px;
+  border: 2px solid var(--paper);
+  border-radius: 8px;
+  transform: rotate(-6deg);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scroll-char {
     transform: none !important;
