@@ -147,7 +147,7 @@ export function CoverField({
       {value && (
         <div
           ref={frame}
-          className="dz-frame pan"
+          className="upz-frame pan"
           onPointerDown={(e) => {
             e.currentTarget.setPointerCapture(e.pointerId);
             drag.current = { x: e.clientX, y: e.clientY, f: value.focus };
@@ -174,8 +174,8 @@ export function CoverField({
             draggable={false}
             style={{ objectPosition: `${value.focus[0]}% ${value.focus[1]}%` }}
           />
-          <i className="dz-thirds" aria-hidden />
-          <span className="tag dz-hint">
+          <i className="upz-thirds" aria-hidden />
+          <span className="tag upz-hint">
             <T zh="拖动调整取景" en="Drag to reframe" />
           </span>
           <Progress upload={value} />
@@ -266,7 +266,7 @@ export function VideoField({
     >
       {value && (
         <>
-          <div className="dz-frame">
+          <div className="upz-frame">
             <video
               ref={player}
               src={`${value.url}#t=0.1`}
@@ -277,7 +277,7 @@ export function VideoField({
               onPlay={() => setPaused(false)}
               onPause={() => setPaused(true)}
             />
-            <div className="dz-vctl">
+            <div className="upz-vctl">
               <button
                 type="button"
                 onClick={() => {
@@ -302,8 +302,8 @@ export function VideoField({
             <Progress upload={value} />
           </div>
           {value.frameUrls.length > 0 && (
-            <div className="dz-strip">
-              <div className="dz-strip-h">
+            <div className="upz-strip">
+              <div className="upz-strip-h">
                 <span className="mono mute">
                   <T zh="选一帧做视频封面" en="Pick a poster frame" />
                 </span>
@@ -311,7 +311,7 @@ export function VideoField({
                   {formatDuration(frameTime(value.seconds, value.pick))}
                 </span>
               </div>
-              <div className="dz-thumbs">
+              <div className="upz-thumbs">
                 {value.frameUrls.map((src, i) => (
                   <button
                     key={src}
@@ -377,13 +377,13 @@ function Drop({
       );
   }, [error]);
 
-  const cls = ["dz", over && "over", upload && "filled", error && "error"]
+  const cls = ["upz", over && "over", upload && "filled", error && "error"]
     .filter(Boolean)
     .join(" ");
 
   return (
     <div className="field">
-      <span className="dz-label">
+      <span className="upz-label">
         <span className="mono">{label}</span>
         <span className="mono mute">{aside}</span>
       </span>
@@ -426,18 +426,18 @@ function Drop({
         <i className="c bl" aria-hidden />
         <i className="c br" aria-hidden />
         {upload ? (
-          <div className="dz-file">
+          <div className="upz-file">
             {children}
-            <div className="dz-bar">
+            <div className="upz-bar">
               <svg
-                className={upload.status === "done" ? "dz-ok on" : "dz-ok"}
+                className={upload.status === "done" ? "upz-ok on" : "upz-ok"}
                 viewBox="0 0 22 22"
                 aria-hidden
               >
                 <circle cx="11" cy="11" r="11" />
                 <path d="M6.5 11.5l3 3 6-6.5" />
               </svg>
-              <span className="dz-meta">
+              <span className="upz-meta">
                 <b>{upload.file.name}</b>
                 <span>
                   {formatBytes(upload.file.size)} ·{" "}
@@ -460,16 +460,16 @@ function Drop({
               </span>
               <button
                 type="button"
-                className="dz-lnk"
+                className="upz-lnk"
                 onClick={() => input.current?.click()}
               >
                 <T zh="替换" en="Replace" />
               </button>
-              <button type="button" className="dz-lnk" onClick={onRemove}>
+              <button type="button" className="upz-lnk" onClick={onRemove}>
                 <T zh="移除" en="Remove" />
               </button>
               <i
-                className="dz-line"
+                className="upz-line"
                 style={{
                   transform: `scaleX(${upload.status === "uploading" ? upload.progress : 0})`,
                 }}
@@ -480,14 +480,14 @@ function Drop({
         ) : (
           <button
             type="button"
-            className="dz-empty"
+            className="upz-empty"
             onClick={() => input.current?.click()}
           >
-            <span className="dz-ico" aria-hidden>
+            <span className="upz-ico" aria-hidden>
               {icon}
             </span>
-            <span className="dz-t">{title}</span>
-            <span className="dz-rules mono mute">
+            <span className="upz-t">{title}</span>
+            <span className="upz-rules mono mute">
               {rules.map((r, i) => (
                 <span key={i}>{r}</span>
               ))}
@@ -508,8 +508,8 @@ function Drop({
 function Progress({ upload }: { upload: Upload }) {
   const done = upload.status === "done";
   return (
-    <div className={done ? "dz-up gone" : "dz-up"} aria-hidden={done}>
-      <div className="dz-ring">
+    <div className={done ? "upz-up gone" : "upz-up"} aria-hidden={done}>
+      <div className="upz-ring">
         <svg viewBox="0 0 76 76">
           <circle className="bg" cx="38" cy="38" r="34" />
           <circle
