@@ -1,5 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { COVER_BUCKET, VIDEO_BUCKET } from "./media";
 import { getSupabase } from "./supabase/client";
 import {
   samplePicks,
@@ -7,12 +9,13 @@ import {
   sampleEvents,
   sampleTutorials,
 } from "./sample-data";
-import type {
-  Project,
-  ProjectUpdate,
-  SiteEvent,
-  Tutorial,
-  WeeklyPick,
+import {
+  NO_MEDIA,
+  type Project,
+  type ProjectUpdate,
+  type SiteEvent,
+  type Tutorial,
+  type WeeklyPick,
 } from "./types";
 
 // Every read is cached for a few minutes; ops edits in Supabase show up on the
@@ -66,7 +69,8 @@ export async function getEventSchedule(): Promise<{
 }
 
 const PROJECT_COLUMNS =
-  "slug,name,problem,target_user,status,needed_roles,next_step,contact,owner_name,repo_url,demo_url,updated_at";
+  "slug,name,problem,target_user,status,needed_roles,next_step,contact,owner_name,repo_url,demo_url,updated_at," +
+  "cover_path,cover_focus_x,cover_focus_y,video_path,video_poster_path,video_seconds";
 
 type ProjectRow = {
   slug: string;
@@ -81,7 +85,73 @@ type ProjectRow = {
   repo_url: string | null;
   demo_url: string | null;
   updated_at: string;
+  cover_path: string | null;
+  cover_focus_x: number;
+  cover_focus_y: number;
+  video_path: string | null;
+  video_poster_path: string | null;
+  video_seconds: number | null;
 };
+
+// Media buckets are private; storage RLS only signs files of approved
+// projects. A day outlives every cached render that embeds the URLs.
+const SIGNED_URL_SECONDS = 60 * 60 * 24;
+
+async function signAll(
+  db: SupabaseClient,
+  bucket: string,
+  paths: (string | null)[],
+): Promise<Map<string, string>> {
+  const wanted = [...new Set(paths.filter((p): p is string => Boolean(p)))];
+  if (wanted.length === 0) return new Map();
+  const { data, error } = await db.storage
+    .from(bucket)
+    .createSignedUrls(wanted, SIGNED_URL_SECONDS);
+  // A missing file shouldn't take the plaza down; the card falls back to the
+  // generated cover.
+  if (error) {
+    console.error(`[media] signing ${bucket} failed`, error.message);
+    return new Map();
+  }
+  return new Map(
+    data.flatMap((d) =>
+      d.path && d.signedUrl && !d.error ? [[d.path, d.signedUrl]] : [],
+    ),
+  );
+}
+
+async function toProjects(
+  db: SupabaseClient,
+  rows: ProjectRow[],
+): Promise<Project[]> {
+  const [covers, videos] = await Promise.all([
+    signAll(
+      db,
+      COVER_BUCKET,
+      rows.flatMap((r) => [r.cover_path, r.video_poster_path]),
+    ),
+    signAll(
+      db,
+      VIDEO_BUCKET,
+      rows.map((r) => r.video_path),
+    ),
+  ]);
+  const url = (map: Map<string, string>, path: string | null) =>
+    (path && map.get(path)) ?? null;
+  return rows.map((r) => {
+    const videoUrl = url(videos, r.video_path);
+    return {
+      ...toProject(r),
+      media: {
+        coverUrl: url(covers, r.cover_path),
+        coverFocus: [r.cover_focus_x, r.cover_focus_y],
+        videoUrl,
+        videoPosterUrl: url(covers, r.video_poster_path),
+        videoSeconds: videoUrl ? r.video_seconds : null,
+      },
+    };
+  });
+}
 
 function toProject(p: ProjectRow): Project {
   return {
@@ -97,6 +167,7 @@ function toProject(p: ProjectRow): Project {
     repoUrl: p.repo_url,
     demoUrl: p.demo_url,
     updatedAt: p.updated_at,
+    media: NO_MEDIA,
   };
 }
 
@@ -113,7 +184,7 @@ export async function getProjects(): Promise<Project[]> {
     .select(PROJECT_COLUMNS)
     .order("updated_at", { ascending: false });
   if (error) throw error;
-  return (data as ProjectRow[]).map(toProject);
+  return toProjects(db, data as unknown as ProjectRow[]);
 }
 
 export async function getProject(slug: string): Promise<{
@@ -142,7 +213,7 @@ export async function getProject(slug: string): Promise<{
   if (error) throw error;
   if (!data) return null;
 
-  const row = data as ProjectRow & {
+  const row = data as unknown as ProjectRow & {
     project_updates: {
       kind: ProjectUpdate["kind"];
       body: string;
@@ -150,8 +221,9 @@ export async function getProject(slug: string): Promise<{
       occurred_at: string;
     }[];
   };
+  const [project] = await toProjects(db, [row]);
   return {
-    project: toProject(row),
+    project,
     updates: row.project_updates.map((u) => ({
       kind: u.kind,
       body: u.body,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MEDIA_PATH, VIDEO_MAX_SECONDS } from "./media";
 import {
   AVAILABILITY,
   BLOCKERS,
@@ -147,6 +148,45 @@ export const volunteerSchema = z.object({
 });
 export type VolunteerInput = z.infer<typeof volunteerSchema>;
 
+// Paths of files the browser already uploaded; empty means none.
+const mediaPath = (pattern: RegExp) =>
+  z
+    .string()
+    .trim()
+    .transform((v) => v || null)
+    .pipe(
+      z.string().regex(pattern, "上传的文件无效|Invalid upload").nullable(),
+    );
+const focus = z.coerce.number().int().min(0).max(100).catch(50);
+
+const projectMediaSchema = z
+  .object({
+    coverPath: mediaPath(MEDIA_PATH.cover),
+    coverFocusX: focus,
+    coverFocusY: focus,
+    videoPath: mediaPath(MEDIA_PATH.video),
+    videoPosterPath: mediaPath(MEDIA_PATH.poster),
+    videoSeconds: z.coerce
+      .number()
+      .catch(0)
+      .transform((v) => (v > 0 ? Math.round(v * 100) / 100 : null))
+      .pipe(
+        z
+          .number()
+          .max(
+            VIDEO_MAX_SECONDS,
+            "视频请剪到 3 分钟以内|Keep the video under 3 minutes",
+          )
+          .nullable(),
+      ),
+  })
+  .transform((m) =>
+    // A video row needs its length; drop the leftovers of a removed video.
+    m.videoPath && m.videoSeconds
+      ? m
+      : { ...m, videoPath: null, videoPosterPath: null, videoSeconds: null },
+  );
+
 export const projectSubmissionSchema = z.object({
   name: text(60),
   problem: text(280),
@@ -157,6 +197,7 @@ export const projectSubmissionSchema = z.object({
   contact: text(120),
   repoUrl: optionalUrl,
   demoUrl: optionalUrl,
+  media: projectMediaSchema,
 });
 export type ProjectSubmission = z.infer<typeof projectSubmissionSchema>;
 
@@ -216,6 +257,14 @@ export function parseProjectForm(form: FormData) {
     contact: form.get("contact") ?? "",
     repoUrl: form.get("repoUrl") ?? "",
     demoUrl: form.get("demoUrl") ?? "",
+    media: {
+      coverPath: form.get("coverPath") ?? "",
+      coverFocusX: form.get("coverFocusX") ?? 50,
+      coverFocusY: form.get("coverFocusY") ?? 50,
+      videoPath: form.get("videoPath") ?? "",
+      videoPosterPath: form.get("videoPosterPath") ?? "",
+      videoSeconds: form.get("videoSeconds") ?? "",
+    },
   });
 }
 

@@ -208,6 +208,67 @@ describe("parseProjectForm", () => {
     );
     expect(result.success).toBe(false);
   });
+
+  const folder = "0b6c1f0e-8a4e-4d43-9a39-2f1f6f0f7c11";
+
+  it("has no media when nothing was uploaded", () => {
+    const result = parseProjectForm(form(base));
+    expect(result.data?.media).toEqual({
+      coverPath: null,
+      coverFocusX: 50,
+      coverFocusY: 50,
+      videoPath: null,
+      videoPosterPath: null,
+      videoSeconds: null,
+    });
+  });
+
+  it("keeps uploaded cover and video paths", () => {
+    const result = parseProjectForm(
+      form([
+        ...base,
+        ["coverPath", `${folder}/cover.webp`],
+        ["coverFocusX", "30"],
+        ["coverFocusY", "120"],
+        ["videoPath", `${folder}/video.mp4`],
+        ["videoPosterPath", `${folder}/poster-2.jpg`],
+        ["videoSeconds", "7.4"],
+      ]),
+    );
+    expect(result.data?.media).toEqual({
+      coverPath: `${folder}/cover.webp`,
+      coverFocusX: 30,
+      coverFocusY: 50,
+      videoPath: `${folder}/video.mp4`,
+      videoPosterPath: `${folder}/poster-2.jpg`,
+      videoSeconds: 7.4,
+    });
+  });
+
+  it("rejects paths outside the upload folders and over-long videos", () => {
+    for (const [k, v] of [
+      ["coverPath", "../secrets/cover.jpg"],
+      ["coverPath", `${folder}/cover.gif`],
+      ["videoPath", `${folder}/video.exe`],
+    ]) {
+      expect(parseProjectForm(form([...base, [k, v]])).success).toBe(false);
+    }
+    const long = parseProjectForm(
+      form([
+        ...base,
+        ["videoPath", `${folder}/video.mp4`],
+        ["videoSeconds", "181"],
+      ]),
+    );
+    expect(long.success).toBe(false);
+  });
+
+  it("drops a video path that came without a length", () => {
+    const result = parseProjectForm(
+      form([...base, ["videoPath", `${folder}/video.mp4`]]),
+    );
+    expect(result.data?.media.videoPath).toBeNull();
+  });
 });
 
 describe("parseVolunteerForm", () => {

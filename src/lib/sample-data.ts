@@ -1,4 +1,10 @@
-import type { Project, SiteEvent, Tutorial, WeeklyPick } from "./types";
+import {
+  NO_MEDIA,
+  type Project,
+  type SiteEvent,
+  type Tutorial,
+  type WeeklyPick,
+} from "./types";
 
 // Used only when Supabase is not configured (local dev, preview builds).
 // No invented events or projects: CourseMate, the club's own product, is the
@@ -20,6 +26,7 @@ export const sampleProjects: Project[] = [
     repoUrl: null,
     demoUrl: null,
     updatedAt: "2026-10-10T12:00:00+11:00",
+    media: NO_MEDIA,
   },
 ];
 
