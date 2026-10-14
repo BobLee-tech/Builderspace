@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { MEDIA_PATH, VIDEO_MAX_SECONDS } from "./media";
 import {
-  AVAILABILITY,
   BLOCKERS,
   EVENT_INTEREST,
   REFERRAL_SOURCES,
@@ -85,9 +84,8 @@ const joinFields = {
   }),
   channel: z.string().transform(normalizeChannel),
   showcaseConsent: z.boolean(),
-  // Both optional: they size the next event, nobody has to answer.
+  // Optional: it sizes the next event, nobody has to answer.
   eventInterest: z.enum(EVENT_INTEREST).nullable(),
-  availability: z.array(z.enum(AVAILABILITY)).max(AVAILABILITY.length),
 };
 
 /** Whatever was typed into a field the member did not opt in to is dropped. */
@@ -224,7 +222,6 @@ export function parseJoinForm(form: FormData) {
     channel: form.get("channel") ?? "",
     showcaseConsent: form.get("showcaseConsent") === "on",
     eventInterest: form.get("eventInterest") ?? null,
-    availability: form.getAll("availability"),
     affiliationSupport: form.get("affiliationSupport") === "on",
     fullName: form.get("fullName") ?? "",
     zid: form.get("zid") ?? "",

@@ -78,13 +78,6 @@ export type VolunteerPosition = (typeof VOLUNTEER_POSITIONS)[number];
 export const EVENT_INTEREST = ["yes", "maybe", "no"] as const;
 export type EventInterest = (typeof EVENT_INTEREST)[number];
 
-export const AVAILABILITY = [
-  "weekday_evening",
-  "weekend_day",
-  "online",
-] as const;
-export type Availability = (typeof AVAILABILITY)[number];
-
 export type SiteEvent = {
   slug: string;
   title: string;
@@ -225,12 +218,6 @@ export const EVENT_INTEREST_LABEL: Record<EventInterest, Bi> = {
   yes: { zh: "想来", en: "I'm in" },
   maybe: { zh: "看时间", en: "Depends on timing" },
   no: { zh: "这次不来", en: "Not this time" },
-};
-
-export const AVAILABILITY_LABEL: Record<Availability, Bi> = {
-  weekday_evening: { zh: "工作日晚上", en: "Weekday evenings" },
-  weekend_day: { zh: "周末白天", en: "Weekend daytime" },
-  online: { zh: "线上", en: "Online" },
 };
 
 export const POSITION_LABEL: Record<VolunteerPosition, Bi> = {

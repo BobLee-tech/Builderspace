@@ -76,39 +76,20 @@ describe("parseJoinForm", () => {
     expect(bad.data?.channel).toBeNull();
   });
 
-  it("treats the event questions as optional", () => {
+  it("treats the event question as optional", () => {
     const result = parseJoinForm(form(validJoin));
-    expect(result.data).toMatchObject({
-      eventInterest: null,
-      availability: [],
-    });
+    expect(result.data).toMatchObject({ eventInterest: null });
   });
 
-  it("keeps event interest and availability, and rejects unknown values", () => {
-    const ok = parseJoinForm(
-      form([
-        ...validJoin,
-        ["eventInterest", "yes"],
-        ["availability", "weekday_evening"],
-        ["availability", "online"],
-      ]),
-    );
-    expect(ok.data).toMatchObject({
-      eventInterest: "yes",
-      availability: ["weekday_evening", "online"],
-    });
+  it("keeps event interest and rejects unknown values", () => {
+    const ok = parseJoinForm(form([...validJoin, ["eventInterest", "yes"]]));
+    expect(ok.data).toMatchObject({ eventInterest: "yes" });
 
     const bad = parseJoinForm(
-      form([
-        ...validJoin,
-        ["eventInterest", "definitely"],
-        ["availability", "midnight"],
-      ]),
+      form([...validJoin, ["eventInterest", "definitely"]]),
     );
     const paths = bad.error!.issues.map((i) => i.path[0]);
-    expect(paths).toEqual(
-      expect.arrayContaining(["eventInterest", "availability"]),
-    );
+    expect(paths).toEqual(["eventInterest"]);
   });
 
   it("never keeps a name or zID unless the member opted in", () => {
