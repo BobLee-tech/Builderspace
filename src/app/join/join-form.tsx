@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState, type ReactNode } from "react";
+import { useActionState, useState } from "react";
 import { Arr, Hud } from "@/components/fx/arr";
+import { CheckGroup, ChoiceGroup, TextField } from "@/components/form-fields";
 import { SpamGuard } from "@/components/spam-guard";
 import { Msg, T } from "@/components/t";
 import { channelFromSearch, type FormState } from "@/lib/forms";
@@ -23,8 +24,6 @@ import {
 } from "@/lib/types";
 import { submitJoin } from "./actions";
 import { MemberCard, readCard, type CardData } from "./member-card";
-
-type Bi = { zh: string; en: string };
 
 export function JoinForm({ adminQr }: { adminQr: string | null }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
@@ -296,104 +295,5 @@ function Form({
         <Arr />
       </button>
     </form>
-  );
-}
-
-function TextField({
-  name,
-  label,
-  placeholder,
-  error,
-  max,
-}: {
-  name: string;
-  label: ReactNode;
-  placeholder?: string;
-  error?: string;
-  max: number;
-}) {
-  return (
-    <label className="field">
-      <span className="mono">{label}</span>
-      <input
-        type="text"
-        name={name}
-        placeholder={placeholder}
-        maxLength={max}
-        aria-invalid={Boolean(error)}
-        required
-      />
-      {error && (
-        <span className="err">
-          <Msg s={error} />
-        </span>
-      )}
-    </label>
-  );
-}
-
-function ChoiceGroup({
-  name,
-  legend,
-  options,
-  error,
-  optional,
-}: {
-  name: string;
-  legend: ReactNode;
-  options: [string, Bi][];
-  error?: string;
-  optional?: boolean;
-}) {
-  return (
-    <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
-      <legend className="mono mute" style={{ marginBottom: 8 }}>
-        {legend}
-      </legend>
-      <div className="filters">
-        {options.map(([value, label]) => (
-          <label key={value} className="chip">
-            <input
-              type="radio"
-              name={name}
-              value={value}
-              required={!optional}
-            />
-            <T {...label} />
-          </label>
-        ))}
-      </div>
-      {error && (
-        <span className="err">
-          <Msg s={error} />
-        </span>
-      )}
-    </fieldset>
-  );
-}
-
-function CheckGroup({
-  name,
-  legend,
-  options,
-}: {
-  name: string;
-  legend: ReactNode;
-  options: [string, Bi][];
-}) {
-  return (
-    <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
-      <legend className="mono mute" style={{ marginBottom: 8 }}>
-        {legend}
-      </legend>
-      <div className="filters">
-        {options.map(([value, label]) => (
-          <label key={value} className="chip">
-            <input type="checkbox" name={name} value={value} />
-            <T {...label} />
-          </label>
-        ))}
-      </div>
-    </fieldset>
   );
 }

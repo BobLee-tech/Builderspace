@@ -94,6 +94,9 @@ export default function PeoplePage() {
             <Link href="/projects" className="btn ghost">
               <T zh="看项目广场" en="See projects" />
             </Link>
+            <Link href="/volunteer" className="btn ghost">
+              <T zh="申请做志愿者" en="Volunteer" />
+            </Link>
             <Link href="/join" className="btn solid">
               <T zh="加入 BuilderSpace" en="Join BuilderSpace" /> <Arr />
             </Link>

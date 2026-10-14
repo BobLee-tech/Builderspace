@@ -47,6 +47,23 @@ export const REFERRAL_SOURCES = [
   "other",
 ] as const;
 
+// The eleven core-team positions, grouped into three departments. The keys are
+// stored in volunteer_applications.positions and checked by the database.
+export const VOLUNTEER_POSITIONS = [
+  "events",
+  "content",
+  "design_media",
+  "partnerships",
+  "recruiting",
+  "product",
+  "web_tools",
+  "teaching",
+  "tech_explore",
+  "secretary",
+  "finance",
+] as const;
+export type VolunteerPosition = (typeof VOLUNTEER_POSITIONS)[number];
+
 export const EVENT_INTEREST = ["yes", "maybe", "no"] as const;
 export type EventInterest = (typeof EVENT_INTEREST)[number];
 
@@ -185,3 +202,41 @@ export const AVAILABILITY_LABEL: Record<Availability, Bi> = {
   weekend_day: { zh: "周末白天", en: "Weekend daytime" },
   online: { zh: "线上", en: "Online" },
 };
+
+export const POSITION_LABEL: Record<VolunteerPosition, Bi> = {
+  events: { zh: "活动", en: "Events" },
+  content: { zh: "内容与渠道", en: "Content & channels" },
+  design_media: { zh: "设计与影像", en: "Design & media" },
+  partnerships: { zh: "对外合作", en: "Partnerships" },
+  recruiting: { zh: "招募与成员发展", en: "Recruiting & member growth" },
+  product: { zh: "产品与项目", en: "Product & projects" },
+  web_tools: { zh: "网站与工具", en: "Website & tools" },
+  teaching: { zh: "教学与支持", en: "Teaching & support" },
+  tech_explore: { zh: "技术探索", en: "Tech exploration" },
+  secretary: { zh: "秘书与行政", en: "Secretary & admin" },
+  finance: { zh: "财务", en: "Finance" },
+};
+
+export const DEPARTMENTS: {
+  name: Bi;
+  positions: readonly VolunteerPosition[];
+}[] = [
+  {
+    name: { zh: "市场运营部", en: "Marketing & Operations" },
+    positions: [
+      "events",
+      "content",
+      "design_media",
+      "partnerships",
+      "recruiting",
+    ],
+  },
+  {
+    name: { zh: "产品技术部", en: "Product & Technology" },
+    positions: ["product", "web_tools", "teaching", "tech_explore"],
+  },
+  {
+    name: { zh: "行政财务部", en: "Admin & Finance" },
+    positions: ["secretary", "finance"],
+  },
+];

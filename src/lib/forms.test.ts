@@ -4,6 +4,7 @@ import {
   parseJoinForm,
   parseProjectForm,
   parseProjectUpdateForm,
+  parseVolunteerForm,
   projectSlug,
 } from "./forms";
 
@@ -205,6 +206,87 @@ describe("parseProjectForm", () => {
       ]),
     );
     expect(result.success).toBe(false);
+  });
+});
+
+describe("parseVolunteerForm", () => {
+  const base: [string, string][] = [
+    ["nickname", " Yuki "],
+    ["contact", " wechat: yuki "],
+    ["schoolDegree", "UNSW · Master of IT"],
+    ["positions", "events"],
+    ["positions", "web_tools"],
+    ["weeklyHours", "2to5"],
+    ["about", " 办过两场校内活动 "],
+    ["portfolioUrl", ""],
+    ["dataConsent", "on"],
+  ];
+
+  it("accepts a complete application and trims text", () => {
+    const result = parseVolunteerForm(form(base));
+    expect(result.success).toBe(true);
+    expect(result.data).toMatchObject({
+      nickname: "Yuki",
+      contact: "wechat: yuki",
+      positions: ["events", "web_tools"],
+      weeklyHours: "2to5",
+      about: "办过两场校内活动",
+      portfolioUrl: null,
+      channel: null,
+      dataConsent: true,
+    });
+  });
+
+  it("needs at least one known position", () => {
+    const none = parseVolunteerForm(
+      form(base.filter(([k]) => k !== "positions")),
+    );
+    expect(none.error!.issues.map((i) => i.path[0])).toContain("positions");
+
+    const unknown = parseVolunteerForm(
+      form([...base.filter(([k]) => k !== "positions"), ["positions", "ceo"]]),
+    );
+    expect(unknown.success).toBe(false);
+  });
+
+  it("does not store anything without consent", () => {
+    const result = parseVolunteerForm(
+      form(base.filter(([k]) => k !== "dataConsent")),
+    );
+    expect(result.error!.issues.map((i) => i.path[0])).toContain("dataConsent");
+  });
+
+  it("requires contact details, a weekly-hours answer and an intro", () => {
+    const result = parseVolunteerForm(
+      form(
+        base.filter(([k]) => !["contact", "weeklyHours", "about"].includes(k)),
+      ),
+    );
+    const paths = result.error!.issues.map((i) => i.path[0]);
+    expect(paths).toEqual(
+      expect.arrayContaining(["contact", "weeklyHours", "about"]),
+    );
+  });
+
+  it("keeps an http(s) portfolio link and rejects anything else", () => {
+    const rest = base.filter(([k]) => k !== "portfolioUrl");
+    const ok = parseVolunteerForm(
+      form([...rest, ["portfolioUrl", "https://github.com/yuki"]]),
+    );
+    expect(ok.data?.portfolioUrl).toBe("https://github.com/yuki");
+
+    const bad = parseVolunteerForm(
+      form([...rest, ["portfolioUrl", "javascript:alert(1)"]]),
+    );
+    expect(bad.success).toBe(false);
+  });
+
+  it("keeps a clean channel tag and drops a malformed one", () => {
+    const ok = parseVolunteerForm(form([...base, ["channel", "Poster-QR"]]));
+    expect(ok.data?.channel).toBe("poster-qr");
+    const bad = parseVolunteerForm(form([...base, ["channel", "<script>"]]));
+    expect(bad.success).toBe(true);
+    expect(bad.data?.channel).toBeNull();
   });
 });
 
