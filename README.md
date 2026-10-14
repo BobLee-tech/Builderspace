@@ -60,6 +60,7 @@ pnpm check   # lint + typecheck + format + test + build
 - **每周精选**：`weekly_picks`，每条必须有来源链接和日期，只写摘要。
 - **导出报名**：`join_submissions` 右上角 Export → CSV。成员要求删除数据时直接删对应行。
 - **看意向成员和志愿者申请**：两张表都在 Table Editor 里。`join_submissions` 是官网「加入」提交的意向成员；`volunteer_applications` 是 `/volunteer` 提交的核心团队志愿者申请（想申请的职位、每周投入、联系方式、自我介绍）。志愿者申请的 `status` 是下拉框（new → contacted → interviewing → accepted / declined），跟进情况写在 `ops_notes`；这两列只有后台能改，访客提交的永远是 `new`。想要汇总数字，看视图 `join_interest_summary`。
+- **投稿通知（企业微信群）**：新项目卡、待审核的进展、新志愿者申请会逐条推到运营群；每天悉尼时间早上 8–9 点再发一条汇总（过去 24 小时报名人数和各类待处理数）。消息里只有项目名、昵称和职位，不含联系方式和 zID。群机器人的 Webhook 地址存在 Supabase Vault 里（名为 `ops_webhook_url`，见迁移 `20261014020000` 开头的说明），不进仓库；没存时不发通知，也不影响提交。换 key：在群里删掉机器人重建，再用 `vault.update_secret` 更新。
 - **渠道归因**：每个渠道发不同的加入链接，如 `/join?ref=xhs-w1`、`/join?ref=poster-qr`（也认 `utm_source`），记在 `join_submissions.channel`。只用小写字母、数字、`-`、`_`。
 
 页面缓存几分钟，改完稍等即可看到。
