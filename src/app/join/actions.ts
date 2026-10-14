@@ -47,7 +47,6 @@ export async function submitJoin(
     channel: v.channel,
     showcase_consent: v.showcaseConsent,
     next_event_interest: v.eventInterest,
-    availability: v.availability,
     affiliation_support: v.affiliationSupport,
     full_name: v.fullName,
     zid: v.zid,

@@ -11,8 +11,6 @@ import { Msg, T } from "@/components/t";
 import { channelFromSearch, type FormState } from "@/lib/forms";
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 import {
-  AVAILABILITY,
-  AVAILABILITY_LABEL,
   BLOCKERS,
   BLOCKER_LABEL,
   EVENT_INTEREST,
@@ -200,16 +198,6 @@ function Form({
         options={EVENT_INTEREST.map((e) => [e, EVENT_INTEREST_LABEL[e]])}
         error={err.eventInterest}
         optional
-      />
-      <CheckGroup
-        name="availability"
-        legend={
-          <T
-            zh="哪些时间方便（选填，可多选）"
-            en="When could you make it? (optional, pick any)"
-          />
-        }
-        options={AVAILABILITY.map((a) => [a, AVAILABILITY_LABEL[a]])}
       />
 
       <label className="consent">
