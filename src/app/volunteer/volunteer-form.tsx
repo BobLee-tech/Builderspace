@@ -53,8 +53,8 @@ export function VolunteerForm() {
         </h2>
         <p className="mute">
           <T
-            zh="我们会通过你留下的联系方式约一次面试，具体分工面试时再聊。"
-            en="We'll use the contact you left to set up a chat. Who does what is something we settle together there."
+            zh="审核通过后，我们会用这个邮箱给你开通内部协作系统的账号，具体分工再一起聊。"
+            en="Once we've reviewed it, we'll open an account on our internal workspace with this email. Who does what is something we settle together."
           />
         </p>
         <Link
@@ -86,25 +86,19 @@ export function VolunteerForm() {
       <div className="row2">
         <TextField
           name="nickname"
-          label={<T zh="昵称" en="Nickname" />}
+          label={<T zh="微信昵称" en="WeChat name" />}
           error={err.nickname}
           max={40}
         />
         <TextField
-          name="schoolDegree"
-          label={<T zh="学校与学位" en="University & degree" />}
-          placeholder="UNSW · Master of IT"
-          error={err.schoolDegree}
-          max={80}
+          name="email"
+          label={<T zh="邮箱" en="Email" />}
+          placeholder="yuki@example.com"
+          error={err.email}
+          max={254}
+          email
         />
       </div>
-      <TextField
-        name="contact"
-        label={<T zh="微信号或邮箱" en="WeChat ID or email" />}
-        placeholder="wechat: yuki"
-        error={err.contact}
-        max={120}
-      />
 
       <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
         <legend className="mono mute" style={{ marginBottom: 8 }}>
@@ -125,36 +119,54 @@ export function VolunteerForm() {
         <FieldError name="positions" error={err.positions} />
       </fieldset>
 
+      <TextField
+        name="schoolDegree"
+        label={
+          <T zh="学校与学位（选填）" en="University & degree (optional)" />
+        }
+        placeholder="UNSW · Master of IT"
+        error={err.schoolDegree}
+        max={80}
+        optional
+      />
+
       <ChoiceGroup
         name="weeklyHours"
-        legend={<T zh="每周可稳定投入" en="Hours per week you can commit" />}
+        legend={
+          <T
+            zh="每周可稳定投入（选填）"
+            en="Hours per week you can commit (optional)"
+          />
+        }
         options={WEEKLY_HOURS.map((h) => [h, HOURS_LABEL[h]])}
         error={err.weeklyHours}
+        optional
       />
 
       <TextField
         name="about"
         label={
           <T
-            zh="为什么想加入，做过哪些相关的事"
-            en="Why you want in, and what you've done that's related"
+            zh="个人介绍：为什么想加入，做过哪些相关的事（选填）"
+            en="About you: why you want in, and what you've done that's related (optional)"
           />
         }
         placeholder="办过两场校内活动 / Ran two campus events"
         error={err.about}
         max={500}
         multiline
+        optional
       />
 
       <TextField
         name="portfolioUrl"
         label={
           <T
-            zh="作品或主页链接（选填）"
-            en="Portfolio or profile link (optional)"
+            zh="简历、作品或主页链接（选填）"
+            en="Résumé, portfolio or profile link (optional)"
           />
         }
-        placeholder="github.com/…"
+        placeholder="linkedin.com/in/… / github.com/…"
         error={err.portfolioUrl}
         max={300}
         optional

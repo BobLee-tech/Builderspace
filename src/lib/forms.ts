@@ -126,18 +126,30 @@ export type JoinInput = z.infer<typeof joinSchema>;
 // Core-team volunteers can be reached, so unlike the join form this one asks
 // for contact details, and nothing is stored unless the applicant consents.
 // Still no student card and no zID.
+//
+// Only the WeChat name, the email and the positions are required: the email is
+// what an account on the internal tool is opened with. Everything else is
+// optional for now; to make a field required again, swap it back to `text`.
 export const volunteerSchema = z.object({
   nickname: text(40),
-  contact: text(120),
-  schoolDegree: text(80),
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, "必填|Required")
+    .max(254)
+    .pipe(z.email({ error: "请填写有效的邮箱|Enter a valid email" })),
+  schoolDegree: optionalText(80),
   positions: z
     .array(z.enum(VOLUNTEER_POSITIONS))
     .min(1, "至少选一个职位|Pick at least one position")
     .max(VOLUNTEER_POSITIONS.length),
-  weeklyHours: z.enum(WEEKLY_HOURS, {
-    error: "请选择每周可投入时间|Pick your weekly hours",
-  }),
-  about: text(500),
+  weeklyHours: z
+    .enum(WEEKLY_HOURS, {
+      error: "请选择每周可投入时间|Pick your weekly hours",
+    })
+    .nullable(),
+  about: optionalText(500),
   portfolioUrl: optionalUrl,
   channel: z.string().transform(normalizeChannel),
   dataConsent: z.literal(true, {
@@ -232,10 +244,10 @@ export function parseJoinForm(form: FormData) {
 export function parseVolunteerForm(form: FormData) {
   return volunteerSchema.safeParse({
     nickname: form.get("nickname") ?? "",
-    contact: form.get("contact") ?? "",
+    email: form.get("email") ?? "",
     schoolDegree: form.get("schoolDegree") ?? "",
     positions: form.getAll("positions"),
-    weeklyHours: form.get("weeklyHours") ?? undefined,
+    weeklyHours: form.get("weeklyHours") ?? null,
     about: form.get("about") ?? "",
     portfolioUrl: form.get("portfolioUrl") ?? "",
     channel: form.get("channel") ?? "",

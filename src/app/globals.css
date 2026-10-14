@@ -809,6 +809,7 @@ main {
 }
 .field input[type="text"],
 .field input[type="url"],
+.field input[type="email"],
 .field textarea,
 .field select {
   width: 100%;

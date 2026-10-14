@@ -20,11 +20,11 @@ export async function submitVolunteer(
   const db = getSupabase();
   if (!db) {
     // Never log the contact details, even in development.
-    const { contact, ...loggable } = parsed.data;
+    const { email, ...loggable } = parsed.data;
     return withoutDatabase(
       "volunteer",
       "申请暂未开放，请稍后再试|Applications aren't open yet",
-      { ...loggable, contact: contact && "[redacted]" },
+      { ...loggable, email: email && "[redacted]" },
       { status: "ok", nickname: parsed.data.nickname },
     );
   }
@@ -34,7 +34,7 @@ export async function submitVolunteer(
   // for ops in the dashboard.
   const { error } = await db.from("volunteer_applications").insert({
     nickname: v.nickname,
-    contact: v.contact,
+    email: v.email,
     school_degree: v.schoolDegree,
     positions: v.positions,
     weekly_hours: v.weeklyHours,
