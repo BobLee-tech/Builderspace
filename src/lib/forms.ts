@@ -27,9 +27,12 @@ const URL_MAX = 300;
 const SCHEME = /^[a-z][a-z0-9+.-]*:(?!\d)/i;
 export function withScheme(link: string) {
   if (!link) return link;
-  // The database checks for a lower-case `http(s)://`.
+  // The database checks for a lower-case `http(s)://`, slashes included.
   if (SCHEME.test(link))
-    return link.replace(/^https?:/i, (m) => m.toLowerCase());
+    return link.replace(
+      /^(https?):\/*/i,
+      (_, p: string) => `${p.toLowerCase()}://`,
+    );
   return `https://${link.replace(/^\/+/, "")}`;
 }
 const optionalUrl = z

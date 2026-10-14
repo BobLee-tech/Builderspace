@@ -277,6 +277,7 @@ describe("parseVolunteerForm", () => {
       ["//yuki.dev/a", "https://yuki.dev/a"],
       ["http://yuki.dev", "http://yuki.dev"],
       ["HTTPS://yuki.dev", "https://yuki.dev"],
+      ["http:yuki.dev", "http://yuki.dev"],
     ];
     for (const [typed, stored] of cases) {
       const result = parseVolunteerForm(
