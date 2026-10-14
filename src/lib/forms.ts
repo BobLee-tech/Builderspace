@@ -7,6 +7,7 @@ import {
   ROLES,
   SKILLS,
   UPDATE_KINDS,
+  VOLUNTEER_POSITIONS,
   WEEKLY_HOURS,
 } from "./types";
 
@@ -18,15 +19,35 @@ const optionalText = (max: number) =>
     .trim()
     .max(max)
     .transform((v) => v || null);
+// Matches the longest URL column in the database (volunteer portfolio_url).
+const URL_MAX = 300;
+// `github.com/me` and `www.x.dev` are links too: anything without a scheme
+// gets https://. A `host:port` start (digits after the colon) is not a scheme,
+// while `javascript:` / `mailto:` keep theirs and are then rejected.
+const SCHEME = /^[a-z][a-z0-9+.-]*:(?!\d)/i;
+export function withScheme(link: string) {
+  if (!link) return link;
+  // The database checks for a lower-case `http(s)://`, slashes included.
+  if (SCHEME.test(link))
+    return link.replace(
+      /^(https?):\/*/i,
+      (_, p: string) => `${p.toLowerCase()}://`,
+    );
+  return `https://${link.replace(/^\/+/, "")}`;
+}
 const optionalUrl = z
   .string()
   .trim()
+  .transform(withScheme)
+  .pipe(z.string().max(URL_MAX, "链接太长了|That link is too long"))
   .transform((v) => v || null)
   .pipe(
     z
       .url({
         protocol: /^https?$/,
-        error: "请填写 http(s) 链接|Use an http(s) link",
+        // A real host has a dot in it (rules out `https://hello`).
+        hostname: /^[^.]+(\.[^.]+)+$/,
+        error: "请填写有效的链接|Enter a valid link",
       })
       .nullable(),
   );
@@ -103,6 +124,29 @@ export const joinSchema = z.discriminatedUnion("affiliationSupport", [
 ]);
 export type JoinInput = z.infer<typeof joinSchema>;
 
+// Core-team volunteers can be reached, so unlike the join form this one asks
+// for contact details, and nothing is stored unless the applicant consents.
+// Still no student card and no zID.
+export const volunteerSchema = z.object({
+  nickname: text(40),
+  contact: text(120),
+  schoolDegree: text(80),
+  positions: z
+    .array(z.enum(VOLUNTEER_POSITIONS))
+    .min(1, "至少选一个职位|Pick at least one position")
+    .max(VOLUNTEER_POSITIONS.length),
+  weeklyHours: z.enum(WEEKLY_HOURS, {
+    error: "请选择每周可投入时间|Pick your weekly hours",
+  }),
+  about: text(500),
+  portfolioUrl: optionalUrl,
+  channel: z.string().transform(normalizeChannel),
+  dataConsent: z.literal(true, {
+    error: "勾选同意后才能提交|Tick the box to submit",
+  }),
+});
+export type VolunteerInput = z.infer<typeof volunteerSchema>;
+
 export const projectSubmissionSchema = z.object({
   name: text(60),
   problem: text(280),
@@ -144,6 +188,20 @@ export function parseJoinForm(form: FormData) {
     fullName: form.get("fullName") ?? "",
     zid: form.get("zid") ?? "",
     affiliationConsent: form.get("affiliationConsent") === "on",
+  });
+}
+
+export function parseVolunteerForm(form: FormData) {
+  return volunteerSchema.safeParse({
+    nickname: form.get("nickname") ?? "",
+    contact: form.get("contact") ?? "",
+    schoolDegree: form.get("schoolDegree") ?? "",
+    positions: form.getAll("positions"),
+    weeklyHours: form.get("weeklyHours") ?? undefined,
+    about: form.get("about") ?? "",
+    portfolioUrl: form.get("portfolioUrl") ?? "",
+    channel: form.get("channel") ?? "",
+    dataConsent: form.get("dataConsent") === "on",
   });
 }
 

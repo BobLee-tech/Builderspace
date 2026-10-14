@@ -4,6 +4,7 @@ import { Arr } from "@/components/fx/arr";
 import Link from "next/link";
 import { useActionState } from "react";
 import { SpamGuard } from "@/components/spam-guard";
+import { useRevealResult } from "@/components/use-reveal-result";
 import { Msg, T } from "@/components/t";
 import type { FormState } from "@/lib/forms";
 import { submitWithoutReset } from "@/lib/submit-without-reset";
@@ -34,10 +35,11 @@ export function ProjectForm() {
     submitProject,
     { status: "idle" },
   );
+  const reveal = useRevealResult(state);
 
   if (state.status === "ok") {
     return (
-      <div className="form" role="status">
+      <div ref={reveal} className="form" role="status">
         <p className="mono mute">
           <T zh="已提交" en="Submitted" />
         </p>
@@ -64,7 +66,12 @@ export function ProjectForm() {
   const err = state.status === "error" ? (state.fieldErrors ?? {}) : {};
 
   return (
-    <form onSubmit={submitWithoutReset(action)} className="form" noValidate>
+    <form
+      ref={reveal}
+      onSubmit={submitWithoutReset(action)}
+      className="form"
+      noValidate
+    >
       <SpamGuard />
       <div className="row2">
         {FIELDS.map((f) => (
@@ -133,7 +140,12 @@ export function ProjectForm() {
           <span className="mono">
             <T zh="仓库链接（可选）" en="Repo link (optional)" />
           </span>
-          <input type="url" name="repoUrl" placeholder="https://github.com/…" />
+          <input
+            type="text"
+            inputMode="url"
+            name="repoUrl"
+            placeholder="github.com/…"
+          />
           {err.repoUrl && (
             <span className="err">
               <Msg s={err.repoUrl} />
@@ -144,7 +156,12 @@ export function ProjectForm() {
           <span className="mono">
             <T zh="Demo 链接（可选）" en="Demo link (optional)" />
           </span>
-          <input type="url" name="demoUrl" placeholder="https://" />
+          <input
+            type="text"
+            inputMode="url"
+            name="demoUrl"
+            placeholder="yourapp.vercel.app"
+          />
           {err.demoUrl && (
             <span className="err">
               <Msg s={err.demoUrl} />

@@ -1,6 +1,7 @@
 "use server";
 
-import { fieldErrors, parseJoinForm, type FormState } from "@/lib/forms";
+import { parseJoinForm, type FormState } from "@/lib/forms";
+import { invalidForm, submitFailed, withoutDatabase } from "@/lib/form-actions";
 import { looksAutomated } from "@/lib/spam";
 import { getSupabase } from "@/lib/supabase/client";
 
@@ -14,30 +15,22 @@ export async function submitJoin(
   }
 
   const parsed = parseJoinForm(form);
-  if (!parsed.success) {
-    return {
-      status: "error",
-      message: "有几项还没填好|A few fields need attention",
-      fieldErrors: fieldErrors(parsed.error),
-    };
-  }
+  if (!parsed.success) return invalidForm(parsed.error);
 
   const db = getSupabase();
   if (!db) {
-    if (process.env.NODE_ENV === "production") {
-      return {
-        status: "error",
-        message: "报名暂未开放，请稍后再试|Sign-up isn't open yet",
-      };
-    }
     // Never log the name or zID, even in development.
     const { fullName, zid, ...loggable } = parsed.data;
-    console.info("[join] Supabase not configured, dropped:", {
-      ...loggable,
-      fullName: fullName && "[redacted]",
-      zid: zid && "[redacted]",
-    });
-    return { status: "ok", nickname: parsed.data.nickname };
+    return withoutDatabase(
+      "join",
+      "报名暂未开放，请稍后再试|Sign-up isn't open yet",
+      {
+        ...loggable,
+        fullName: fullName && "[redacted]",
+        zid: zid && "[redacted]",
+      },
+      { status: "ok", nickname: parsed.data.nickname },
+    );
   }
 
   const v = parsed.data;
@@ -60,12 +53,6 @@ export async function submitJoin(
     zid: v.zid,
     affiliation_consent: v.affiliationConsent,
   });
-  if (error) {
-    console.error("[join] insert failed", error);
-    return {
-      status: "error",
-      message: "提交失败，请稍后再试|Couldn't submit, please try again",
-    };
-  }
+  if (error) return submitFailed("join", error);
   return { status: "ok", nickname: v.nickname };
 }

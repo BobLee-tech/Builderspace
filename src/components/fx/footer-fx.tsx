@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 import { scrollToTop } from "@/lib/smooth-scroll";
 import { NAV_LINKS, isActive } from "../nav-links";
 import { T } from "../t";
-import { prefersReducedMotion, rafThrottle } from "./motion";
+import { hasFinePointer, prefersReducedMotion, rafThrottle } from "./motion";
 
 // Every page hands you on to the next one.
 const NEXT: Record<string, [string, string, string, string]> = {
@@ -47,6 +47,12 @@ const NEXT: Record<string, [string, string, string, string]> = {
     "活动 · 先来一场 Build Night",
     "Events · come to a Build Night first",
   ],
+  "/volunteer": [
+    "/people",
+    "The builders",
+    "回成员页 · 看看现在的团队",
+    "People · meet the current team",
+  ],
 };
 const BACK_TO_PLAZA: [string, string, string, string] = [
   "/projects",
@@ -66,18 +72,78 @@ export function FootNext() {
   const section = NAV_LINKS.map((l) => l.href)
     .filter((h) => h !== "/")
     .find((h) => pathname.startsWith(h));
+  // Pages outside the nav (/join, /volunteer) have their own entry.
   const [to, title, zh, en] =
-    pathname === "/"
-      ? NEXT["/"]
-      : section === "/projects" && pathname !== "/projects"
-        ? BACK_TO_PLAZA
-        : (NEXT[section ?? "/"] ?? NEXT["/"]);
+    NEXT[pathname] ??
+    (section === "/projects" ? BACK_TO_PLAZA : NEXT[section ?? "/"]) ??
+    NEXT["/"];
   const a = pageIndex(pathname);
   const b = pageIndex(to);
   const pad = (n: number) => String(n + 1).padStart(2, "0");
+  const band = useRef<HTMLAnchorElement>(null);
+  const titleRef = useRef<HTMLSpanElement>(null);
+
+  // Lift the title in as the band scrolls up. Runs only after this boundary
+  // has hydrated, so the inline styles GSAP writes never reach hydration.
+  useEffect(() => {
+    const trigger = band.current;
+    const target = titleRef.current;
+    if (!trigger || !target) return;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+    const desk = matchMedia("(min-width: 761px)");
+    let revision = 0,
+      timer = 0;
+    let revert = () => {};
+    let refresh = () => {};
+    const setup = () => {
+      const run = ++revision;
+      revert();
+      revert = refresh = () => {};
+      if (reduce.matches || !desk.matches || !hasFinePointer()) return;
+      void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(
+        ([{ gsap }, { ScrollTrigger }]) => {
+          if (run !== revision) return;
+          gsap.registerPlugin(ScrollTrigger);
+          const ctx = gsap.context(() => {
+            gsap.from(target, {
+              yPercent: 35,
+              opacity: 0.2,
+              ease: "none",
+              scrollTrigger: {
+                trigger,
+                start: "top bottom",
+                end: "top 55%",
+                scrub: 0.6,
+              },
+            });
+          });
+          revert = () => ctx.revert();
+          refresh = () => ScrollTrigger.refresh();
+        },
+      );
+    };
+    // Content streamed into the page moves the band; re-measure once it settles.
+    const ro = new ResizeObserver(() => {
+      clearTimeout(timer);
+      timer = window.setTimeout(() => refresh(), 120);
+    });
+    ro.observe(document.body);
+    reduce.addEventListener("change", setup);
+    desk.addEventListener("change", setup);
+    setup();
+    return () => {
+      revision++;
+      clearTimeout(timer);
+      ro.disconnect();
+      reduce.removeEventListener("change", setup);
+      desk.removeEventListener("change", setup);
+      revert();
+    };
+  }, [to]);
 
   return (
     <Link
+      ref={band}
       href={to}
       className="foot-next"
       onPointerEnter={(e) => {
@@ -96,7 +162,7 @@ export function FootNext() {
           <span>{a >= 0 ? `${pad(a)} → ${pad(b)}` : `→ ${pad(b)}`}</span>
         </div>
         <div className="fn-row">
-          <span className="fn-title">
+          <span className="fn-title" ref={titleRef}>
             <span className="fn-roll">
               <span>{title}</span>
               <span aria-hidden>{title}</span>

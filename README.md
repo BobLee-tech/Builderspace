@@ -37,14 +37,15 @@ pnpm check   # lint + typecheck + format + test + build
 
 网站只用 anon key，读写权限全部由 RLS 控制：
 
-| 表                 | 公开可读           | 公开可写             |
-| ------------------ | ------------------ | -------------------- |
-| `events`           | `published = true` | —                    |
-| `projects`         | 审核通过的         | 只能投稿为 `pending` |
-| `project_updates`  | 审核通过的         | 只能投稿为 `pending` |
-| `tutorials`        | `published = true` | —                    |
-| `weekly_picks`     | `published = true` | —                    |
-| `join_submissions` | —                  | 可提交，不可读回     |
+| 表                       | 公开可读           | 公开可写                                     |
+| ------------------------ | ------------------ | -------------------------------------------- |
+| `events`                 | `published = true` | —                                            |
+| `projects`               | 审核通过的         | 只能投稿为 `pending`                         |
+| `project_updates`        | 审核通过的         | 只能投稿为 `pending`                         |
+| `tutorials`              | `published = true` | —                                            |
+| `weekly_picks`           | `published = true` | —                                            |
+| `join_submissions`       | —                  | 可提交，不可读回                             |
+| `volunteer_applications` | —                  | 可提交，不可读回，运营列（状态、备注）不可写 |
 
 ## 运营怎么用（不用改代码）
 
@@ -58,6 +59,8 @@ pnpm check   # lint + typecheck + format + test + build
 - **上线资源（工作坊资料）**：`tutorials` 加一行并勾选 `published`（工作坊后 48 小时内）。
 - **每周精选**：`weekly_picks`，每条必须有来源链接和日期，只写摘要。
 - **导出报名**：`join_submissions` 右上角 Export → CSV。成员要求删除数据时直接删对应行。
+- **看意向成员和志愿者申请**：两张表都在 Table Editor 里。`join_submissions` 是官网「加入」提交的意向成员；`volunteer_applications` 是 `/volunteer` 提交的核心团队志愿者申请（想申请的职位、每周投入、联系方式、自我介绍）。志愿者申请的 `status` 是下拉框（new → contacted → interviewing → accepted / declined），跟进情况写在 `ops_notes`；这两列只有后台能改，访客提交的永远是 `new`。想要汇总数字，看视图 `join_interest_summary`。
+- **投稿通知（企业微信群）**：新项目卡、待审核的进展、新志愿者申请会逐条推到运营群；每天悉尼时间早上 8–9 点再发一条汇总（过去 24 小时报名人数和各类待处理数）。消息里只有项目名、昵称和职位，不含联系方式和 zID。群机器人的 Webhook 地址存在 Supabase Vault 里（名为 `ops_webhook_url`，见迁移 `20261014020000` 开头的说明），不进仓库；没存时不发通知，也不影响提交。换 key：在群里删掉机器人重建，再用 `vault.update_secret` 更新。
 - **渠道归因**：每个渠道发不同的加入链接，如 `/join?ref=xhs-w1`、`/join?ref=poster-qr`（也认 `utm_source`），记在 `join_submissions.channel`。只用小写字母、数字、`-`、`_`。
 
 页面缓存几分钟，改完稍等即可看到。
@@ -75,6 +78,7 @@ pnpm check   # lint + typecheck + format + test + build
 | `/learn`           | 资源：工作坊资料 + 每周精选                        | P0/P1 |
 | `/people`          | 成员：筹备团队按职能介绍（不写人名）               | —     |
 | `/join`            | 加入表单，提交后显示管理员微信（入口在顶栏和首屏） | P0    |
+| `/volunteer`       | 核心团队志愿者申请（入口在成员页和页脚）           | —     |
 
 ## 中英双语
 
@@ -87,7 +91,7 @@ pnpm check   # lint + typecheck + format + test + build
 ## 防刷
 
 - 表单带隐藏的蜜罐字段和填写用时检查（`src/lib/spam.ts`）。像机器人的提交照样显示“成功”，但不入库。
-- 数据库触发器限制公开提交速度：加入表单每分钟 20 条，项目卡和进展每分钟各 10 条（迁移 `20261012030000`）。运营在后台操作不受限。
+- 数据库触发器限制公开提交速度：加入表单每分钟 20 条，项目卡、进展和志愿者申请每分钟各 10 条（迁移 `20261012030000`、`20261014000000`）。超限时访客会看到“请一分钟后再试”（迁移 `20261014010000` 给节流单独的错误码）。运营在后台操作不受限。
 - 没用验证码：多数验证码在国内打不开。
 
 ## 视觉效果
@@ -102,6 +106,7 @@ pnpm check   # lint + typecheck + format + test + build
 - 赞助未确认不上页面；作品和照片公开前征得同意。
 - 加入表单不收学生证。姓名和 zID 只在成员自愿勾选「支持社团申请」并单独同意后才收，
   仅用于提交给 Arc；不勾选时数据库约束保证这两列为空。
+- 志愿者申请同样不收学生证和 zID；要留联系方式，勾选同意后才会保存，只用于联系和筛选，成员要求删除时直接删对应行。
 
 ## 目录
 

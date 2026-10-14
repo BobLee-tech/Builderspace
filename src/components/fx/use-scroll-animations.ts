@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { hasFinePointer } from "./motion";
 import { getSmoothScroller } from "@/lib/smooth-scroll";
 
-/** Only the three effects CSS cannot express; each route owns a reversible context. */
+/** Effects CSS cannot express; each route owns a reversible context. */
 export function useScrollAnimations(pathname: string) {
   useEffect(() => {
     let cancelled = false,
@@ -84,19 +84,9 @@ export function useScrollAnimations(pathname: string) {
             });
           });
         });
-        const next = document.querySelector<HTMLElement>(".foot-next");
-        if (next)
-          gsap.from(next.querySelector(".fn-title"), {
-            yPercent: 35,
-            opacity: 0.2,
-            ease: "none",
-            scrollTrigger: {
-              trigger: next,
-              start: "top bottom",
-              end: "top 55%",
-              scrub: 0.6,
-            },
-          });
+        // The footer's "next page" title animates itself in FootNext: it
+        // streams in its own Suspense boundary, and styling it here before
+        // React hydrates it causes a hydration mismatch.
       });
       revert = () => {
         ctx.revert();
