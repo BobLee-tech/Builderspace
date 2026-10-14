@@ -1,7 +1,14 @@
 import { User, ClockCounterClockwise } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { formatShortDate } from "@/lib/format";
-import { ROLE_LABEL, STATUS_LABEL, type Project } from "@/lib/types";
+import {
+  NO_MEDIA,
+  ROLE_LABEL,
+  STATUS_LABEL,
+  type Project,
+  type ProjectMedia,
+} from "@/lib/types";
+import { CoverMedia } from "./project-media";
 import { T } from "./t";
 
 /** Stable small hash so a project always gets the same generative cover. */
@@ -9,12 +16,28 @@ function hash(s: string) {
   return [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 }
 
-/** Monochrome pattern + outlined initials, picked by slug; see .cover in motion.css. */
-export function Cover({ seed, label }: { seed: string; label: string }) {
+/**
+ * The uploaded cover / demo video when there is one, otherwise a monochrome
+ * pattern + outlined initials picked by slug; see .cover in motion.css.
+ */
+export function Cover({
+  seed,
+  label,
+  media = NO_MEDIA,
+}: {
+  seed: string;
+  label: string;
+  media?: ProjectMedia;
+}) {
   return (
-    <div className="cover" data-v={hash(seed) % 6} aria-hidden>
-      <span className="ini">{[...label].slice(0, 2).join("")}</span>
-      <span className="id">#{seed}</span>
+    <div className="cover" data-v={hash(seed) % 6}>
+      <span className="ini" aria-hidden>
+        {[...label].slice(0, 2).join("")}
+      </span>
+      <CoverMedia media={media} title={label} />
+      <span className="id" aria-hidden>
+        #{seed}
+      </span>
     </div>
   );
 }
@@ -23,13 +46,19 @@ export function StatusDot({ status }: { status: Project["status"] }) {
   return <i className={`st-dot st-${status}`} aria-hidden />;
 }
 
-export function ProjectCard({ project }: { project: Project }) {
+// An <article> with the title link stretched over it, so the play button on
+// the cover can be its own control instead of a button inside a link.
+// `preview` renders the submit form's live card, which links nowhere.
+export function ProjectCard({
+  project,
+  preview = false,
+}: {
+  project: Project;
+  preview?: boolean;
+}) {
   return (
-    <Link
-      href={`/projects/${project.slug}`}
-      className={`pcard ${project.status === "paused" ? "paused" : ""}`}
-    >
-      <Cover seed={project.slug} label={project.name} />
+    <article className={`pcard ${project.status === "paused" ? "paused" : ""}`}>
+      <Cover seed={project.slug} label={project.name} media={project.media} />
       <div className="pcard-head">
         <div className="pcard-top">
           <span
@@ -40,7 +69,15 @@ export function ProjectCard({ project }: { project: Project }) {
           </span>
           <span className="mono mute">{project.targetUser}</span>
         </div>
-        <h3>{project.name}</h3>
+        <h3>
+          {preview ? (
+            project.name
+          ) : (
+            <Link href={`/projects/${project.slug}`} className="pcard-link">
+              {project.name}
+            </Link>
+          )}
+        </h3>
         <p className="prob">{project.problem}</p>
       </div>
       {project.neededRoles.length > 0 && (
@@ -64,9 +101,16 @@ export function ProjectCard({ project }: { project: Project }) {
         </span>
         <span className="mono">
           <ClockCounterClockwise weight="light" size={15} aria-hidden />
-          <T zh="更新于" en="Updated" /> {formatShortDate(project.updatedAt)}
+          {preview ? (
+            <T zh="刚刚" en="Just now" />
+          ) : (
+            <>
+              <T zh="更新于" en="Updated" />{" "}
+              {formatShortDate(project.updatedAt)}
+            </>
+          )}
         </span>
       </div>
-    </Link>
+    </article>
   );
 }

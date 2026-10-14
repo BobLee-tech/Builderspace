@@ -37,6 +37,12 @@ export async function submitProject(
     contact: v.contact,
     repo_url: v.repoUrl,
     demo_url: v.demoUrl,
+    cover_path: v.media.coverPath,
+    cover_focus_x: v.media.coverFocusX,
+    cover_focus_y: v.media.coverFocusY,
+    video_path: v.media.videoPath,
+    video_poster_path: v.media.videoPosterPath,
+    video_seconds: v.media.videoSeconds,
     review_status: "pending",
   });
   if (error) return submitFailed("project", error);

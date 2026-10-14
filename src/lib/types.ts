@@ -110,6 +110,25 @@ export type Project = {
   repoUrl: string | null;
   demoUrl: string | null;
   updatedAt: string;
+  media: ProjectMedia;
+};
+
+/** Signed, short-lived URLs for an approved project's uploads. */
+export type ProjectMedia = {
+  coverUrl: string | null;
+  /** object-position percentages for the 16:9 crop. */
+  coverFocus: [number, number];
+  videoUrl: string | null;
+  videoPosterUrl: string | null;
+  videoSeconds: number | null;
+};
+
+export const NO_MEDIA: ProjectMedia = {
+  coverUrl: null,
+  coverFocus: [50, 50],
+  videoUrl: null,
+  videoPosterUrl: null,
+  videoSeconds: null,
 };
 
 export type ProjectUpdate = {

@@ -3,14 +3,28 @@
 import { Arr } from "@/components/fx/arr";
 import { useCelebration } from "@/components/fx/celebrate";
 import Link from "next/link";
-import { useActionState } from "react";
+import {
+  startTransition,
+  useActionState,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
+import { ProjectCard } from "@/components/project-card";
 import { SpamGuard } from "@/components/spam-guard";
 import { useRevealResult } from "@/components/use-reveal-result";
 import { Msg, T } from "@/components/t";
 import type { FormState } from "@/lib/forms";
-import { submitWithoutReset } from "@/lib/submit-without-reset";
-import { ROLES, ROLE_LABEL } from "@/lib/types";
+import { COVER_BUCKET, posterPath } from "@/lib/media";
+import { ROLES, ROLE_LABEL, type Project, type Role } from "@/lib/types";
+import { uploadFile } from "@/lib/upload";
 import { submitProject } from "./actions";
+import {
+  CoverField,
+  VideoField,
+  type CoverUpload,
+  type VideoUpload,
+} from "./media-drop";
 
 const FIELDS = [
   { name: "name", zh: "项目名", en: "Project name", max: 60 },
@@ -31,67 +45,200 @@ const FIELDS = [
   },
 ] as const;
 
+type Draft = Pick<Project, "name" | "problem" | "targetUser" | "ownerName"> & {
+  neededRoles: Role[];
+};
+
+function readDraft(form: HTMLFormElement): Draft {
+  const d = new FormData(form);
+  const s = (k: string) => String(d.get(k) ?? "").trim();
+  return {
+    name: s("name"),
+    problem: s("problem"),
+    targetUser: s("targetUser"),
+    ownerName: s("ownerName"),
+    neededRoles: d.getAll("neededRoles").map(String) as Role[],
+  };
+}
+
+/** The plaza card as it will look, built from the form and local uploads. */
+function previewProject(
+  draft: Draft | null,
+  cover: CoverUpload | null,
+  video: VideoUpload | null,
+): Project {
+  return {
+    slug: "draft",
+    name: draft?.name || "你的项目名 · Your project",
+    problem:
+      draft?.problem ||
+      "一句话说清楚：谁，遇到了什么麻烦。· Who has the problem, and what is it?",
+    targetUser: draft?.targetUser || "—",
+    status: "recruiting",
+    neededRoles: draft?.neededRoles ?? [],
+    nextStep: null,
+    contact: "",
+    ownerName: draft?.ownerName || "你 · You",
+    repoUrl: null,
+    demoUrl: null,
+    // The preview card says "just now" instead of a date.
+    updatedAt: "",
+    media: {
+      coverUrl: cover?.url ?? null,
+      coverFocus: cover?.focus ?? [50, 50],
+      videoUrl: video?.url ?? null,
+      videoPosterUrl: video?.frameUrls[video.pick] ?? null,
+      videoSeconds: video?.seconds ?? null,
+    },
+  };
+}
+
 export function ProjectForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(
     submitProject,
     { status: "idle" },
   );
   const reveal = useRevealResult(state);
-  const celebrate = useCelebration("project", state.status === "ok");
+  const done = state.status === "ok";
+  // The confetti comes from the live card as its stamp lands.
+  const celebrate = useCelebration("project", done, () =>
+    document.querySelector(".pv-col .pcard"),
+  );
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const [cover, setCover] = useState<CoverUpload | null>(null);
+  const [video, setVideo] = useState<VideoUpload | null>(null);
 
-  if (state.status === "ok") {
-    return (
-      <div
-        ref={(node) => {
-          reveal(node);
-          celebrate(node);
-        }}
-        className="form"
-        role="status"
-      >
-        <div className="ship-head" aria-hidden>
-          <svg
-            data-celebrate="check"
-            className="ship-check"
-            viewBox="0 0 64 64"
-            fill="none"
-          >
-            <circle cx="32" cy="32" r="30" />
-            <path d="M20 33 l8 8 l16 -18" />
-          </svg>
-          <span data-celebrate="stamp" className="ship-stamp">
-            SHIPPED · 待审核
+  return (
+    <div ref={reveal} className="ship2">
+      <div className={done ? "pv-col shipped" : "pv-col"}>
+        <div className="pv-cap">
+          <span className="mono mute">
+            <T
+              zh="实时预览 · 广场里就长这样"
+              en="Live preview · as it shows in the plaza"
+            />
+          </span>
+          <span className="mono mute">
+            {done ? (
+              <T zh="已提交" en="Submitted" />
+            ) : (
+              <T zh="草稿" en="Draft" />
+            )}
           </span>
         </div>
-        <p className="mono mute">
-          <T zh="已提交" en="Submitted" />
-        </p>
-        <h2 className="h2" style={{ fontSize: 32 }}>
-          <T zh="收到，审核后公开。" en="Got it — it goes live after review." />
-        </h2>
-        <p className="mute">
-          <T
-            zh="运营会在 48 小时内看完。之后每两周更新一次进展，项目就会一直在广场上。"
-            en="We review within 48 hours. Post an update every two weeks and your project stays in the plaza."
-          />
-        </p>
-        <Link
-          href="/projects"
-          className="btn ghost"
-          style={{ alignSelf: "start" }}
-        >
-          <T zh="回项目广场" en="Back to projects" /> <Arr />
-        </Link>
+        <div className="pv-card">
+          <ProjectCard project={previewProject(draft, cover, video)} preview />
+          <span className="pv-stamp" aria-hidden>
+            SHIPPED · 待审核
+          </span>
+          <i className="pv-scan" aria-hidden />
+        </div>
       </div>
-    );
-  }
+      {done ? (
+        <div ref={celebrate} className="form" role="status">
+          <div className="ship-head" aria-hidden>
+            <svg
+              data-celebrate="check"
+              className="ship-check"
+              viewBox="0 0 64 64"
+              fill="none"
+            >
+              <circle cx="32" cy="32" r="30" />
+              <path d="M20 33 l8 8 l16 -18" />
+            </svg>
+          </div>
+          <p className="mono mute">
+            <T zh="已提交" en="Submitted" />
+          </p>
+          <h2 className="h2" style={{ fontSize: 32 }}>
+            <T
+              zh="收到，审核后公开。"
+              en="Got it — it goes live after review."
+            />
+          </h2>
+          <p className="mute">
+            <T
+              zh="运营会在 48 小时内看完，封面和视频跟项目一起审核。之后每两周更新一次进展，项目就会一直在广场上。"
+              en="We review within 48 hours, cover and video included. Post an update every two weeks and your project stays in the plaza."
+            />
+          </p>
+          <Link
+            href="/projects"
+            className="btn ghost"
+            style={{ alignSelf: "start" }}
+          >
+            <T zh="回项目广场" en="Back to projects" /> <Arr />
+          </Link>
+        </div>
+      ) : (
+        <Form
+          state={state}
+          action={action}
+          pending={pending}
+          onDraft={setDraft}
+          cover={cover}
+          setCover={setCover}
+          video={video}
+          setVideo={setVideo}
+        />
+      )}
+    </div>
+  );
+}
 
+function Form({
+  state,
+  action,
+  pending,
+  onDraft,
+  cover,
+  setCover,
+  video,
+  setVideo,
+}: {
+  state: FormState;
+  action: (data: FormData) => void;
+  pending: boolean;
+  onDraft: (d: Draft) => void;
+  cover: CoverUpload | null;
+  setCover: (fn: (u: CoverUpload | null) => CoverUpload | null) => void;
+  video: VideoUpload | null;
+  setVideo: (fn: (u: VideoUpload | null) => VideoUpload | null) => void;
+}) {
   const err = state.status === "error" ? (state.fieldErrors ?? {}) : {};
+  const uploading = [cover, video].some((u) => u?.status === "uploading");
+  const [posting, setPosting] = useState(false);
+  const postersSent = useRef(new Set<string>());
+
+  // Fields keep their values on a validation error (no form reset); the
+  // picked poster frame is uploaded only now, since it can still change.
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    if (video?.status === "done" && video.frames[video.pick]) {
+      const path = posterPath(video.folder, video.pick);
+      if (!postersSent.current.has(path)) {
+        setPosting(true);
+        await uploadFile({
+          bucket: COVER_BUCKET,
+          path,
+          file: video.frames[video.pick],
+          onProgress: () => {},
+        })
+          .done.then(() => postersSent.current.add(path))
+          // The video still plays without a poster frame.
+          .catch((e: unknown) => console.error("[upload] poster failed", e))
+          .finally(() => setPosting(false));
+      }
+      if (postersSent.current.has(path)) data.set("videoPosterPath", path);
+    }
+    startTransition(() => action(data));
+  };
 
   return (
     <form
-      ref={reveal}
-      onSubmit={submitWithoutReset(action)}
+      onSubmit={(e) => void submit(e)}
+      onInput={(e) => onDraft(readDraft(e.currentTarget))}
       className="form"
       noValidate
     >
@@ -158,6 +305,31 @@ export function ProjectForm() {
         <input type="text" name="nextStep" maxLength={280} />
       </label>
 
+      <CoverField value={cover} onChange={setCover} />
+      <VideoField value={video} onChange={setVideo} />
+      {err.media && (
+        <p className="form-status err">
+          <Msg s={err.media} />
+        </p>
+      )}
+      <input
+        type="hidden"
+        name="coverPath"
+        value={cover?.status === "done" ? cover.path : ""}
+      />
+      <input type="hidden" name="coverFocusX" value={cover?.focus[0] ?? 50} />
+      <input type="hidden" name="coverFocusY" value={cover?.focus[1] ?? 50} />
+      <input
+        type="hidden"
+        name="videoPath"
+        value={video?.status === "done" ? video.path : ""}
+      />
+      <input
+        type="hidden"
+        name="videoSeconds"
+        value={video?.status === "done" ? video.seconds : ""}
+      />
+
       <div className="row2">
         <label className="field">
           <span className="mono">
@@ -201,10 +373,12 @@ export function ProjectForm() {
       <button
         type="submit"
         className="btn solid"
-        disabled={pending}
+        disabled={pending || posting || uploading}
         style={{ alignSelf: "start" }}
       >
-        {pending ? (
+        {uploading ? (
+          <T zh="等上传完成…" en="Waiting for uploads…" />
+        ) : pending || posting ? (
           <T zh="提交中…" en="Sending…" />
         ) : (
           <T zh="提交项目卡" en="Submit project" />

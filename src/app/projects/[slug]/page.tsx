@@ -56,7 +56,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
   return (
     <>
       <div className="d-banner">
-        <Cover seed={project.slug} label={project.name} />
+        <Cover seed={project.slug} label={project.name} media={project.media} />
         <div className="wrap d-banner-in">
           <Crumb />
           <div className="need">
