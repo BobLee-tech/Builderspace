@@ -31,13 +31,14 @@ end;
 $$;
 revoke all on function default_comment_owner() from public, anon, authenticated;
 
+drop trigger if exists project_comments_owner_default on project_comments;
 create trigger project_comments_owner_default before insert on project_comments
   for each row execute function default_comment_owner();
 
 -- RLS checks the row after BEFORE triggers, so the insert policy can no longer
 -- require is_owner = false. Visitors still can't write the column (no grant);
 -- only the trigger above sets it.
-drop policy "public comments on approved projects" on project_comments;
+drop policy if exists "public comments on approved projects" on project_comments;
 create policy "public comments on approved projects" on project_comments
   for insert to anon, authenticated with check (
     deleted_at is null
@@ -53,12 +54,12 @@ where p.id = c.project_id
   and lower(btrim(p.owner_name)) = lower(btrim(c.nickname));
 
 -- Admin delete ------------------------------------------------------------------
-create table comment_admin_attempts (
+create table if not exists comment_admin_attempts (
   id bigint generated always as identity primary key,
   ok boolean not null,
   at timestamptz not null default now()
 );
-create index comment_admin_attempts_at_idx on comment_admin_attempts (at);
+create index if not exists comment_admin_attempts_at_idx on comment_admin_attempts (at);
 alter table comment_admin_attempts enable row level security;
 revoke all on comment_admin_attempts from anon, authenticated;
 
