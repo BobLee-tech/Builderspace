@@ -9,7 +9,7 @@ const PAGES = [
   "/learn",
   "/people",
   "/join",
-  "/volunteer",
+  "/core-team",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
