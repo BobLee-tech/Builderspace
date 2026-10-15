@@ -6,6 +6,9 @@ export {
   ditheringFragmentShader,
   DitheringShapes,
   DitheringTypes,
+  grainGradientFragmentShader,
+  GrainGradientShapes,
+  getShaderNoiseTexture,
   ShaderFitOptions,
   getShaderColorFromString,
 } from "@paper-design/shaders";

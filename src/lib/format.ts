@@ -19,6 +19,28 @@ const timeFmt = new Intl.DateTimeFormat("en-AU", {
   hourCycle: "h23",
 });
 
+const dayFmt = new Intl.DateTimeFormat("en-AU", {
+  timeZone: TZ,
+  day: "numeric",
+});
+const monthFmt = new Intl.DateTimeFormat("en-AU", {
+  timeZone: TZ,
+  month: "numeric",
+});
+const monthNameFmt = new Intl.DateTimeFormat("en-AU", {
+  timeZone: TZ,
+  month: "short",
+});
+
+/** Parts of a date stamp: 21 · 10月 / Oct */
+export function dateStamp(iso: string) {
+  const d = new Date(iso);
+  return {
+    day: dayFmt.format(d),
+    month: { zh: `${monthFmt.format(d)}月`, en: monthNameFmt.format(d) },
+  };
+}
+
 /** 10/21周三 */
 export function formatDate(iso: string): string {
   return dateFmt.format(new Date(iso));

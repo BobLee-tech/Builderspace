@@ -27,6 +27,7 @@ export const sampleProjects: Project[] = [
     demoUrl: null,
     updatedAt: "2026-10-10T12:00:00+11:00",
     media: NO_MEDIA,
+    commentCount: 0,
   },
 ];
 

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { MEDIA_PATH, VIDEO_MAX_SECONDS } from "./media";
 import {
   BLOCKERS,
+  COMMENT_KINDS,
   EVENT_INTEREST,
   REFERRAL_SOURCES,
   ROLES,
@@ -220,6 +221,33 @@ export const projectUpdateSchema = z.object({
 });
 export type ProjectUpdateSubmission = z.infer<typeof projectUpdateSchema>;
 
+// A top-level comment picks a kind; a reply names its thread and has none, so
+// a kind sent along with a reply is dropped.
+export const projectCommentSchema = z
+  .object({
+    slug: z.string().regex(/^[a-z0-9-]+$/),
+    parentId: z
+      .string()
+      .trim()
+      .transform((v) => v || null)
+      .pipe(z.uuid().nullable()),
+    kind: z
+      .enum(COMMENT_KINDS, { error: "请选择评论类型|Pick a comment type" })
+      .nullable(),
+    nickname: text(40),
+    body: text(500),
+  })
+  .superRefine((c, ctx) => {
+    if (!c.parentId && !c.kind)
+      ctx.addIssue({
+        code: "custom",
+        path: ["kind"],
+        message: "请选择评论类型|Pick a comment type",
+      });
+  })
+  .transform((c) => (c.parentId ? { ...c, kind: null } : c));
+export type ProjectCommentSubmission = z.infer<typeof projectCommentSchema>;
+
 export function parseJoinForm(form: FormData) {
   return joinSchema.safeParse({
     nickname: form.get("nickname") ?? "",
@@ -287,6 +315,16 @@ export function parseProjectUpdateForm(form: FormData) {
   });
 }
 
+export function parseProjectCommentForm(form: FormData) {
+  return projectCommentSchema.safeParse({
+    slug: form.get("slug") ?? "",
+    parentId: form.get("parentId") ?? "",
+    kind: form.get("kind") || null,
+    nickname: form.get("nickname") ?? "",
+    body: form.get("body") ?? "",
+  });
+}
+
 /** Slug for a submitted project; ops can rename it during review. */
 export function projectSlug(name: string, suffix: string): string {
   const base = name
@@ -301,7 +339,7 @@ export function projectSlug(name: string, suffix: string): string {
 export type FormState =
   | { status: "idle" }
   | { status: "error"; message: string; fieldErrors?: Record<string, string> }
-  | { status: "ok"; nickname?: string };
+  | { status: "ok"; nickname?: string; id?: string };
 
 export function fieldErrors(error: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {};

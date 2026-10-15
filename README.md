@@ -37,15 +37,16 @@ pnpm check   # lint + typecheck + format + test + build
 
 网站只用 anon key，读写权限全部由 RLS 控制：
 
-| 表                       | 公开可读           | 公开可写                                     |
-| ------------------------ | ------------------ | -------------------------------------------- |
-| `events`                 | `published = true` | —                                            |
-| `projects`               | 审核通过的         | 只能投稿为 `pending`                         |
-| `project_updates`        | 审核通过的         | 只能投稿为 `pending`                         |
-| `tutorials`              | `published = true` | —                                            |
-| `weekly_picks`           | `published = true` | —                                            |
-| `join_submissions`       | —                  | 可提交，不可读回                             |
-| `volunteer_applications` | —                  | 可提交，不可读回，运营列（状态、备注）不可写 |
+| 表                       | 公开可读           | 公开可写                                       |
+| ------------------------ | ------------------ | ---------------------------------------------- |
+| `events`                 | `published = true` | —                                              |
+| `projects`               | 审核通过的         | 只能投稿为 `pending`                           |
+| `project_updates`        | 审核通过的         | 只能投稿为 `pending`                           |
+| `tutorials`              | `published = true` | —                                              |
+| `weekly_picks`           | `published = true` | —                                              |
+| `join_submissions`       | —                  | 可提交，不可读回                               |
+| `volunteer_applications` | —                  | 可提交，不可读回，运营列（状态、备注）不可写   |
+| `project_comments`       | 公开项目下未删除的 | 可评论、回复一层，运营列（删除、发起人）不可写 |
 
 ## 运营怎么用（不用改代码）
 
@@ -60,7 +61,8 @@ pnpm check   # lint + typecheck + format + test + build
 - **每周精选**：`weekly_picks`，每条必须有来源链接和日期，只写摘要。
 - **导出报名**：`join_submissions` 右上角 Export → CSV。成员要求删除数据时直接删对应行。
 - **看意向成员和核心成员申请**：两张表都在 Table Editor 里。`join_submissions` 是官网「加入」提交的意向成员；`volunteer_applications` 是 `/core-team` 提交的核心成员申请（旧地址 `/volunteer` 会跳转过来）：必填的是微信昵称（`nickname`）、邮箱（`email`，用来开通内部协作系统的账号）和想申请的职位；学校与学位、每周投入、个人介绍、简历或作品链接是选填。2026-10-15 之前的申请没有邮箱，联系方式在 `contact`。核心成员申请的 `status` 是下拉框（new → contacted → interviewing → accepted / declined），跟进情况写在 `ops_notes`；这两列只有后台能改，访客提交的永远是 `new`。想要汇总数字，看视图 `join_interest_summary`。
-- **投稿通知（邮件）**：新项目卡、待审核的进展、新的核心成员申请会逐封发到运营邮箱（可以多人）；每天悉尼时间早上 8–9 点再发一封汇总（过去 24 小时报名人数和各类待处理数）。邮件里只有项目名、昵称和职位，不含联系方式和 zID；每小时最多 30 封。用 Resend 发送，API key 和收件人存在 Supabase Vault 里（`resend_api_key`、`ops_email_to`，逗号分隔），不进仓库；加减收件人用 `vault.update_secret`，见迁移 `20261015040000` 开头的说明。没存时不发通知，也不影响提交。（原来的企业微信群机器人已停用。）
+- **管理评论**：项目详情页的评论不用审核，发出去就公开，分想加入、建议、提问三类，可以回复一层。删除：在 Hub 或 Table Editor 里把 `project_comments.deleted_at` 填上当前时间，清空就恢复；删掉的评论如果有回复，回复保留，原位置显示「已被管理员删除」。发起人本人的回复把 `is_owner` 勾上，会带「发起人」标记和镀铬头像。删除和标记几分钟内在页面上生效。
+- **投稿通知（邮件）**：新项目卡、待审核的进展、新的核心成员申请会逐封发到运营邮箱（可以多人）；每天悉尼时间早上 8–9 点再发一封汇总（过去 24 小时报名人数、新评论数和评论最多的项目，以及各类待处理数）。评论不逐封发。邮件里只有项目名、昵称和职位，不含联系方式和 zID；每小时最多 30 封。用 Resend 发送，API key 和收件人存在 Supabase Vault 里（`resend_api_key`、`ops_email_to`，逗号分隔），不进仓库；加减收件人用 `vault.update_secret`，见迁移 `20261015040000` 开头的说明。没存时不发通知，也不影响提交。（原来的企业微信群机器人已停用。）
 - **渠道归因**：每个渠道发不同的加入链接，如 `/join?ref=xhs-w1`、`/join?ref=poster-qr`（也认 `utm_source`），记在 `join_submissions.channel`。只用小写字母、数字、`-`、`_`。
 
 页面缓存几分钟，改完稍等即可看到。
@@ -73,7 +75,7 @@ pnpm check   # lint + typecheck + format + test + build
 | `/events`          | 活动列表、往期、日历订阅                           | P0    |
 | `/events.ics`      | ICS 订阅源（Google / Apple 日历）                  | P1    |
 | `/projects`        | 项目广场，按状态和所缺角色筛选                     | P0    |
-| `/projects/[slug]` | 项目卡详情 + 进展时间线                            | P0/P1 |
+| `/projects/[slug]` | 项目卡详情、进展时间线、讨论区                     | P0/P1 |
 | `/projects/new`    | 项目卡投稿（人工审核后公开）                       | P0    |
 | `/learn`           | 资源：工作坊资料 + 每周精选                        | P0/P1 |
 | `/people`          | 成员：筹备团队按职能介绍（不写人名）               | —     |
@@ -91,7 +93,7 @@ pnpm check   # lint + typecheck + format + test + build
 ## 防刷
 
 - 表单带隐藏的蜜罐字段和填写用时检查（`src/lib/spam.ts`）。像机器人的提交照样显示“成功”，但不入库。
-- 数据库触发器限制公开提交速度：加入表单每分钟 20 条，项目卡、进展和核心成员申请每分钟各 10 条（迁移 `20261012030000`、`20261014000000`）。超限时访客会看到“请一分钟后再试”（迁移 `20261014010000` 给节流单独的错误码）。运营在后台操作不受限。
+- 数据库触发器限制公开提交速度：加入表单和评论每分钟各 20 条，项目卡、进展和核心成员申请每分钟各 10 条（迁移 `20261012030000`、`20261014000000`、`20261015050000`）。超限时访客会看到“请一分钟后再试”（迁移 `20261014010000` 给节流单独的错误码）。运营在后台操作不受限。
 - 没用验证码：多数验证码在国内打不开。
 
 ## 视觉效果
@@ -99,6 +101,8 @@ pnpm check   # lint + typecheck + format + test + build
 - 首页首屏：液态金属 + Bayer 1-bit 抖动（`src/components/hero-metal.tsx`），原生 WebGL，不依赖 three.js。
 - 首页第二屏：1.76 万个取自 logo 的粒子吉祥物（`src/components/mascot-stage.tsx`），数据 `public/mascot-particles.json` 只在滚动到附近时才加载。
 - 两者都在“减少动态效果”时静止，WebGL 不可用时退回静态图，并按帧率自动降分辨率。
+- 项目详情页：没有上传封面的项目用 Paper Shaders 的颗粒渐变做封面材质（`src/components/fx/cover-material.tsx`），最多渲染约 60 万像素，离开屏幕或切走标签页就暂停。
+- 手感：自定义光标外圈约 0.25 秒追上指针，按钮磁吸最多偏 6px、不回弹，卡片倾斜 3–4°，Lenis 平滑滚动 `lerp` 0.15，标题进入屏幕后自己播完、不跟着滚动走（`src/components/fx/global-fx.tsx`、`smooth-scroll.tsx`、`use-scroll-animations.ts`）。
 
 ## 合规提醒
 
