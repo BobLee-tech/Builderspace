@@ -255,7 +255,7 @@ describe("parseProjectForm", () => {
 describe("parseVolunteerForm", () => {
   const base: [string, string][] = [
     ["nickname", " Yuki "],
-    ["contact", " wechat: yuki "],
+    ["email", " Yuki@Example.com "],
     ["schoolDegree", "UNSW · Master of IT"],
     ["positions", "events"],
     ["positions", "web_tools"],
@@ -270,7 +270,7 @@ describe("parseVolunteerForm", () => {
     expect(result.success).toBe(true);
     expect(result.data).toMatchObject({
       nickname: "Yuki",
-      contact: "wechat: yuki",
+      email: "yuki@example.com",
       positions: ["events", "web_tools"],
       weeklyHours: "2to5",
       about: "办过两场校内活动",
@@ -299,16 +299,46 @@ describe("parseVolunteerForm", () => {
     expect(result.error!.issues.map((i) => i.path[0])).toContain("dataConsent");
   });
 
-  it("requires contact details, a weekly-hours answer and an intro", () => {
+  it("requires only the WeChat name, the email and a position", () => {
+    const required = ["nickname", "email", "positions"];
     const result = parseVolunteerForm(
-      form(
-        base.filter(([k]) => !["contact", "weeklyHours", "about"].includes(k)),
-      ),
+      form(base.filter(([k]) => !required.includes(k))),
     );
     const paths = result.error!.issues.map((i) => i.path[0]);
-    expect(paths).toEqual(
-      expect.arrayContaining(["contact", "weeklyHours", "about"]),
+    expect([...new Set(paths)].sort()).toEqual([...required].sort());
+  });
+
+  it("stores the optional fields as null when left blank", () => {
+    const optional = ["schoolDegree", "weeklyHours", "about", "portfolioUrl"];
+    const result = parseVolunteerForm(
+      form([
+        ...base.filter(([k]) => !optional.includes(k)),
+        ["schoolDegree", "  "],
+        ["about", ""],
+      ]),
     );
+    expect(result.success).toBe(true);
+    expect(result.data).toMatchObject({
+      schoolDegree: null,
+      weeklyHours: null,
+      about: null,
+      portfolioUrl: null,
+    });
+  });
+
+  it("rejects a malformed email and an unknown weekly-hours value", () => {
+    const rest = base.filter(([k]) => k !== "email");
+    for (const bad of ["yuki", "yuki@", "wechat: yuki", "a b@x.com"]) {
+      const result = parseVolunteerForm(form([...rest, ["email", bad]]));
+      expect(result.error!.issues.map((i) => i.path[0])).toContain("email");
+    }
+    const hours = parseVolunteerForm(
+      form([
+        ...base.filter(([k]) => k !== "weeklyHours"),
+        ["weeklyHours", "always"],
+      ]),
+    );
+    expect(hours.error!.issues.map((i) => i.path[0])).toContain("weeklyHours");
   });
 
   it("adds https:// to a link typed without it", () => {

@@ -40,8 +40,8 @@ export default function VolunteerPage() {
         />
         <p className="lede" style={{ marginBottom: 32 }}>
           <T
-            zh="志愿参与，没有工资，可以提供参与证明。没有相关经验也可以申请；可以只选一个职位，也可以跨几个。我们不收学生证和 zID，联系方式只用来联系你。"
-            en="Volunteer and unpaid; a certificate of participation is available. No experience needed. Pick one position or several. We never ask for your student card or zID, and your contact details are only used to reach you."
+            zh="志愿参与，没有工资，可以提供参与证明。没有相关经验也可以申请；可以只选一个职位，也可以跨几个。我们不收学生证和 zID，邮箱只用来联系你和开通内部协作系统的账号。"
+            en="Volunteer and unpaid; a certificate of participation is available. No experience needed. Pick one position or several. We never ask for your student card or zID, and your email is only used to reach you and to open your account on our internal workspace."
           />
         </p>
         <VolunteerForm />

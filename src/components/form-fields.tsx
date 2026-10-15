@@ -22,6 +22,7 @@ export function TextField({
   optional,
   multiline,
   url,
+  email,
 }: {
   name: string;
   label: ReactNode;
@@ -34,6 +35,8 @@ export function TextField({
   /** A link: brings up the URL keyboard on phones. Kept `type="text"` so
    * bare `github.com/…` still submits and is completed server-side. */
   url?: boolean;
+  /** An email address: email keyboard on phones and browser autofill. */
+  email?: boolean;
 }) {
   const props = {
     name,
@@ -49,7 +52,12 @@ export function TextField({
       {multiline ? (
         <textarea {...props} />
       ) : (
-        <input type="text" inputMode={url ? "url" : undefined} {...props} />
+        <input
+          type={email ? "email" : "text"}
+          inputMode={url ? "url" : undefined}
+          autoComplete={email ? "email" : undefined}
+          {...props}
+        />
       )}
       <FieldError name={name} error={error} />
     </label>
