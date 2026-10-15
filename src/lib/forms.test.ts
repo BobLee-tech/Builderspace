@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   channelFromSearch,
   parseJoinForm,
+  parseProjectCommentForm,
   parseProjectForm,
   parseProjectUpdateForm,
   parseVolunteerForm,
@@ -383,7 +384,7 @@ describe("parseVolunteerForm", () => {
   });
 
   it("offers every position on the form", () => {
-    expect(new Set(VOLUNTEER_POSITIONS).size).toBe(11);
+    expect(new Set(VOLUNTEER_POSITIONS).size).toBe(9);
     expect(Object.keys(POSITION_LABEL).sort()).toEqual(
       [...VOLUNTEER_POSITIONS].sort(),
     );
@@ -436,6 +437,64 @@ describe("parseProjectUpdateForm", () => {
     );
     const paths = result.error!.issues.map((i) => i.path[0]);
     expect(paths).toEqual(expect.arrayContaining(["kind", "submittedBy"]));
+  });
+});
+
+describe("parseProjectCommentForm", () => {
+  const thread = "0b7e3f4a-9c1d-4e2f-8a6b-5c4d3e2f1a0b";
+  const base: [string, string][] = [
+    ["slug", "coursemate"],
+    ["nickname", " 阿杰 "],
+    ["body", " 我会 React，想一起做前端 "],
+  ];
+
+  it("accepts a top-level comment with a kind", () => {
+    const result = parseProjectCommentForm(form([...base, ["kind", "join"]]));
+    expect(result.data).toEqual({
+      slug: "coursemate",
+      parentId: null,
+      kind: "join",
+      nickname: "阿杰",
+      body: "我会 React，想一起做前端",
+    });
+  });
+
+  it("needs a kind unless it is a reply", () => {
+    const top = parseProjectCommentForm(form(base));
+    expect(top.error!.issues.map((i) => i.path[0])).toEqual(["kind"]);
+
+    const reply = parseProjectCommentForm(
+      form([...base, ["parentId", thread]]),
+    );
+    expect(reply.data).toMatchObject({ parentId: thread, kind: null });
+  });
+
+  it("drops the kind sent with a reply", () => {
+    const result = parseProjectCommentForm(
+      form([...base, ["parentId", thread], ["kind", "ask"]]),
+    );
+    expect(result.data?.kind).toBeNull();
+  });
+
+  it("rejects an unknown kind, a bad thread id and an empty body", () => {
+    const result = parseProjectCommentForm(
+      form([
+        ["slug", "coursemate"],
+        ["kind", "spam"],
+        ["parentId", "not-a-uuid"],
+        ["nickname", "x"],
+        ["body", "   "],
+      ]),
+    );
+    const paths = result.error!.issues.map((i) => i.path[0]);
+    expect(paths).toEqual(expect.arrayContaining(["kind", "parentId", "body"]));
+  });
+
+  it("caps the body at 500 characters", () => {
+    const result = parseProjectCommentForm(
+      form([...base.slice(0, 2), ["kind", "idea"], ["body", "长".repeat(501)]]),
+    );
+    expect(result.success).toBe(false);
   });
 });
 

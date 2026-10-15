@@ -29,7 +29,9 @@ export function SmoothScroll() {
       if (cancelled || run !== version) return;
       document.documentElement.classList.add("has-smooth-scroll");
       const lenis: Lenis = new Lenis({
-        lerp: 0.1,
+        // 0.1 left a ~0.5s glide after each flick that read as sticky; this
+        // settles in ~0.3s and still feels smooth.
+        lerp: 0.15,
         anchors: { offset: -80 },
         // Otherwise a scroll still easing out when a link is clicked carries
         // on into the next page and drags it down past the top.

@@ -12,6 +12,7 @@ import {
 import {
   NO_MEDIA,
   type Project,
+  type ProjectComment,
   type ProjectUpdate,
   type SiteEvent,
   type Tutorial,
@@ -91,6 +92,8 @@ type ProjectRow = {
   video_path: string | null;
   video_poster_path: string | null;
   video_seconds: number | null;
+  /** Only the plaza asks for it: `project_comments(count)`. */
+  project_comments?: { count: number }[];
 };
 
 // Media buckets are private; storage RLS only signs files of approved
@@ -168,20 +171,24 @@ function toProject(p: ProjectRow): Project {
     demoUrl: p.demo_url,
     updatedAt: p.updated_at,
     media: NO_MEDIA,
+    commentCount: p.project_comments?.[0]?.count ?? 0,
   };
 }
 
 export async function getProjects(): Promise<Project[]> {
   "use cache";
   cacheLife("minutes");
-  cacheTag("projects");
+  // A new comment only bumps the card's counter, so it refreshes this list in
+  // the background rather than making the next visitor wait.
+  cacheTag("projects", "comment-counts");
 
   const db = getSupabase();
   if (!db) return sampleProjects;
 
   const { data, error } = await db
     .from("projects")
-    .select(PROJECT_COLUMNS)
+    // RLS leaves deleted comments out of the count.
+    .select(`${PROJECT_COLUMNS},project_comments(count)`)
     .order("updated_at", { ascending: false });
   if (error) throw error;
   return toProjects(db, data as unknown as ProjectRow[]);
@@ -231,6 +238,41 @@ export async function getProject(slug: string): Promise<{
       occurredAt: u.occurred_at,
     })),
   };
+}
+
+/**
+ * Visible comments on an approved project, oldest first. A reply whose thread
+ * was deleted still comes back; the page shows it under a placeholder.
+ */
+export async function getProjectComments(
+  slug: string,
+): Promise<ProjectComment[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(`comments:${slug}`);
+
+  const db = getSupabase();
+  if (!db) return [];
+
+  const { data, error } = await db
+    .from("project_comments")
+    .select(
+      "id,parent_id,kind,nickname,body,is_owner,created_at,projects!inner(slug)",
+    )
+    .eq("projects.slug", slug)
+    .order("created_at")
+    .limit(500);
+  if (error) throw error;
+
+  return data.map((c) => ({
+    id: c.id,
+    parentId: c.parent_id,
+    kind: c.kind,
+    nickname: c.nickname,
+    body: c.body,
+    isOwner: c.is_owner,
+    createdAt: c.created_at,
+  }));
 }
 
 export async function getTutorials(): Promise<Tutorial[]> {

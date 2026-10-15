@@ -113,7 +113,7 @@ export function FootNext() {
                 trigger,
                 start: "top bottom",
                 end: "top 55%",
-                scrub: 0.6,
+                scrub: 0.25,
               },
             });
           });

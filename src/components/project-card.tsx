@@ -1,4 +1,8 @@
-import { User, ClockCounterClockwise } from "@phosphor-icons/react/dist/ssr";
+import {
+  ChatCircle,
+  ClockCounterClockwise,
+  User,
+} from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { formatShortDate } from "@/lib/format";
 import {
@@ -12,7 +16,7 @@ import { CoverMedia } from "./project-media";
 import { T } from "./t";
 
 /** Stable small hash so a project always gets the same generative cover. */
-function hash(s: string) {
+export function coverSeed(s: string) {
   return [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 }
 
@@ -30,7 +34,7 @@ export function Cover({
   media?: ProjectMedia;
 }) {
   return (
-    <div className="cover" data-v={hash(seed) % 6}>
+    <div className="cover" data-v={coverSeed(seed) % 6}>
       <span className="ini" aria-hidden>
         {[...label].slice(0, 2).join("")}
       </span>
@@ -100,6 +104,15 @@ export function ProjectCard({
           {project.ownerName}
         </span>
         <span className="mono">
+          {project.commentCount > 0 && (
+            <span className="pcard-cc">
+              <ChatCircle weight="light" size={15} aria-hidden />
+              {project.commentCount}
+              <span className="sr-only">
+                <T zh="条评论" en="comments" />
+              </span>
+            </span>
+          )}
           <ClockCounterClockwise weight="light" size={15} aria-hidden />
           {preview ? (
             <T zh="刚刚" en="Just now" />

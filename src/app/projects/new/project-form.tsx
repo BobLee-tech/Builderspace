@@ -90,6 +90,7 @@ function previewProject(
       videoPosterUrl: video?.frameUrls[video.pick] ?? null,
       videoSeconds: video?.seconds ?? null,
     },
+    commentCount: 0,
   };
 }
 

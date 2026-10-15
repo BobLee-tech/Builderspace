@@ -9,7 +9,15 @@ import {
   spring,
 } from "./motion";
 
-const SPOT = ".pcard, .box, .lcard, .form, .pillars, .surf";
+const SPOT = ".pcard, .box, .lcard, .form, .pillars, .surf, .ccard";
+// The ring grows over things you can click, and steps aside while you type.
+const CLICKABLE = "a, button, label.chip, summary";
+const TYPING = "input, textarea, select, [contenteditable]";
+// Tuned against "sticky" feedback: the ring settles in ~0.25s (was ~0.4s),
+// buttons follow the pointer half as far and stop without overshoot, cards
+// tilt half as much.
+const MAGNET = { x: 0.12, y: 0.16, max: 6 };
+const TILT = { x: 3, y: 4, lift: 3 };
 
 export function GlobalFx() {
   const cur = useRef<HTMLDivElement>(null);
@@ -57,9 +65,15 @@ export function GlobalFx() {
     let x = innerWidth / 2,
       y = innerHeight / 2;
     let target: Element | null = null,
-      lit: HTMLElement | null = null;
-    const rx = spring(170, 26),
-      ry = spring(170, 26);
+      lit: HTMLElement | null = null,
+      // Measured when the pointer enters a surface and again after a scroll,
+      // not on every move.
+      litRect: DOMRect | null = null;
+    on("scroll", () => {
+      litRect = null;
+    });
+    const rx = spring(600, 49),
+      ry = spring(600, 49);
     rx.x = rx.t = x;
     ry.x = ry.t = y;
     let stopCursor: (() => void) | null = null;
@@ -90,9 +104,9 @@ export function GlobalFx() {
       if (!s) {
         s = {
           el,
-          x: spring(kind === "card" ? 220 : 260, kind === "card" ? 28 : 24),
-          y: spring(kind === "card" ? 220 : 260, kind === "card" ? 28 : 24),
-          z: spring(),
+          x: spring(kind === "card" ? 320 : 400, kind === "card" ? 36 : 40),
+          y: spring(kind === "card" ? 320 : 400, kind === "card" ? 36 : 40),
+          z: spring(320, 36),
           stop: null,
         };
         surfaces.set(el, s);
@@ -115,20 +129,23 @@ export function GlobalFx() {
         inner.style.transform = `translate3d(${-(((ox % 120) + 120) % 120)}px,${-(((oy % 120) + 120) % 120)}px,0)`;
         gridEl.classList.add("on");
       }
+      const typing = !!target?.closest(TYPING);
+      ring.current?.classList.toggle("text", typing);
       ring.current?.classList.toggle(
         "big",
-        !!target?.closest("a, button, label.chip, .pcard"),
+        !typing && !!target?.closest(CLICKABLE),
       );
       const spot = target?.closest<HTMLElement>(SPOT) ?? null;
       if (lit && lit !== spot) {
         lit.style.removeProperty("--mx");
         lit.style.removeProperty("--my");
       }
+      if (spot !== lit) litRect = null;
       lit = spot;
       if (spot) {
-        const r = spot.getBoundingClientRect();
-        spot.style.setProperty("--mx", `${x - r.left}px`);
-        spot.style.setProperty("--my", `${y - r.top}px`);
+        litRect ??= spot.getBoundingClientRect();
+        spot.style.setProperty("--mx", `${x - litRect.left}px`);
+        spot.style.setProperty("--my", `${y - litRect.top}px`);
       }
       const nextCard =
         target?.closest<HTMLElement>(".pgrid:not(.as-list) .pcard") ?? null;
@@ -138,9 +155,9 @@ export function GlobalFx() {
       }
       if (card) {
         const r = card.el.getBoundingClientRect();
-        card.x.t = -((y - r.top) / r.height - 0.5) * 7;
-        card.y.t = ((x - r.left) / r.width - 0.5) * 9;
-        card.z.t = 6;
+        card.x.t = -((y - r.top) / r.height - 0.5) * TILT.x;
+        card.y.t = ((x - r.left) / r.width - 0.5) * TILT.y;
+        card.z.t = TILT.lift;
         animate(card, "card");
       }
       const nextButton = target?.closest<HTMLElement>(".btn") ?? null;
@@ -150,8 +167,10 @@ export function GlobalFx() {
       }
       if (magnet) {
         const r = magnet.el.getBoundingClientRect();
-        magnet.x.t = (x - r.left + magnet.x.x - r.width / 2) * 0.25;
-        magnet.y.t = (y - r.top + magnet.y.x - r.height / 2) * 0.35;
+        const pull = (v: number) =>
+          Math.max(-MAGNET.max, Math.min(MAGNET.max, v));
+        magnet.x.t = pull((x - r.left + magnet.x.x - r.width / 2) * MAGNET.x);
+        magnet.y.t = pull((y - r.top + magnet.y.x - r.height / 2) * MAGNET.y);
         animate(magnet, "button");
       }
       rx.t = x;
@@ -159,8 +178,9 @@ export function GlobalFx() {
       if (!stopCursor)
         stopCursor = frameLoop.add((dt) => {
           const moving = [rx.step(dt), ry.step(dt)].some(Boolean);
+          // `translate`, so the hover `scale` in CSS composes with it.
           if (ring.current)
-            ring.current.style.transform = `translate(${rx.x}px,${ry.x}px)`;
+            ring.current.style.translate = `${rx.x}px ${ry.x}px`;
           if (!moving) stopCursor = null;
           return moving;
         });

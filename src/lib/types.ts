@@ -47,9 +47,10 @@ export const REFERRAL_SOURCES = [
   "other",
 ] as const;
 
-// The eleven core-team positions, grouped into three departments. The keys are
-// stored in volunteer_applications.positions and checked by the database, so
-// keep the list there in step. Positions are listed only here so every one of
+// The nine core-team positions, grouped into two departments. The keys are
+// stored in volunteer_applications.positions and checked by the database; the
+// database still accepts the retired `secretary` and `finance` so older
+// applications stay valid. Positions are listed only here so every one of
 // them shows up on the form.
 export const DEPARTMENTS = [
   {
@@ -66,14 +67,14 @@ export const DEPARTMENTS = [
     name: { zh: "产品技术部", en: "Product & Technology" },
     positions: ["product", "web_tools", "teaching", "tech_explore"],
   },
-  {
-    name: { zh: "行政财务部", en: "Admin & Finance" },
-    positions: ["secretary", "finance"],
-  },
 ] as const satisfies readonly { name: Bi; positions: readonly string[] }[];
 
 export const VOLUNTEER_POSITIONS = DEPARTMENTS.flatMap((d) => d.positions);
 export type VolunteerPosition = (typeof VOLUNTEER_POSITIONS)[number];
+
+// Top-level comments on a project pick one; replies belong to their thread.
+export const COMMENT_KINDS = ["join", "idea", "ask"] as const;
+export type CommentKind = (typeof COMMENT_KINDS)[number];
 
 export const EVENT_INTEREST = ["yes", "maybe", "no"] as const;
 export type EventInterest = (typeof EVENT_INTEREST)[number];
@@ -104,6 +105,8 @@ export type Project = {
   demoUrl: string | null;
   updatedAt: string;
   media: ProjectMedia;
+  /** Visible comments, replies included; 0 for sample data and previews. */
+  commentCount: number;
 };
 
 /** Signed, short-lived URLs for an approved project's uploads. */
@@ -129,6 +132,19 @@ export type ProjectUpdate = {
   body: string;
   url: string | null;
   occurredAt: string;
+};
+
+/** A visible comment; replies point at a top-level `parentId`. */
+export type ProjectComment = {
+  id: string;
+  parentId: string | null;
+  /** null for replies. */
+  kind: CommentKind | null;
+  nickname: string;
+  body: string;
+  /** Marked by ops: the reply really is from the project owner. */
+  isOwner: boolean;
+  createdAt: string;
 };
 
 export type Tutorial = {
@@ -214,6 +230,12 @@ export const REFERRAL_LABEL: Record<(typeof REFERRAL_SOURCES)[number], Bi> = {
   other: { zh: "其他", en: "Other" },
 };
 
+export const COMMENT_KIND_LABEL: Record<CommentKind, Bi> = {
+  join: { zh: "想加入", en: "Wants to join" },
+  idea: { zh: "建议", en: "Suggestion" },
+  ask: { zh: "提问", en: "Question" },
+};
+
 export const EVENT_INTEREST_LABEL: Record<EventInterest, Bi> = {
   yes: { zh: "想来", en: "I'm in" },
   maybe: { zh: "看时间", en: "Depends on timing" },
@@ -230,6 +252,4 @@ export const POSITION_LABEL: Record<VolunteerPosition, Bi> = {
   web_tools: { zh: "网站与工具", en: "Website & tools" },
   teaching: { zh: "教学与支持", en: "Teaching & support" },
   tech_explore: { zh: "技术探索", en: "Tech exploration" },
-  secretary: { zh: "秘书与行政", en: "Secretary & admin" },
-  finance: { zh: "财务", en: "Finance" },
 };

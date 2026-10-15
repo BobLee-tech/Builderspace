@@ -36,7 +36,7 @@ export function CoverMedia({
   useEffect(() => {
     const el = box.current;
     const v = video.current;
-    const card = el?.closest<HTMLElement>(".pcard, .d-banner");
+    const card = el?.closest<HTMLElement>(".pcard, .d-cover");
     if (!el || !v || !card || !media.videoUrl) return;
     let raf = 0;
     const enter = () => {
