@@ -5,7 +5,8 @@ import { hasFinePointer, prefersReducedMotion, rafThrottle } from "./motion";
 
 /**
  * Page header motion: a light beam sweeps the outlined line once, then the
- * pointer takes over as the light; both title lines drift with depth parallax.
+ * pointer takes over as the light. The title itself stays put; letting it
+ * drift after the pointer read as sticky.
  */
 export function PageHeadFx({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -13,7 +14,6 @@ export function PageHeadFx({ children }: { children: ReactNode }) {
   useEffect(() => {
     const head = ref.current;
     if (!head || prefersReducedMotion()) return;
-    const title = head.querySelector<HTMLElement>(".page-title");
     const lit = head.querySelector<HTMLElement>(".lit");
 
     let sweeping = false;
@@ -38,7 +38,7 @@ export function PageHeadFx({ children }: { children: ReactNode }) {
       raf = requestAnimationFrame(step);
     }, 450);
 
-    if (!hasFinePointer() || !title) {
+    if (!hasFinePointer() || !lit) {
       return () => {
         clearTimeout(timer);
         cancelAnimationFrame(raf);
@@ -46,21 +46,7 @@ export function PageHeadFx({ children }: { children: ReactNode }) {
     }
 
     const onMove = rafThrottle((x: number, y: number) => {
-      const box = head.getBoundingClientRect();
-      const inside =
-        x >= box.left &&
-        x <= box.right &&
-        y >= box.top - 40 &&
-        y <= box.bottom + 40;
-      title.style.setProperty(
-        "--px",
-        inside ? ((x - box.left) / box.width - 0.5).toFixed(3) : "0",
-      );
-      title.style.setProperty(
-        "--py",
-        inside ? ((y - box.top) / box.height - 0.5).toFixed(3) : "0",
-      );
-      if (lit && !sweeping) {
+      if (!sweeping) {
         const r = lit.getBoundingClientRect();
         const near = y > r.top - 140 && y < r.bottom + 140;
         lit.style.setProperty("--lx", near ? `${x - r.left}px` : "-999px");

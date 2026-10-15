@@ -54,7 +54,7 @@ type Filter = "all" | CommentKind;
 
 /** Opens the comment box with "wants to join" picked and scrolls to it. */
 export function AskToJoin({
-  className = "btn solid",
+  className = "btn solid primary",
   children,
 }: {
   className?: string;

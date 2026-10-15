@@ -278,7 +278,7 @@ function Form({
       )}
       <button
         type="submit"
-        className="btn solid"
+        className="btn solid primary"
         disabled={pending}
         style={{ alignSelf: "start" }}
       >

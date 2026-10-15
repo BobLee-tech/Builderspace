@@ -13,16 +13,14 @@ const SPOT = ".pcard, .box, .lcard, .form, .pillars, .surf, .ccard";
 // The ring grows over things you can click, and steps aside while you type.
 const CLICKABLE = "a, button, label.chip, summary";
 const TYPING = "input, textarea, select, [contenteditable]";
-// Tuned against "sticky" feedback: the ring settles in ~0.25s (was ~0.4s),
-// buttons follow the pointer half as far and stop without overshoot, cards
-// tilt half as much.
-const MAGNET = { x: 0.12, y: 0.16, max: 6 };
-const TILT = { x: 3, y: 4, lift: 3 };
+// The ring settles in ~0.18s: it still reads as following the pointer, but
+// never drags behind it. Buttons and cards no longer move with the pointer
+// (that read as "sticky"); their hover states are plain CSS.
+const RING = { stiffness: 1000, damping: 63 };
 
 export function GlobalFx() {
   const cur = useRef<HTMLDivElement>(null);
   const ring = useRef<HTMLDivElement>(null);
-  const grid = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -72,63 +70,13 @@ export function GlobalFx() {
     on("scroll", () => {
       litRect = null;
     });
-    const rx = spring(600, 49),
-      ry = spring(600, 49);
+    const rx = spring(RING.stiffness, RING.damping),
+      ry = spring(RING.stiffness, RING.damping);
     rx.x = rx.t = x;
     ry.x = ry.t = y;
     let stopCursor: (() => void) | null = null;
-    type Surface = {
-      el: HTMLElement;
-      x: ReturnType<typeof spring>;
-      y: ReturnType<typeof spring>;
-      z: ReturnType<typeof spring>;
-      stop: (() => void) | null;
-    };
-    const surfaces = new Map<HTMLElement, Surface>();
-    let card: Surface | null = null,
-      magnet: Surface | null = null;
-    const animate = (s: Surface, kind: "card" | "button") => {
-      if (s.stop) return;
-      s.stop = frameLoop.add((dt) => {
-        const moving = [s.x.step(dt), s.y.step(dt), s.z.step(dt)].some(Boolean);
-        if (kind === "card")
-          s.el.style.transform = `rotateX(${s.x.x.toFixed(2)}deg) rotateY(${s.y.x.toFixed(2)}deg) translate3d(0,${-s.z.x}px,0)`;
-        else
-          s.el.style.translate = `${s.x.x.toFixed(2)}px ${s.y.x.toFixed(2)}px`;
-        if (!moving) s.stop = null;
-        return moving;
-      });
-    };
-    const surface = (el: HTMLElement, kind: "card" | "button") => {
-      let s = surfaces.get(el);
-      if (!s) {
-        s = {
-          el,
-          x: spring(kind === "card" ? 320 : 400, kind === "card" ? 36 : 40),
-          y: spring(kind === "card" ? 320 : 400, kind === "card" ? 36 : 40),
-          z: spring(320, 36),
-          stop: null,
-        };
-        surfaces.set(el, s);
-      }
-      return s;
-    };
-    const reset = (s: Surface | null, kind: "card" | "button") => {
-      if (!s) return;
-      s.x.t = s.y.t = s.z.t = 0;
-      animate(s, kind);
-    };
     const frame = rafThrottle(() => {
       if (cur.current) cur.current.style.transform = `translate(${x}px,${y}px)`;
-      const gridEl = grid.current;
-      if (gridEl && target) {
-        const ox = x - 260,
-          oy = y - 260;
-        gridEl.style.transform = `translate3d(${ox}px,${oy}px,0)`;
-        const inner = gridEl.firstElementChild as HTMLElement;
-        inner.style.transform = `translate3d(${-(((ox % 120) + 120) % 120)}px,${-(((oy % 120) + 120) % 120)}px,0)`;
-        gridEl.classList.add("on");
-      }
       const typing = !!target?.closest(TYPING);
       ring.current?.classList.toggle("text", typing);
       ring.current?.classList.toggle(
@@ -146,32 +94,6 @@ export function GlobalFx() {
         litRect ??= spot.getBoundingClientRect();
         spot.style.setProperty("--mx", `${x - litRect.left}px`);
         spot.style.setProperty("--my", `${y - litRect.top}px`);
-      }
-      const nextCard =
-        target?.closest<HTMLElement>(".pgrid:not(.as-list) .pcard") ?? null;
-      if (card?.el !== nextCard) {
-        reset(card, "card");
-        card = nextCard ? surface(nextCard, "card") : null;
-      }
-      if (card) {
-        const r = card.el.getBoundingClientRect();
-        card.x.t = -((y - r.top) / r.height - 0.5) * TILT.x;
-        card.y.t = ((x - r.left) / r.width - 0.5) * TILT.y;
-        card.z.t = TILT.lift;
-        animate(card, "card");
-      }
-      const nextButton = target?.closest<HTMLElement>(".btn") ?? null;
-      if (magnet?.el !== nextButton) {
-        reset(magnet, "button");
-        magnet = nextButton ? surface(nextButton, "button") : null;
-      }
-      if (magnet) {
-        const r = magnet.el.getBoundingClientRect();
-        const pull = (v: number) =>
-          Math.max(-MAGNET.max, Math.min(MAGNET.max, v));
-        magnet.x.t = pull((x - r.left + magnet.x.x - r.width / 2) * MAGNET.x);
-        magnet.y.t = pull((y - r.top + magnet.y.x - r.height / 2) * MAGNET.y);
-        animate(magnet, "button");
       }
       rx.t = x;
       ry.t = y;
@@ -195,7 +117,6 @@ export function GlobalFx() {
     });
     const leave = () => {
       root.classList.remove("cur-live");
-      grid.current?.classList.remove("on");
       target = null;
       frame();
     };
@@ -204,11 +125,6 @@ export function GlobalFx() {
       root.removeEventListener("pointerleave", leave);
       frame.cancel();
       stopCursor?.();
-      surfaces.forEach((s) => {
-        s.stop?.();
-        s.el.style.removeProperty("transform");
-        s.el.style.removeProperty("translate");
-      });
       lit?.style.removeProperty("--mx");
       lit?.style.removeProperty("--my");
       root.classList.remove("has-cursor", "cur-live");
@@ -216,13 +132,12 @@ export function GlobalFx() {
     return () => cleanups.forEach((f) => f());
   }, []);
 
+  // Background stack: the page grid's crosshair marks and film grain. The
+  // full-page grid lines, the pointer-following grid and the vignette are
+  // gone; they repeated the marks and dulled the edges.
   return (
     <>
       <div className="marks" aria-hidden />
-      <div className="gridspot" ref={grid} aria-hidden>
-        <i />
-      </div>
-      <div className="vignette" aria-hidden />
       <div className="grain" aria-hidden />
       <div className="cur" ref={cur} aria-hidden />
       <div className="cur-ring" ref={ring} aria-hidden />
