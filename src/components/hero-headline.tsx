@@ -45,9 +45,11 @@ export function HeroHeadline({
     const weights = chars.map(() => spring(170, 26));
     const l2 = h1.querySelector<HTMLElement>(".l2 .fx")!;
     const chromes = [...h1.querySelectorAll<HTMLElement>(".chrome2")];
-    const tiltX = spring(90, 18),
-      tiltY = spring(90, 18),
-      radius = spring(120, 22);
+    // Critically damped and about twice as quick as before (~0.4s), so the
+    // headline answers the pointer instead of trailing it.
+    const tiltX = spring(180, 27),
+      tiltY = spring(180, 27),
+      radius = spring(200, 28);
     const hud = hero.querySelector<HTMLElement>(".headline-hud")!;
     const hx = hud.querySelector<HTMLElement>(".hud-x")!,
       hy = hud.querySelector<HTMLElement>(".hud-y")!,

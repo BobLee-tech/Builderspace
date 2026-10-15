@@ -29,9 +29,10 @@ export function SmoothScroll() {
       if (cancelled || run !== version) return;
       document.documentElement.classList.add("has-smooth-scroll");
       const lenis: Lenis = new Lenis({
-        // 0.1 left a ~0.5s glide after each flick that read as sticky; this
-        // settles in ~0.3s and still feels smooth.
-        lerp: 0.15,
+        // Each step closes 24% of the gap: wheel steps are smoothed, but the
+        // glide after a flick is ~0.18s (0.1 gave ~0.5s, which felt slippery,
+        // most of all on trackpads that already have their own inertia).
+        lerp: 0.24,
         anchors: { offset: -80 },
         // Otherwise a scroll still easing out when a link is clicked carries
         // on into the next page and drags it down past the top.

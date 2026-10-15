@@ -97,7 +97,7 @@ export default function PeoplePage() {
             <Link href="/core-team" className="btn ghost">
               <T zh="申请做核心成员" en="Join the core team" />
             </Link>
-            <Link href="/join" className="btn solid">
+            <Link href="/join" className="btn solid primary">
               <T zh="加入 BuilderSpace" en="Join BuilderSpace" /> <Arr />
             </Link>
           </div>

@@ -74,7 +74,6 @@ export default function RootLayout({
       </head>
       <body>
         <Boot />
-        <div className="backdrop" aria-hidden />
         <BgShader />
         <ScrollRail />
         <GlobalFx />

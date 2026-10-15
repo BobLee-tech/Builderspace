@@ -15,7 +15,7 @@ import { countKind } from "@/lib/comments";
 import { AskToJoin, Comments } from "./comments";
 import { ContactCopy, DetailToc } from "./detail-aside";
 import { UpdateForm } from "./update-form";
-import { Arr, Hud } from "@/components/fx/arr";
+import { Arr } from "@/components/fx/arr";
 import { CoverMaterial } from "@/components/fx/cover-material";
 import { TimelineFx } from "@/components/fx/scroll-fx";
 import { Cover, StatusDot, coverSeed } from "@/components/project-card";
@@ -158,8 +158,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
               )}
             </div>
           </div>
-          <figure className="d-cover hud">
-            <Hud />
+          <figure className="d-cover">
             {!hasMedia && <CoverMaterial seed={coverSeed(project.slug)} />}
             <Cover seed={project.slug} label={project.name} media={media} />
           </figure>

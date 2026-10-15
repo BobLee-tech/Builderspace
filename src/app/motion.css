@@ -74,11 +74,7 @@
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ---------- page atmosphere: blueprint marks, grain, vignette, cursor grid ---------- */
-.backdrop {
-  background-size: 120px 120px;
-  opacity: 0.28;
-}
+/* ---------- page atmosphere: blueprint marks and grain ---------- */
 .marks {
   position: fixed;
   inset: 0;
@@ -94,52 +90,10 @@
   inset: 0;
   pointer-events: none;
   z-index: 60;
-  opacity: 0.05;
+  opacity: 0.035;
   background-image: var(--mat-noise);
   background-size: 220px;
 }
-.vignette {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 59;
-  background: radial-gradient(
-    120% 90% at 50% 40%,
-    transparent 55%,
-    rgba(0, 0, 0, 0.55)
-  );
-}
-.gridspot {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 520px;
-  height: 520px;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0;
-  transition: opacity var(--dur-2);
-  will-change: transform;
-  mask-image: radial-gradient(circle, #000, transparent 68%);
-  overflow: hidden;
-  contain: strict;
-}
-.gridspot > i {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 640px;
-  height: 640px;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px);
-  background-size: 120px 120px;
-  will-change: transform;
-}
-.gridspot.on {
-  opacity: 1;
-}
-
 /* ---------- custom cursor (fine pointers only; enabled by fx) ---------- */
 .cur,
 .cur-ring {
@@ -493,15 +447,27 @@ html.fx .top {
   opacity: 0.7;
   transform: translateX(-120%);
 }
-.btn.solid:not(:hover)::after {
-  animation: sheen 4.5s ease-in-out infinite;
+/* Only the page's main call to action (.primary) shimmers on its own. */
+.btn.solid.primary:not(:hover)::after {
+  animation: sheen 9s ease-in-out infinite;
+}
+.btn.solid:hover::after {
+  animation: sheen-once 0.7s ease-out;
 }
 @keyframes sheen {
   0%,
-  70% {
+  85% {
     transform: translateX(-120%);
   }
   100% {
+    transform: translateX(120%);
+  }
+}
+@keyframes sheen-once {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
     transform: translateX(120%);
   }
 }
@@ -644,8 +610,8 @@ html.fx .top {
   pointer-events: none;
   background:
     radial-gradient(
-      260px circle at var(--mx) var(--my),
-      rgba(255, 255, 255, 0.7),
+      200px circle at var(--mx) var(--my),
+      rgba(255, 255, 255, 0.4),
       transparent 60%
     ),
     var(--edge);
@@ -999,23 +965,16 @@ html.fx .top {
   opacity: 1;
 }
 
-/* ---------- project cards: generative cover, status dot, 3D tilt ---------- */
+/* ---------- project cards: generative cover, status dot, hover lift ---------- */
 .pcard {
-  --rx: 0deg;
-  --ry: 0deg;
   overflow: hidden;
-  transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry));
   transition:
-    transform 0.6s var(--ease),
+    transform 0.25s var(--ease),
     border-color 0.3s;
 }
 @media (hover: hover) {
   .pcard:hover {
-    transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry))
-      translateY(-6px);
-    transition:
-      transform 0.15s linear,
-      border-color 0.3s;
+    transform: translateY(-4px);
   }
 }
 .cover {
@@ -1032,7 +991,7 @@ html.fx .top {
   content: "";
   position: absolute;
   inset: -20%;
-  transition: transform 1.2s var(--ease);
+  transition: transform 0.45s var(--ease);
   mask-image: radial-gradient(120% 100% at 80% 100%, #000 30%, transparent 80%);
 }
 .pcard:hover .cover::before {
@@ -1417,18 +1376,6 @@ html.fx .top {
 .page-title .line > span {
   animation: none;
 }
-.page-title .line:first-child {
-  transform: translate3d(calc(var(--px, 0) * 7px), calc(var(--py, 0) * 3px), 0);
-  transition: transform 0.9s var(--ease);
-}
-.page-title .line:nth-child(2) {
-  transform: translate3d(
-    calc(var(--px, 0) * 16px),
-    calc(var(--py, 0) * 6px),
-    0
-  );
-  transition: transform 0.9s var(--ease);
-}
 .page-title .line:nth-child(2) > span {
   animation: slideUp 1s var(--ease) 0.25s both;
 }
@@ -1493,7 +1440,7 @@ html.fx .top {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--paper), transparent);
   transform: scaleX(0);
-  transition: transform 0.6s var(--ease);
+  transition: transform 0.45s var(--ease);
 }
 .page-aside > div:hover {
   background: rgba(255, 255, 255, 0.035);
@@ -2500,10 +2447,7 @@ html.fx .top {
   padding: 16px 18px 10px;
   border-radius: 16px;
   background-color: var(--panel);
-  background-image: var(--mat-frost), var(--mat-halftone);
-  background-size:
-    auto,
-    6px 6px;
+  background-image: var(--mat-frost);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   /* Long threads: off-screen cards skip layout and paint. */
   content-visibility: auto;
@@ -2520,7 +2464,7 @@ html.fx .top {
     100% 0,
     0 0,
     0 0;
-  transition: background-position 1.2s var(--ease);
+  transition: background-position 0.7s var(--ease);
 }
 @media (hover: hover) {
   .ccard.owner:hover {
@@ -2789,10 +2733,7 @@ html.fx .top {
   border: 1px solid var(--line);
   border-radius: 18px;
   overflow: hidden;
-  background-image: var(--mat-frost), var(--mat-micro);
-  background-size:
-    auto,
-    5px 5px;
+  background-image: var(--mat-frost);
   background-color: var(--panel);
   display: flex;
   flex-direction: column;
@@ -3354,7 +3295,7 @@ html.fx .top {
   background: var(--mat-brushed), var(--paper);
   transform: scaleY(0);
   transform-origin: 50% var(--from);
-  transition: transform 0.75s var(--ease);
+  transition: transform 0.45s var(--ease);
 }
 .fn-in {
   display: flex;
@@ -3392,7 +3333,7 @@ html.fx .top {
 .fn-roll {
   display: flex;
   flex-direction: column;
-  transition: transform 0.75s var(--ease);
+  transition: transform 0.45s var(--ease);
 }
 .fn-roll > span {
   display: block;
@@ -3495,8 +3436,7 @@ html.fx .top {
     padding-top: 96px;
   }
   .readout.br,
-  .scrollcue,
-  .gridspot {
+  .scrollcue {
     display: none;
   }
   .readout.tr {
@@ -3614,7 +3554,6 @@ html.fx .top {
 
 @media (prefers-reduced-motion: reduce) {
   .boot,
-  .gridspot,
   .grain {
     display: none;
   }
@@ -4869,9 +4808,9 @@ html.lenis body {
   filter: grayscale(1) contrast(1.08) brightness(0.86);
   scale: 1.02;
   transition:
-    filter 0.7s var(--ease),
-    scale 1.4s var(--ease),
-    opacity 0.5s;
+    filter 0.45s var(--ease),
+    scale 0.6s var(--ease),
+    opacity 0.45s;
 }
 .cv-media video {
   opacity: 0;

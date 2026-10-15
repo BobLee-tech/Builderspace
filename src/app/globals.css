@@ -155,18 +155,6 @@ p {
 }
 
 /* ---------- backdrop ---------- */
-.backdrop {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    linear-gradient(var(--line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 80px 80px;
-  opacity: 0.35;
-  mask-image: radial-gradient(ellipse at 50% 0%, #000 30%, transparent 75%);
-}
 main {
   position: relative;
   z-index: 1;
@@ -520,10 +508,7 @@ main {
 .box {
   border: 1px solid var(--line-2);
   border-radius: var(--radius);
-  background-image: var(--mat-frost), var(--mat-micro);
-  background-size:
-    auto,
-    5px 5px;
+  background-image: var(--mat-frost);
   background-color: var(--panel);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),

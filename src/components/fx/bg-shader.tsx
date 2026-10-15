@@ -4,7 +4,11 @@ import { useEffect, useRef } from "react";
 import type { ShaderMount } from "@paper-design/shaders";
 import { rafThrottle } from "./motion";
 
-/** A fixed, low-contrast material; never animate behind an opaque, dominant hero. */
+/**
+ * A fixed, low-contrast dithering texture that slowly flows; never animated
+ * behind an opaque, dominant hero, nor while the works band or a hidden tab
+ * would make it wasted work. Reduced motion keeps one still frame.
+ */
 export function BgShader() {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -34,11 +38,10 @@ export function BgShader() {
       const worksVisible = wr && wr.bottom > 0 && wr.top < innerHeight;
       const pause =
         reduce.matches || document.hidden || heroDominates || worksVisible;
+      // The texture flows on its own but no longer drifts with the scroll:
+      // a background sliding under the content made scrolling feel slippery.
       mount.setSpeed(pause ? 0 : 0.18);
       el.dataset.paused = String(Boolean(pause));
-      // Reduced motion retains a single static frame, including while scrolling.
-      if (!reduce.matches && !heroDominates && !worksVisible)
-        mount.setUniforms({ u_offsetY: (-scrollY / innerHeight) * 0.18 });
     });
     const onLost = () => {
       lost = true;

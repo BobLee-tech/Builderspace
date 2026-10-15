@@ -373,7 +373,7 @@ function Form({
       )}
       <button
         type="submit"
-        className="btn solid"
+        className="btn solid primary"
         disabled={pending || posting || uploading}
         style={{ alignSelf: "start" }}
       >

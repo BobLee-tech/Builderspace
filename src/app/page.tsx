@@ -67,7 +67,7 @@ export default function Home() {
               </p>
             </div>
             <div className="hero-cta">
-              <Link href="/join" className="btn solid">
+              <Link href="/join" className="btn solid primary">
                 <T zh="加入 BuilderSpace" en="Join BuilderSpace" />
                 <Arr />
               </Link>
