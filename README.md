@@ -105,7 +105,7 @@ pnpm check   # lint + typecheck + format + test + build
 - 首页第二屏：1.76 万个取自 logo 的粒子吉祥物（`src/components/mascot-stage.tsx`），数据 `public/mascot-particles.json` 只在滚动到附近时才加载。
 - 两者都在“减少动态效果”时静止，WebGL 不可用时退回静态图，并按帧率自动降分辨率。
 - 项目详情页：没有上传封面的项目用 Paper Shaders 的颗粒渐变做封面材质（`src/components/fx/cover-material.tsx`），最多渲染约 60 万像素，离开屏幕或切走标签页就暂停。
-- 背景只有四层：静止的抖动纹理（`bg-shader.tsx`，只画一帧）、顶部光晕、十字标记和 3.5% 的噪点。卡片和表单只用磨砂底，鼠标高光描边 40%；HUD 角标只放在表单上；按钮流光只给每页一个主按钮（`.btn.solid.primary`，9 秒一次），其余按钮悬停时扫一次。
+- 背景只有四层：缓慢流动的抖动纹理（`bg-shader.tsx`，首屏和作品区可见时、切走标签页时暂停，不随滚动漂移）、顶部光晕、十字标记和 3.5% 的噪点。卡片和表单只用磨砂底，鼠标高光描边 40%；HUD 角标只放在表单上；按钮流光只给每页一个主按钮（`.btn.solid.primary`，9 秒一次），其余按钮悬停时扫一次。
 - 手感：自定义光标外圈约 0.18 秒追上指针；按钮和卡片不跟着鼠标动（卡片悬停 0.25 秒抬起 4px），页头标题不随鼠标漂移；Lenis 平滑滚动 `lerp` 0.24（停手后约 0.18 秒停稳）；悬停过渡不超过 0.45 秒；标题进入屏幕后自己播完、不跟着滚动走（`src/components/fx/global-fx.tsx`、`smooth-scroll.tsx`、`use-scroll-animations.ts`）。
 
 ## 合规提醒
