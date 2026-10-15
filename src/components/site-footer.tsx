@@ -82,8 +82,8 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/volunteer">
-                  <T zh="志愿者申请" en="Volunteer" />
+                <Link href="/core-team">
+                  <T zh="核心成员申请" en="Core team" />
                 </Link>
               </li>
               <li>

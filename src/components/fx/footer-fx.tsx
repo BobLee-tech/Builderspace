@@ -47,7 +47,7 @@ const NEXT: Record<string, [string, string, string, string]> = {
     "活动 · 先来一场 Build Night",
     "Events · come to a Build Night first",
   ],
-  "/volunteer": [
+  "/core-team": [
     "/people",
     "The builders",
     "回成员页 · 看看现在的团队",
@@ -72,7 +72,7 @@ export function FootNext() {
   const section = NAV_LINKS.map((l) => l.href)
     .filter((h) => h !== "/")
     .find((h) => pathname.startsWith(h));
-  // Pages outside the nav (/join, /volunteer) have their own entry.
+  // Pages outside the nav (/join, /core-team) have their own entry.
   const [to, title, zh, en] =
     NEXT[pathname] ??
     (section === "/projects" ? BACK_TO_PLAZA : NEXT[section ?? "/"]) ??

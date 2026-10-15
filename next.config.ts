@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // The core-team form used to live at /volunteer; keep shared links working.
+  async redirects() {
+    return [
+      { source: "/volunteer", destination: "/core-team", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

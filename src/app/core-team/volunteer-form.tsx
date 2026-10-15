@@ -177,8 +177,8 @@ export function VolunteerForm() {
         <input type="checkbox" name="dataConsent" />
         <span>
           <T
-            zh="我同意 BuilderSpace 保存以上信息，仅用于联系和筛选核心团队志愿者（可随时要求删除）"
-            en="I agree to BuilderSpace keeping this information, only to contact and select core-team volunteers (deleted on request)"
+            zh="我同意 BuilderSpace 保存以上信息，仅用于联系和筛选核心团队成员（可随时要求删除）"
+            en="I agree to BuilderSpace keeping this information, only to contact and select core-team members (deleted on request)"
           />
         </span>
       </label>
