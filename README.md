@@ -2,7 +2,7 @@
 
 一个从 UNSW 起步的中英双语创客社团的官网与项目广场。
 
-**Bring an idea. Leave with something that works.**
+**Bring an idea. Make it work.**
 
 - 交互原型（设计基准）：[BobLee-tech/builderspace-demo](https://github.com/BobLee-tech/builderspace-demo)
 - 需求来源：PRD v0.5 第四节「官网与项目广场」

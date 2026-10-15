@@ -4241,7 +4241,7 @@ html.fx:not(.booted) .top {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto repeat(4, auto) auto;
+  grid-template-rows: auto auto repeat(3, auto) auto;
   perspective: 1600px;
   container-type: inline-size;
 }
@@ -4278,15 +4278,19 @@ html.fx:not(.booted) .top {
   font-weight: 400;
   color: var(--mute);
 }
+/* Flush both edges: "Bring an idea." and "work." + caret fill the width, measured
+   on the glyph ink of Unbounded 800 (not the side bearings):
+   "Bring an idea." 7.822em wide, starts .0436em in; "Make it" starts .0648em in;
+   "work." 3.274em + .22em caret. --height-fit shrinks every line together. */
 .h1x {
-  grid-row: 2 / 6;
+  grid-row: 3 / 6;
   grid-column: 1;
   display: grid;
   grid-template-rows: subgrid;
   margin: 0;
   font-family: var(--f-display);
   font-weight: 800;
-  font-size: calc(100cqw / 9.28 * var(--height-fit, 1));
+  font-size: calc(99.6cqw / 7.822 * var(--height-fit, 1));
   line-height: 0.9;
   letter-spacing: -0.055em;
   transform-style: preserve-3d;
@@ -4302,10 +4306,6 @@ html.fx:not(.booted) .top {
 }
 .hstage.intro-done .h1x .line {
   overflow: visible;
-}
-.h1x .r {
-  text-align: right;
-  align-self: end;
 }
 .h1x .dz {
   display: block;
@@ -4324,12 +4324,17 @@ html.fx:not(.booted) .top {
 .l4 {
   --z: 110px;
 }
+.h1x .line.l1 {
+  margin-left: -0.0436em;
+}
+.h1x .line.l2 {
+  margin-left: -0.0648em;
+}
 .h1x .l4 {
-  font-size: calc(99cqw / 4.32 * var(--height-fit, 1));
+  font-size: calc(99.6cqw / 3.494 * var(--height-fit, 1));
   line-height: 0.84;
   letter-spacing: -0.06em;
   padding-block: 0.02em 0.1em;
-  margin-top: 0.04em;
 }
 .h1x .fx {
   display: inline-block;
@@ -4353,9 +4358,6 @@ html.fx:not(.booted) .top {
   );
   transform: scaleX(0);
   transform-origin: 0 50%;
-}
-.h1x .r::after {
-  transform-origin: 100% 50%;
 }
 .headline-ready .h1x .line::after {
   transform: none;
@@ -4408,9 +4410,10 @@ html.fx:not(.booted) .top {
     0 0,
     0 var(--cy, 70%);
 }
+/* A thin caret, so "work." keeps the weight of the last line. */
 .h1x .cursor {
-  width: 0.46em;
-  height: 0.76em;
+  width: 0.14em;
+  height: 0.7em;
   vertical-align: -0.02em;
 }
 /* "works": liquid metal (Paper Shaders) + a build that runs on hover / click */
@@ -4498,15 +4501,16 @@ html.fx:not(.booted) .top {
     font-size: 9.5px;
   }
 }
+/* Every headline line is flush left, so the status row sits above them. */
 .hmeta {
-  grid-row: 3;
+  grid-row: 2;
   grid-column: 1;
-  align-self: center;
   justify-self: start;
   z-index: 2;
-  display: grid;
-  gap: 8px;
-  max-width: 24%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-bottom: clamp(16px, 2vw, 28px);
 }
 .hmeta span {
   display: inline-flex;
@@ -4589,9 +4593,6 @@ html.fx:not(.booted) .top {
     font-size: 13.2vw;
     transform: none !important;
   }
-  .h1x .r {
-    text-align: left;
-  }
   .h1x .fx {
     display: inline;
     white-space: normal;
@@ -4639,9 +4640,6 @@ html.fx:not(.booted) .top {
 .hmeta .live {
   white-space: nowrap;
 }
-.hmeta {
-  max-width: 34%;
-}
 .works-metal {
   inset: -0.22em -0.06em;
 }
@@ -4658,10 +4656,10 @@ html.fx:not(.booted) .top {
     padding-block: 88px 96px;
   }
   .h1x {
-    font-size: calc(100cqw / 9.28);
+    font-size: calc(99.6cqw / 7.822);
   }
   .h1x .l4 {
-    font-size: calc(99cqw / 4.32);
+    font-size: calc(99.6cqw / 3.494);
   }
   .hmeta {
     margin-bottom: 28px;
@@ -4689,8 +4687,7 @@ html.fx:not(.booted) .top {
   }
 }
 
-/* Actual self-hosted Unbounded metrics: 9.2525em for the third line.
-   Leave a small margin so rounding cannot wrap it on a narrow phone. */
+/* Lines never wrap on a phone; the sizes above already fit the width. */
 @media (max-width: 760px) {
   .h1x .fx {
     display: inline-block;

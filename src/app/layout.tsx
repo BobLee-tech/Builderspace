@@ -35,7 +35,7 @@ const notoSc = Noto_Sans_SC({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "BuilderSpace · Bring an idea. Leave with something that works.",
+    default: "BuilderSpace · Bring an idea. Make it work.",
     template: "%s · BuilderSpace",
   },
   description: "从 UNSW 起步的中英双语创客社：找队友，每周一起把项目做上线。",

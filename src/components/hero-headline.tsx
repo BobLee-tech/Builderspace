@@ -328,10 +328,7 @@ export function HeroHeadline({
         <i />
         <b className="dim-f tnum">UNBOUNDED 800</b>
       </div>
-      <h1
-        className="h1x"
-        aria-label="Bring an idea. Leave with something that works."
-      >
+      <h1 className="h1x" aria-label="Bring an idea. Make it work.">
         <span className="line l1" style={lineStyle(0)} aria-hidden>
           <span className="dz">
             <span className="fx">
@@ -350,20 +347,15 @@ export function HeroHeadline({
             </span>
           </span>
         </span>
-        <span className="line l2 r" style={lineStyle(1)} aria-hidden>
+        <span className="line l2" style={lineStyle(1)} aria-hidden>
           <span className="dz">
-            <span className="fx">Leave with</span>
+            <span className="fx">Make it</span>
           </span>
         </span>
-        <span className="line l3" style={lineStyle(2)} aria-hidden>
-          <span className="dz">
-            <span className="fx chrome2">something that</span>
-          </span>
-        </span>
-        <span className="line l4" style={lineStyle(3)} aria-hidden>
+        <span className="line l4" style={lineStyle(2)} aria-hidden>
           <span className="dz">
             <span className="works-wrap">
-              <span className="fx chrome2 works-text">works</span>
+              <span className="fx chrome2 works-text">work.</span>
               <WorksMetal />
               <span className="wstat mono">
                 <i className="led" />
