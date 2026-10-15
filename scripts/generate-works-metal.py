@@ -14,6 +14,8 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 root = Path(__file__).resolve().parents[1]
+# The last headline line in src/components/hero-headline.tsx.
+WORD = 'work.'
 if len(sys.argv) > 1:
     font_path = Path(sys.argv[1])
 else:
@@ -33,16 +35,16 @@ size = 400
 font = ImageFont.truetype(str(font_path), size)
 font.set_variation_by_axes([800])
 spacing = -0.06 * size
-width = round(font.getlength('works') + 5 * spacing)
+width = round(font.getlength(WORD) + len(WORD) * spacing)
 height = round(size * .84)
 px, py = round(size * .06), round(size * .22)
 alpha = Image.new('L', (width + 2 * px, height + 2 * py))
 g = ImageDraw.Draw(alpha)
 # Centre the visual glyph box, like the prototype's canvas text mask.
-bbox = font.getbbox('works', anchor='ls')
+bbox = font.getbbox(WORD, anchor='ls')
 baseline = py + (height - bbox[1] - bbox[3]) / 2
 x = px
-for letter in 'works':
+for letter in WORD:
     g.text((x, baseline), letter, fill=255, font=font, anchor='ls')
     x += font.getlength(letter) + spacing
 

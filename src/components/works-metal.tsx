@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { ShaderMount } from "@paper-design/shaders";
 
-/** Height map: scripts/generate-works-metal.py, Unbounded 800, spacing -.06em.
+/** Height map of "work.": scripts/generate-works-metal.py, Unbounded 800, spacing -.06em.
  * It includes .06em horizontal / .22em vertical padding, like polish-demo.
  * Regenerate after changing the word/font; the browser never processes text. */
 export function WorksMetal() {
