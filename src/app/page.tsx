@@ -17,7 +17,7 @@ import { CYCLE } from "@/lib/cycle";
 import { getProjects } from "@/lib/data";
 import { Plaza } from "./projects/plaza";
 
-// The whole page is three beats: who we are, the mascot, what members are building.
+// The whole page is three beats: who we are, what members are building, the mascot.
 export default function Home() {
   return (
     <>
@@ -98,9 +98,9 @@ export default function Home() {
         </dl>
       </section>
 
-      <MascotStage />
-
       <PlazaSection />
+
+      <MascotStage />
     </>
   );
 }
