@@ -5,6 +5,7 @@ import {
   ChatCircle,
   Lightbulb,
   Question,
+  Trash,
   UserPlus,
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
@@ -15,11 +16,14 @@ import {
   useMemo,
   useRef,
   useState,
+  useTransition,
 } from "react";
 import type { Flip } from "gsap/Flip";
+import Link from "next/link";
 import { Arr, Hud } from "@/components/fx/arr";
 import { SpamGuard } from "@/components/spam-guard";
 import { Msg, T } from "@/components/t";
+import { hasAdminFlag } from "@/lib/admin";
 import { countKind, threadsOf } from "@/lib/comments";
 import { formatShortDate, formatTime } from "@/lib/format";
 import type { FormState } from "@/lib/forms";
@@ -31,7 +35,7 @@ import {
   type CommentKind,
   type ProjectComment,
 } from "@/lib/types";
-import { submitProjectComment } from "./actions";
+import { deleteProjectComment, submitProjectComment } from "./actions";
 
 /** Fired by the "I want to join" buttons elsewhere on the page. */
 const COMPOSE_EVENT = "bs:compose";
@@ -97,15 +101,95 @@ function Body({ text }: { text: string }) {
   );
 }
 
+/** Admin only: delete with an inline confirmation (no browser dialogs). */
+function DeleteControl({
+  slug,
+  id,
+  hasReplies,
+}: {
+  slug: string;
+  id: string;
+  hasReplies: boolean;
+}) {
+  const [asking, setAsking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  if (!asking) {
+    return (
+      <button
+        type="button"
+        className="ibtn danger"
+        onClick={() => setAsking(true)}
+      >
+        <Trash weight="light" size={14} aria-hidden />
+        <T zh="删除" en="Delete" />
+      </button>
+    );
+  }
+  return (
+    <div className="cm-confirm" role="group">
+      <span>
+        {hasReplies ? (
+          <T
+            zh="删除后这里显示「已被管理员删除」，回复保留。"
+            en="It will show as removed; the replies stay."
+          />
+        ) : (
+          <T
+            zh="删除后访客就看不到这条评论了。"
+            en="Visitors won't see this comment any more."
+          />
+        )}
+      </span>
+      <button
+        type="button"
+        className="btn sm del"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            const result = await deleteProjectComment(slug, id);
+            if (!result.ok) setError(result.message);
+          })
+        }
+      >
+        {pending ? (
+          <T zh="删除中…" en="Deleting…" />
+        ) : (
+          <T zh="确认删除" en="Delete" />
+        )}
+      </button>
+      <button
+        type="button"
+        className="ibtn"
+        disabled={pending}
+        onClick={() => {
+          setAsking(false);
+          setError(null);
+        }}
+      >
+        <T zh="取消" en="Cancel" />
+      </button>
+      {error && (
+        <span className="err" role="alert">
+          <Msg s={error} />
+        </span>
+      )}
+    </div>
+  );
+}
+
 function Comment({
   c,
   fresh,
   onReply,
+  admin,
 }: {
   c: ProjectComment;
   fresh: boolean;
   /** Missing under a deleted comment, which takes no more replies. */
   onReply?: () => void;
+  /** Set for a signed-in admin. */
+  admin?: { slug: string; hasReplies: boolean };
 }) {
   const KindIcon = c.kind ? KIND_ICON[c.kind] : null;
   return (
@@ -133,12 +217,21 @@ function Comment({
           </time>
         </header>
         <Body text={c.body} />
-        {onReply && (
+        {(onReply || admin) && (
           <div className="cm-foot">
-            <button type="button" className="ibtn" onClick={onReply}>
-              <ArrowBendUpLeft weight="light" size={14} aria-hidden />
-              <T zh="回复" en="Reply" />
-            </button>
+            {onReply && (
+              <button type="button" className="ibtn" onClick={onReply}>
+                <ArrowBendUpLeft weight="light" size={14} aria-hidden />
+                <T zh="回复" en="Reply" />
+              </button>
+            )}
+            {admin && (
+              <DeleteControl
+                slug={admin.slug}
+                id={c.id}
+                hasReplies={admin.hasReplies}
+              />
+            )}
           </div>
         )}
       </div>
@@ -169,6 +262,7 @@ export function Comments({
   const [nickname, setNickname] = useState("");
   const [body, setBody] = useState("");
   const [freshId, setFreshId] = useState<string | null>(null);
+  const [admin, setAdmin] = useState(false);
 
   const box = useRef<HTMLDivElement>(null);
   const bar = useRef<HTMLDivElement>(null);
@@ -197,6 +291,12 @@ export function Comments({
     );
   }, [threads, filter, sort]);
   const shown = visible.slice(0, limit);
+
+  // Delete buttons for a browser signed in at /admin; the server checks the key.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reads a cookie once mounted
+    setAdmin(hasAdminFlag());
+  }, []);
 
   // The nickname is remembered on this device only, for the next comment.
   useEffect(() => {
@@ -369,22 +469,29 @@ export function Comments({
               );
             })}
           </div>
-          <div className="seg" role="group" aria-label="排序 / Sort">
-            {(
-              [
-                ["new", "最新", "Newest"],
-                ["old", "最早", "Oldest"],
-              ] as const
-            ).map(([s, zh, en]) => (
-              <button
-                key={s}
-                type="button"
-                aria-pressed={sort === s}
-                onClick={() => rearrange(() => setSort(s))}
-              >
-                <T zh={zh} en={en} />
-              </button>
-            ))}
+          <div className="cx-bar-r">
+            {admin && (
+              <Link href="/admin" className="tag cx-admin">
+                <T zh="管理员模式" en="Admin mode" />
+              </Link>
+            )}
+            <div className="seg" role="group" aria-label="排序 / Sort">
+              {(
+                [
+                  ["new", "最新", "Newest"],
+                  ["old", "最早", "Oldest"],
+                ] as const
+              ).map(([s, zh, en]) => (
+                <button
+                  key={s}
+                  type="button"
+                  aria-pressed={sort === s}
+                  onClick={() => rearrange(() => setSort(s))}
+                >
+                  <T zh={zh} en={en} />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -586,6 +693,11 @@ export function Comments({
                     c={t.root}
                     fresh={t.root.id === freshId}
                     onReply={() => reply(t.id, t.root!.nickname)}
+                    admin={
+                      admin
+                        ? { slug, hasReplies: t.replies.length > 0 }
+                        : undefined
+                    }
                   />
                 ) : (
                   <p className="ccard gone mono mute">
@@ -604,6 +716,9 @@ export function Comments({
                           fresh={r.id === freshId}
                           onReply={
                             t.root ? () => reply(t.id, r.nickname) : undefined
+                          }
+                          admin={
+                            admin ? { slug, hasReplies: false } : undefined
                           }
                         />
                       </li>

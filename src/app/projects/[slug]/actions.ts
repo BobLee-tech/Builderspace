@@ -1,6 +1,9 @@
 "use server";
 
 import { revalidateTag, updateTag } from "next/cache";
+import { cookies } from "next/headers";
+import { z } from "zod";
+import { ADMIN_FLAG_COOKIE, ADMIN_KEY_COOKIE } from "@/lib/admin";
 import {
   parseProjectCommentForm,
   parseProjectUpdateForm,
@@ -112,4 +115,74 @@ export async function submitProjectComment(
   updateTag(`comments:${v.slug}`);
   revalidateTag("comment-counts", "max");
   return { status: "ok", id: data.id };
+}
+
+const deleteInput = z.object({
+  slug: z.string().regex(/^[a-z0-9-]+$/),
+  id: z.uuid(),
+});
+
+/**
+ * Deletes (hides) a comment for a signed-in admin. The database checks the key
+ * from the /admin cookie; the page only decides whether to show the button.
+ */
+export async function deleteProjectComment(
+  slug: string,
+  id: string,
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  const input = deleteInput.safeParse({ slug, id });
+  if (!input.success) return { ok: false, message: "参数无效|Invalid request" };
+
+  const jar = await cookies();
+  const key = jar.get(ADMIN_KEY_COOKIE)?.value;
+  if (!key) {
+    jar.delete(ADMIN_FLAG_COOKIE);
+    return {
+      ok: false,
+      message: "请先在 /admin 登录|Sign in at /admin first",
+    };
+  }
+  const db = getSupabase();
+  if (!db)
+    return {
+      ok: false,
+      message: "没有连接数据库|The database isn't connected",
+    };
+
+  const { data, error } = await db.rpc("delete_project_comment", {
+    comment_id: input.data.id,
+    admin_key: key,
+  });
+  if (error) {
+    console.error("[comment] delete failed", {
+      code: error.code,
+      message: error.message,
+    });
+    return {
+      ok: false,
+      message: "删除失败，请稍后再试|Couldn't delete, try again",
+    };
+  }
+  if (data === "denied") {
+    // The key was changed in Vault: this browser has to sign in again.
+    jar.delete(ADMIN_KEY_COOKIE);
+    jar.delete(ADMIN_FLAG_COOKIE);
+    return {
+      ok: false,
+      message:
+        "口令已失效，请在 /admin 重新登录|Your admin key changed, sign in again at /admin",
+    };
+  }
+  if (data === "throttled") {
+    return {
+      ok: false,
+      message:
+        "输错次数太多，请 10 分钟后再试|Too many wrong keys, try again in 10 minutes",
+    };
+  }
+
+  // "missing" means someone already deleted it; either way it's gone.
+  updateTag(`comments:${input.data.slug}`);
+  revalidateTag("comment-counts", "max");
+  return { ok: true };
 }
