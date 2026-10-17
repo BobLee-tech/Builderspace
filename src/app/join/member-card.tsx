@@ -9,35 +9,28 @@ import {
 import { Scramble } from "@/components/fx/text-fx";
 import { T } from "@/components/t";
 import {
-  HOURS_LABEL,
-  SKILL_LABEL,
-  type Skill,
-  type WeeklyHours,
-} from "@/lib/types";
+  LOOKING_LABEL,
+  MEMBER_SKILL_LABEL,
+  SPARK_INFO,
+  memberCode,
+  type LookingFor,
+  type MemberSkill,
+  type Spark,
+} from "@/lib/members";
 
-export type CardData = {
+export type CardView = {
   nickname: string;
   schoolDegree: string;
   major: string;
-  skills: Skill[];
-  hours: WeeklyHours | null;
+  skills: MemberSkill[];
+  spark: Spark;
+  /** Null until the card is made: the number comes from the real join order. */
+  memberNo: number | null;
+  /** Set when the sign-in email is a school address; shows the seal. */
+  seal: string | null;
+  building: string | null;
+  lookingFor: LookingFor[];
 };
-
-export function readCard(form: HTMLFormElement): CardData {
-  const d = new FormData(form);
-  const s = (k: string) => String(d.get(k) ?? "").trim();
-  return {
-    nickname: s("nickname"),
-    schoolDegree: s("schoolDegree"),
-    major: s("major"),
-    skills: d.getAll("skills").map(String) as Skill[],
-    hours: (s("weeklyHours") || null) as WeeklyHours | null,
-  };
-}
-
-/** Display-only number, stable for a nickname; not stored anywhere. */
-const memberNo = (name: string) =>
-  `BS-T3-${([...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % 9000) + 1000}`;
 
 /** Where the virtual light sits when nothing is hovering: a slow loop. */
 const idleLight = (t: number) => [
@@ -46,25 +39,26 @@ const idleLight = (t: number) => [
 ];
 
 /**
- * A preview of the member card that fills in as the form is typed; on success
- * it flips to show the admin's WeChat QR on the back. A brushed-metal card lit
- * by one virtual light: the pointer moves the light (and tilts the card), and
- * when idle the light drifts on its own.
+ * The member card. A brushed-metal card lit by one virtual light: the pointer
+ * moves the light (and tilts the card), and when idle the light drifts on its
+ * own. The front says who you are; the back is your builder profile: your
+ * mascot, what you are building and who you are looking for.
  */
 export function MemberCard({
-  data,
+  card,
   flipped,
-  adminQr,
+  caption,
 }: {
-  data: CardData | null;
+  card: CardView;
   flipped: boolean;
-  adminQr: string | null;
+  caption?: React.ReactNode;
 }) {
   const col = useRef<HTMLDivElement>(null);
   const tilt = useRef<HTMLDivElement>(null);
   const hovering = useRef(false);
-  const name = data?.nickname || null;
-  const major = [data?.major, data?.schoolDegree].filter(Boolean).join(" · ");
+  const spark = SPARK_INFO[card.spark];
+  const major = [card.major, card.schoolDegree].filter(Boolean).join(" · ");
+  const no = card.memberNo ? memberCode(card.memberNo) : "BS-····";
 
   const light = useCallback((x: number, y: number, tiltToo: boolean) => {
     // Set on the column so the shadow under the card can follow the light too.
@@ -112,8 +106,15 @@ export function MemberCard({
     };
   }, [light]);
 
+  const shown = card.skills.slice(0, 3);
+  const more = card.skills.length - shown.length;
+
   return (
-    <div className="mc-col" ref={col}>
+    <div
+      className="mc-col"
+      ref={col}
+      style={{ "--spark": spark.color } as React.CSSProperties}
+    >
       <div
         className="mc-stage"
         onPointerMove={(e) => {
@@ -149,8 +150,8 @@ export function MemberCard({
               </div>
               <div className="mc-mid">
                 <b className="mc-name">
-                  {name ? (
-                    <Scramble text={name} frames={14} />
+                  {card.nickname ? (
+                    <Scramble text={card.nickname} frames={14} />
                   ) : (
                     <T zh="你的昵称" en="Your name" />
                   )}
@@ -159,73 +160,94 @@ export function MemberCard({
                   {major || <T zh="专业 · 学位" en="Major · degree" />}
                 </span>
                 <div className="mc-skills">
-                  {data?.skills.map((s) => (
+                  {shown.map((s) => (
                     <span key={s} className="tag">
-                      <T {...SKILL_LABEL[s]} />
+                      <T {...MEMBER_SKILL_LABEL[s]} />
                     </span>
                   ))}
+                  {more > 0 && <span className="tag">+{more}</span>}
                 </div>
               </div>
               <div className="mc-bot">
                 <div>
                   <span className="mono mute">No.</span>
-                  <b className="mono">
-                    {name ? (
-                      <Scramble text={memberNo(name)} frames={20} />
-                    ) : (
-                      "BS-T3-····"
-                    )}
-                  </b>
+                  <b className="mono">{no}</b>
                 </div>
                 <div>
-                  <span className="mono mute">
-                    <T zh="每周" en="Weekly" />
-                  </span>
-                  <b className="mono">
-                    {data?.hours ? <T {...HOURS_LABEL[data.hours]} /> : "—"}
+                  <span className="mono mute">Spark</span>
+                  <b className="mono mc-spark">
+                    <T {...spark.role} />
                   </b>
                 </div>
+                {card.seal && (
+                  <i className="mc-seal" title="School email verified">
+                    <b>✓</b>
+                    <small>{card.seal}</small>
+                  </i>
+                )}
                 <div className="mc-chip" aria-hidden />
               </div>
               <span className="mc-micro" aria-hidden>
-                BUILDERSPACE · MEMBER · SYDNEY · T3 2026 · BRING AN IDEA · LEAVE
-                WITH SOMETHING THAT WORKS · BUILDERSPACE · MEMBER · SYDNEY
+                BUILDERSPACE · DIFFERENT PIECES · ONE BIG IDEA · SYDNEY · T3
+                2026 · 五色各异 · 拼创无限 · BUILDERSPACE · DIFFERENT PIECES
               </span>
             </div>
             <div className="mc-face mc-back" aria-hidden={!flipped}>
               <Lighting />
               <span className="mc-frame" aria-hidden />
               <div className="mc-top">
-                <span className="mono mute">
-                  <T zh="扫码加管理员微信" en="Add the admin on WeChat" />
-                </span>
-                <span className="mono mute">BuilderSpace</span>
+                <span className="mono mute">Builder profile</span>
+                <span className="mono mute">{no}</span>
               </div>
-              <div className="mc-qr">
-                {adminQr ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- ops-supplied QR, any host
-                  <img src={adminQr} alt="Admin WeChat QR / 管理员微信二维码" />
-                ) : (
-                  <T zh="管理员二维码待上传" en="Admin QR coming soon" />
-                )}
+              <div className="mc-profile">
+                <div className="mc-buddy">
+                  <span className="mc-say">{spark.say}</span>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- static SVG art */}
+                  <img src={`/mascots/${card.spark}.svg`} alt="" />
+                  <span className="mono mc-buddy-name">
+                    {spark.name} · <T {...spark.role} />
+                  </span>
+                </div>
+                <div className="mc-wants">
+                  <div>
+                    <span className="mono mute">
+                      <T zh="正在做" en="Building" />
+                    </span>
+                    <p className={card.building ? "" : "mute"}>
+                      {card.building || (
+                        <T
+                          zh="还没想好？来 Build Night 找灵感"
+                          en="Not sure yet? Find one at Build Night"
+                        />
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="mono mute">
+                      <T zh="在找" en="Looking for" />
+                    </span>
+                    <div className="mc-skills">
+                      {card.lookingFor.length ? (
+                        card.lookingFor.map((k) => (
+                          <span key={k} className="tag">
+                            <T {...LOOKING_LABEL[k]} />
+                          </span>
+                        ))
+                      ) : (
+                        <span className="tag mute">
+                          <T zh="随缘" en="Open to anything" />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p className="mono mute" style={{ fontSize: 10.5 }}>
-                <T
-                  zh="备注 “BuilderSpace + 昵称”"
-                  en='Note: "BuilderSpace + your nickname"'
-                />
-              </p>
             </div>
           </div>
         </div>
       </div>
       <div className="mc-shadow" aria-hidden />
-      <p className="mono mute mc-cap">
-        <T
-          zh="你的成员卡 · 跟着表单实时更新"
-          en="Your member card · updates as you type"
-        />
-      </p>
+      {caption && <p className="mono mute mc-cap">{caption}</p>}
     </div>
   );
 }
