@@ -78,5 +78,5 @@ export async function makeCard(
   }
   const made = await createMember(parsed.data);
   if (!made.ok) return { status: "error", message: made.message };
-  redirect("/me?welcome=1");
+  redirect("/welcome");
 }

@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
 import { T } from "@/components/t";
-import { getSession, surveyDone } from "@/lib/auth";
+import { getCardDesign, getSession, surveyDone } from "@/lib/auth";
 import {
+  cardViewOf,
   isUnsw,
   LOOKING_LABEL,
   MEMBER_SKILL_LABEL,
   memberCode,
   ordinal,
-  sealLabel,
   SPARK_INFO,
   type Member,
 } from "@/lib/members";
@@ -24,34 +26,24 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-export default function MePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ welcome?: string }>;
-}) {
+export default function MePage() {
   return (
     <section className="sec first">
       <div className="wrap">
         <Suspense fallback={<div className="join-wait" aria-busy />}>
-          <Me searchParams={searchParams} />
+          <Me />
         </Suspense>
       </div>
     </section>
   );
 }
 
-async function Me({
-  searchParams,
-}: {
-  searchParams: Promise<{ welcome?: string }>;
-}) {
+async function Me() {
   const session = await getSession();
   if (!session?.member) redirect("/join");
   const m = session.member;
-  const [{ welcome }, done] = await Promise.all([searchParams, surveyDone()]);
+  const [done, design] = await Promise.all([surveyDone(), getCardDesign()]);
   const spark = SPARK_INFO[m.spark];
-  const adminQr =
-    process.env.NEXT_PUBLIC_ADMIN_WECHAT_QR || "/admin-wechat-qr.jpg";
 
   return (
     <>
@@ -80,44 +72,17 @@ async function Me({
         ]}
       />
 
-      {welcome && (
-        <div className="me-welcome hud">
-          <p className="mono mute">Welcome to BuilderSpace</p>
-          <h2 className="me-welcome-line">
-            {m.nickname}, you are the{" "}
-            <b>
-              {m.memberNo}
-              <sup>{ordinal(m.memberNo)}</sup> Builder!
-            </b>
-          </h2>
-          <p className="mute">
-            <T
-              zh={`你是第 ${m.memberNo} 位 Builder。最后一步：扫码加管理员微信，备注「BuilderSpace + ${m.nickname}」，拉你进群。`}
-              en={`You're Builder No. ${m.memberNo}. Last step: scan to add the admin on WeChat with the note "BuilderSpace + ${m.nickname}" and you'll be added to the group.`}
-            />
-          </p>
-          <div className="me-qr">
-            {/* eslint-disable-next-line @next/next/no-img-element -- ops-supplied QR, any host */}
-            <img src={adminQr} alt="Admin WeChat QR / 管理员微信二维码" />
-          </div>
-        </div>
-      )}
-
       <div className="join2 me-grid">
-        <MeCard
-          card={{
-            nickname: m.nickname,
-            schoolDegree: m.schoolDegree,
-            major: m.major,
-            skills: m.skills,
-            spark: m.spark,
-            memberNo: m.memberNo,
-            seal: m.verified ? sealLabel(m.schoolDomain) : null,
-            building: m.building,
-            lookingFor: m.lookingFor,
-          }}
-        />
+        <MeCard card={cardViewOf(m)} design={design} />
         <div className="me-side">
+          <div className="row-actions">
+            <Link href="/me/card" className="btn solid">
+              <T zh="定制卡片" en="Customise your card" /> <Arr />
+            </Link>
+            <Link href="/welcome" className="btn ghost">
+              <T zh="重看欢迎 · 加群二维码" en="Welcome again · group QR" />
+            </Link>
+          </div>
           <Details m={m} />
           {!done && <SurveyForm />}
           <form action={logOut}>
@@ -196,8 +161,8 @@ function Details({ m }: { m: Member }) {
       </dl>
       <p className="mute small">
         <T
-          zh="卡片工坊（换材质、贴贴纸）和拼图徽章下一步上线。"
-          en="The card studio (materials, stickers) and puzzle badges come next."
+          zh="拼图徽章和公开卡片页下一步上线。"
+          en="Puzzle badges and public card pages come next."
         />
       </p>
     </div>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cardDesignSchema } from "./card-design";
 import { normalizeChannel } from "./forms";
 import {
   LOOKING_FOR,
@@ -118,3 +119,12 @@ export function parseSurvey(form: FormData) {
     affiliationConsent: form.get("affiliationConsent") === "on",
   });
 }
+
+// The card studio's save: the design, plus the builder-profile back.
+export const cardSaveSchema = z.object({
+  design: cardDesignSchema,
+  spark: memberProfileSchema.shape.spark,
+  building: memberProfileSchema.shape.building,
+  lookingFor: memberProfileSchema.shape.lookingFor,
+});
+export type CardSaveInput = z.infer<typeof cardSaveSchema>;

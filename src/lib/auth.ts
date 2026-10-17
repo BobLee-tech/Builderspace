@@ -2,7 +2,17 @@ import "server-only";
 import { cookies } from "next/headers";
 import { connection } from "next/server";
 import { cache } from "react";
-import type { MemberProfileInput, SurveyInput } from "./member-forms";
+import {
+  DEFAULT_DESIGN,
+  lockedParts,
+  readDesign,
+  type CardDesign,
+} from "./card-design";
+import type {
+  CardSaveInput,
+  MemberProfileInput,
+  SurveyInput,
+} from "./member-forms";
 import {
   schoolDomain,
   type LookingFor,
@@ -67,7 +77,12 @@ function toMember(row: ProfileRow, email: string): Member {
 /* ---------- development stand-in (no Supabase) ---------- */
 
 const DEV_COOKIE = "bs_dev_member";
-type DevSession = { email: string; member: Member | null; survey: boolean };
+type DevSession = {
+  email: string;
+  member: Member | null;
+  survey: boolean;
+  card?: CardDesign;
+};
 
 async function readDev(): Promise<DevSession | null> {
   const raw = (await cookies()).get(DEV_COOKIE)?.value;
@@ -121,9 +136,15 @@ export async function verifyCode(
 ): Promise<Result<{ hasCard: boolean }>> {
   if (devMode()) {
     const prev = await readDev();
-    const member = prev?.email === email ? prev.member : null;
-    await writeDev({ email, member, survey: prev?.survey ?? false });
-    return ok({ hasCard: Boolean(member) });
+    // Same email: keep the card; a different one starts over.
+    const kept = prev?.email === email ? prev : null;
+    await writeDev({
+      email,
+      member: kept?.member ?? null,
+      survey: kept?.survey ?? false,
+      card: kept?.card,
+    });
+    return ok({ hasCard: Boolean(kept?.member) });
   }
   const supabase = await getSupabaseAuth();
   if (!supabase) return fail(CLOSED);
@@ -256,10 +277,12 @@ export async function saveSurvey(input: SurveyInput): Promise<Result> {
       fullName: input.fullName && "[redacted]",
       zid: input.zid && "[redacted]",
     });
+    const dev = await readDev();
     await writeDev({
       email: session.email,
       member: session.member,
       survey: true,
+      card: dev?.card,
     });
     return ok(undefined);
   }
@@ -285,4 +308,112 @@ export async function saveSurvey(input: SurveyInput): Promise<Result> {
     return fail("提交失败，请稍后再试|Couldn't submit, please try again");
   }
   return ok(undefined);
+}
+
+/* ---------- card studio ---------- */
+
+type CardRow = {
+  material: string;
+  tint: string;
+  pattern: string;
+  tagline: string;
+  stickers: unknown;
+};
+
+/** The signed-in member's saved card design, or the default. Memoised per request. */
+export const getCardDesign = cache(async (): Promise<CardDesign> => {
+  const session = await getSession();
+  if (!session?.member) return DEFAULT_DESIGN;
+  if (devMode()) {
+    const card = (await readDev())?.card;
+    return card ? readDesign(card) : DEFAULT_DESIGN;
+  }
+  const supabase = await getSupabaseAuth();
+  if (!supabase) return DEFAULT_DESIGN;
+  const { data } = await supabase
+    .from("member_cards")
+    .select("material, tint, pattern, tagline, stickers")
+    .eq("user_id", session.member.id)
+    .maybeSingle<CardRow>();
+  return data ? readDesign(data) : DEFAULT_DESIGN;
+});
+
+const VERIFIED_ONLY =
+  "五色全息、阳极钛和校园贴纸需要学校邮箱认证|Holo foil, titanium and campus stickers are for verified members";
+
+/**
+ * Saves the studio: the card's look in member_cards, and the builder-profile
+ * back (mascot, what you're building, who you're looking for) in profiles.
+ */
+export async function saveCard(input: CardSaveInput): Promise<Result<Member>> {
+  const session = await getSession();
+  if (!session?.member) return fail("先生成你的卡片|Make your card first");
+  const m = session.member;
+  // The database trigger is the real check; this one just says it nicely.
+  const locked = lockedParts(input.design);
+  if (!m.verified && (locked.material || locked.stickers)) {
+    return fail(VERIFIED_ONLY);
+  }
+  const member: Member = {
+    ...m,
+    spark: input.spark,
+    building: input.building,
+    lookingFor: input.lookingFor,
+  };
+
+  if (devMode()) {
+    const dev = await readDev();
+    await writeDev({
+      email: session.email,
+      member,
+      survey: dev?.survey ?? false,
+      card: input.design,
+    });
+    return ok(member);
+  }
+
+  const supabase = await getSupabaseAuth();
+  if (!supabase) return fail(CLOSED);
+  const { material, tint, pattern, tagline, stickers } = input.design;
+  const row = { material, tint, pattern, tagline, stickers };
+  const update = () =>
+    supabase
+      .from("member_cards")
+      .update(row)
+      .eq("user_id", m.id)
+      .select("user_id");
+  let { data: updated, error } = await update();
+  if (!error && !updated?.length) {
+    ({ error } = await supabase
+      .from("member_cards")
+      .insert({ user_id: m.id, ...row }));
+    // Saved twice at once: the other request made the row, so update it.
+    if (error?.code === "23505") ({ data: updated, error } = await update());
+  }
+  if (error) {
+    if (error.code === "42501") return fail(VERIFIED_ONLY);
+    console.error("[auth] save card failed", {
+      code: error.code,
+      message: error.message,
+    });
+    return fail("保存失败，请稍后再试|Couldn't save your card, try again");
+  }
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({
+      spark: input.spark,
+      building: input.building,
+      looking_for: input.lookingFor,
+    })
+    .eq("id", m.id);
+  if (profileError) {
+    console.error("[auth] save card back failed", {
+      code: profileError.code,
+      message: profileError.message,
+    });
+    return fail(
+      "卡面已保存，背面没存上，请再点一次保存|The front saved but the back didn't, press save again",
+    );
+  }
+  return ok(member);
 }

@@ -160,3 +160,30 @@ export type Member = {
   isPublic: boolean;
   email: string;
 };
+
+/** What the card prints. The join flow fills it in as you type. */
+export type CardView = {
+  nickname: string;
+  schoolDegree: string;
+  major: string;
+  skills: MemberSkill[];
+  spark: Spark;
+  /** Null until the card is made: the number comes from the real join order. */
+  memberNo: number | null;
+  /** Set when the sign-in email is a school address; shows the seal. */
+  seal: string | null;
+  building: string | null;
+  lookingFor: LookingFor[];
+};
+
+export const cardViewOf = (m: Member): CardView => ({
+  nickname: m.nickname,
+  schoolDegree: m.schoolDegree,
+  major: m.major,
+  skills: m.skills,
+  spark: m.spark,
+  memberNo: m.memberNo,
+  seal: m.verified ? sealLabel(m.schoolDomain) : null,
+  building: m.building,
+  lookingFor: m.lookingFor,
+});

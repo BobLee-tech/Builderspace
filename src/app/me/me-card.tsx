@@ -2,14 +2,21 @@
 
 import { useState } from "react";
 import { T } from "@/components/t";
+import type { CardDesign } from "@/lib/card-design";
 import { MemberCard, type CardView } from "../join/member-card";
 
 /** The member's card with a button to turn it over to the builder profile. */
-export function MeCard({ card }: { card: CardView }) {
+export function MeCard({
+  card,
+  design,
+}: {
+  card: CardView;
+  design: CardDesign;
+}) {
   const [flipped, setFlipped] = useState(false);
   return (
     <div className="me-card">
-      <MemberCard card={card} flipped={flipped} />
+      <MemberCard card={card} design={design} flipped={flipped} />
       <button
         type="button"
         className="btn ghost sm"

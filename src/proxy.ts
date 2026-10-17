@@ -3,8 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 /**
  * Keeps a member's Supabase session fresh on the pages that read it. This is
- * not an access check: /me and every Server Action look up the member again
- * themselves.
+ * not an access check: /me, /welcome and every Server Action look up the
+ * member again themselves.
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -36,5 +36,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/join/:path*", "/me/:path*"],
+  matcher: ["/join/:path*", "/me/:path*", "/welcome"],
 };
