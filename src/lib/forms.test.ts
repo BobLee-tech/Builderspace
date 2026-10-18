@@ -5,6 +5,7 @@ import {
   parseProjectCommentForm,
   parseProjectForm,
   parseProjectUpdateForm,
+  parseRegistrationForm,
   parseVolunteerForm,
   projectSlug,
 } from "./forms";
@@ -505,5 +506,108 @@ describe("projectSlug", () => {
 
   it("falls back when the name has no ascii", () => {
     expect(projectSlug("合租雷达", "a1b2c3")).toBe("project-a1b2c3");
+  });
+});
+
+const validSignup: [string, string][] = [
+  ["slug", "put-yourself-online"],
+  ["fullName", " Yuki Tan "],
+  ["wechat", "yuki_t"],
+  ["unswStudent", "yes"],
+  ["zid", "Z1234567"],
+  ["githubUsername", ""],
+];
+
+const swap = (k: string, v: string) =>
+  validSignup.map(([key, value]): [string, string] =>
+    key === k ? [k, v] : [key, value],
+  );
+
+describe("parseRegistrationForm", () => {
+  it("accepts a UNSW student with a zID", () => {
+    const result = parseRegistrationForm(form(validSignup));
+    expect(result.success).toBe(true);
+    expect(result.data).toMatchObject({
+      fullName: "Yuki Tan",
+      seatGroup: "unsw",
+      zid: "z1234567",
+      school: null,
+      occupation: null,
+      githubUsername: null,
+      photoConsent: false,
+    });
+  });
+
+  it("requires a well-formed zID from UNSW students", () => {
+    expect(parseRegistrationForm(form(swap("zid", ""))).success).toBe(false);
+    expect(parseRegistrationForm(form(swap("zid", "1234567"))).success).toBe(
+      false,
+    );
+  });
+
+  it("drops the zID and takes the group for everyone else", () => {
+    const usyd = parseRegistrationForm(
+      form([...swap("unswStudent", "no"), ["otherGroup", "usyd"]]),
+    );
+    expect(usyd.data).toMatchObject({ seatGroup: "usyd", zid: null });
+
+    expect(parseRegistrationForm(form(swap("unswStudent", "no"))).success).toBe(
+      false,
+    );
+  });
+
+  it("asks other universities for a name and non-students for a job", () => {
+    const other = [
+      ...swap("unswStudent", "no"),
+      ["otherGroup", "other_school"],
+    ];
+    expect(
+      parseRegistrationForm(form(other as [string, string][])).success,
+    ).toBe(false);
+    expect(
+      parseRegistrationForm(
+        form([...(other as [string, string][]), ["school", "UTS"]]),
+      ).data,
+    ).toMatchObject({ seatGroup: "other_school", school: "UTS" });
+
+    const external: [string, string][] = [
+      ...swap("unswStudent", "no"),
+      ["otherGroup", "external"],
+      ["occupation", "Designer"],
+    ];
+    expect(parseRegistrationForm(form(external)).data).toMatchObject({
+      seatGroup: "external",
+      occupation: "Designer",
+      school: null,
+    });
+  });
+
+  it("reads the photo consent checkbox", () => {
+    const result = parseRegistrationForm(
+      form([...validSignup, ["photoConsent", "on"]]),
+    );
+    expect(result.data?.photoConsent).toBe(true);
+  });
+
+  it("reduces a GitHub link or @name to the username", () => {
+    for (const input of [
+      "https://github.com/octo-cat/",
+      "github.com/octo-cat",
+      "@octo-cat",
+    ]) {
+      expect(
+        parseRegistrationForm(form(swap("githubUsername", input))).data
+          ?.githubUsername,
+      ).toBe("octo-cat");
+    }
+    expect(
+      parseRegistrationForm(form(swap("githubUsername", "-bad--name"))).success,
+    ).toBe(false);
+  });
+
+  it("requires a name and a WeChat ID", () => {
+    expect(parseRegistrationForm(form(swap("wechat", " "))).success).toBe(
+      false,
+    );
   });
 });

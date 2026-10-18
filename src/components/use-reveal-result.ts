@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import type { FormState } from "@/lib/forms";
 import { revealElement } from "@/lib/smooth-scroll";
 
 const HEADER = 96;
@@ -18,7 +17,7 @@ function outOfView(el: Element) {
  * Put the returned ref on the element that holds both the form and the
  * confirmation (a callback ref, so it fits any element type).
  */
-export function useRevealResult(state: FormState) {
+export function useRevealResult(state: { status: "idle" | "error" | "ok" }) {
   const ref = useRef<HTMLElement | null>(null);
   useEffect(() => {
     const root = ref.current;

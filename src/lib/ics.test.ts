@@ -12,6 +12,8 @@ const event: SiteEvent = {
   summary: "第一行\n第二行",
   signupUrl: null,
   capacity: 40,
+  registrationClosesAt: null,
+  seatQuotas: null,
 };
 
 const ics = buildCalendar([event], {

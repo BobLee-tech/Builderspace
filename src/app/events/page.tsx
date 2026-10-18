@@ -3,9 +3,13 @@ import Link from "next/link";
 import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
-import { getEventSchedule, getTutorials } from "@/lib/data";
+import { getEventSchedule, getEventSignups, getTutorials } from "@/lib/data";
 import { formatShortDate, formatTime, formatTimeRange } from "@/lib/format";
-import { EVENT_KIND_LABEL, type SiteEvent } from "@/lib/types";
+import {
+  EVENT_KIND_LABEL,
+  type EventSignups,
+  type SiteEvent,
+} from "@/lib/types";
 import { siteUrl } from "@/lib/site-url";
 import { T } from "@/components/t";
 import { CopyButton, EventList, Roadmap } from "./events-fx";
@@ -13,9 +17,10 @@ import { CopyButton, EventList, Roadmap } from "./events-fx";
 export const metadata: Metadata = { title: "活动" };
 
 export default async function EventsPage() {
-  const [{ upcoming, past }, tutorials] = await Promise.all([
+  const [{ upcoming, past }, tutorials, signups] = await Promise.all([
     getEventSchedule(),
     getTutorials(),
+    getEventSignups(),
   ]);
   const withMaterials = new Set(tutorials.map((t) => t.eventSlug));
   const calendarUrl = `${siteUrl.replace(/^https?:/, "webcal:")}/events.ics`;
@@ -61,22 +66,6 @@ export default async function EventsPage() {
 
         <Roadmap />
 
-        <div className="bn-flow">
-          {RHYTHM.map((r) => (
-            <div key={r.when.en}>
-              <span className="mono mute">
-                <T {...r.when} />
-              </span>
-              <b>
-                <T {...r.what} />
-              </b>
-              <p className="mute">
-                <T {...r.body} />
-              </p>
-            </div>
-          ))}
-        </div>
-
         <div className="cal-row">
           <div>
             <b style={{ fontSize: 14 }}>
@@ -115,7 +104,12 @@ export default async function EventsPage() {
             </p>
           )}
           {upcoming.map((event, i) => (
-            <EventRow key={event.slug} event={event} n={i + 1} />
+            <EventRow
+              key={event.slug}
+              event={event}
+              n={i + 1}
+              signups={signups[event.slug]}
+            />
           ))}
           {past.map((event, i) => (
             <EventRow
@@ -151,43 +145,19 @@ export default async function EventsPage() {
   );
 }
 
-const RHYTHM = [
-  {
-    when: { zh: "周一 · 线上", en: "Monday · online" },
-    what: { zh: "群里抛问题", en: "Post your blocker" },
-    body: {
-      zh: "每个项目贴出这周要解决的一件事，提前找好能帮忙的人。",
-      en: "Each project posts the one thing it needs to solve this week, and finds who can help.",
-    },
-  },
-  {
-    when: { zh: "每周 · 线下 · 时间待定", en: "Weekly · in person · time TBA" },
-    what: { zh: "一起写两小时", en: "Two hours of building" },
-    body: {
-      zh: "按项目坐，卡住就举手。讲解用中文，提交记录用英文。",
-      en: "Sit with your project, raise a hand when stuck. Explanations in Chinese, commits in English.",
-    },
-  },
-  {
-    when: { zh: "每两周 · 项目卡", en: "Fortnightly · project card" },
-    what: { zh: "更新一次进展", en: "Post an update" },
-    body: {
-      zh: "代码提交、Demo 或更新帖任一，计入双周活跃项目数。",
-      en: "A commit, demo or update post — any one counts towards active projects.",
-    },
-  },
-];
-
 function EventRow({
   event,
   n,
   past,
   materials,
+  signups,
 }: {
   event: SiteEvent;
   n: number;
   past?: boolean;
   materials?: boolean;
+  /** Head-count when people sign up on the site. */
+  signups?: EventSignups;
 }) {
   const body = (
     <>
@@ -208,6 +178,13 @@ function EventRow({
               <T zh="已结束" en="Past" />
             </span>
           )}
+          {!past && event.registrationClosesAt && (
+            <span className="tag dash">
+              {signups?.confirmed ?? 0}
+              {event.capacity !== null && ` / ${event.capacity}`}{" "}
+              <T zh="已报名" en="signed up" />
+            </span>
+          )}
         </div>
         <h3>{event.title}</h3>
         {materials && (
@@ -218,7 +195,7 @@ function EventRow({
       </div>
       <p className="ev-where mute">{event.location}</p>
       <span className="ev-go" aria-hidden>
-        {materials ? "→" : event.signupUrl && !past ? "↗" : "·"}
+        {materials || !past ? "→" : "·"}
       </span>
     </>
   );
@@ -236,10 +213,11 @@ function EventRow({
       </Link>
     );
   }
-  return event.signupUrl && !past ? (
-    <a {...props} href={event.signupUrl} target="_blank" rel="noreferrer">
+  // Upcoming events open their detail page (sign-up, or the outside link).
+  return !past ? (
+    <Link {...props} href={`/events/${event.slug}`}>
       {body}
-    </a>
+    </Link>
   ) : (
     <div {...props}>{body}</div>
   );
