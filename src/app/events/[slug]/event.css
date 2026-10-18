@@ -4,7 +4,7 @@
    and address bar are shared with /events (../events.css). */
 
 .evp {
-  --evp-gap: clamp(88px, 11vw, 160px);
+  --evp-gap: clamp(56px, 7vw, 104px);
 }
 
 /* ---------- terminal bar ---------- */
@@ -182,102 +182,14 @@
   letter-spacing: -0.04em;
 }
 
-/* ---------- 01 four stops on a rail ---------- */
-.evp-rail {
-  position: relative;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(20px, 3vw, 40px);
-}
-.evp-rail-line {
-  position: absolute;
-  left: 28px;
-  right: 0;
-  top: 27px;
-  height: 1px;
-  background: linear-gradient(90deg, var(--paper), var(--line-2) 70%);
-}
-.evp-rail > li {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.evp-node {
-  position: relative;
-  z-index: 1;
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  border: 1px solid var(--line-2);
-  background: var(--ink);
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  transition:
-    background 0.4s var(--ease),
-    color 0.4s var(--ease),
-    border-color 0.4s var(--ease);
-}
-.evp-rail > li:first-child .evp-node {
-  border-color: var(--paper);
-}
-.evp-rail > li:first-child .evp-node::after {
-  content: "";
-  position: absolute;
-  inset: -7px;
-  border-radius: 50%;
-  border: 1px dashed var(--paper);
-  animation: evpSpin 10s linear infinite;
-}
-@keyframes evpSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.evp-rail > li:hover .evp-node {
-  background: var(--paper);
-  color: var(--ink);
-  border-color: var(--paper);
-}
-.evp-at {
-  margin-top: 12px;
-}
-.evp-act-glyph {
-  font-family: var(--f-display);
-  font-weight: 800;
-  font-size: clamp(56px, 7vw, 104px);
-  line-height: 1;
-  letter-spacing: -0.04em;
-  background: var(--mat-chrome);
-  background-size: 100% 220%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.evp-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: var(--fs-md);
-}
-.evp-lines li::before {
-  content: "— ";
-  color: var(--line-2);
-}
+/* ---------- what to bring, under the readouts ---------- */
 .evp-bring {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 12px 32px;
   align-items: center;
-  padding: 24px 0;
-  border-block: 1px dashed var(--line-2);
+  padding: 20px 0;
+  border-bottom: 1px dashed var(--line-2);
 }
 .evp-bring ul {
   display: flex;
@@ -431,35 +343,6 @@
   .evp-kv > div:nth-child(n + 3) {
     border-top: 1px solid var(--line);
   }
-  /* The rail turns vertical. */
-  .evp-rail {
-    grid-template-columns: 1fr;
-    gap: 36px;
-  }
-  .evp-rail-line {
-    left: 27px;
-    right: auto;
-    top: 28px;
-    bottom: 0;
-    width: 1px;
-    height: auto;
-    background: linear-gradient(180deg, var(--paper), var(--line-2) 70%);
-  }
-  .evp-rail > li {
-    display: grid;
-    grid-template-columns: 55px minmax(0, 1fr);
-    column-gap: 20px;
-    row-gap: 6px;
-  }
-  .evp-node {
-    grid-row: span 3;
-  }
-  .evp-at {
-    margin-top: 4px;
-  }
-  .evp-act-glyph {
-    font-size: 56px;
-  }
 }
 @media (max-width: 640px) {
   .evp-bar > .mute {
@@ -491,8 +374,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .evp-grid i.on,
-  .evp-rail > li:first-child .evp-node::after {
+  .evp-grid i.on {
     animation: none;
   }
 }

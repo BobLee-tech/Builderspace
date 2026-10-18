@@ -26,11 +26,6 @@ export type EventPage = {
   handles: string[];
   /** Three short promises under the address bar. */
   points: { icon: EventIcon; title: Bi; sub: Bi }[];
-  /**
-   * How the session runs, in order: a start time (each runs until the next,
-   * the last until the event ends), a word and two short lines.
-   */
-  steps: { at: string; name: Bi; lines: Bi[] }[];
   /** What to bring, a few words each. */
   bring: { icon: EventIcon; label: Bi }[];
   /** Ask for a GitHub username on sign-up (a build-along workshop). */
@@ -67,40 +62,6 @@ const putYourselfOnline: EventPage = {
       icon: "people",
       title: { zh: "一桌新朋友", en: "New friends" },
       sub: { zh: "按主题坐，一起做", en: "Sit by topic, build together" },
-    },
-  ],
-  steps: [
-    {
-      at: "10:00",
-      name: { zh: "聊", en: "Talk" },
-      lines: [
-        { zh: "按主题选桌", en: "Tables by topic" },
-        { zh: "嘉宾分享", en: "Guest talk" },
-      ],
-    },
-    {
-      at: "10:40",
-      name: { zh: "学", en: "Learn" },
-      lines: [
-        { zh: "做网站的五关", en: "Five levels of a site" },
-        { zh: "现场演示", en: "Live demo" },
-      ],
-    },
-    {
-      at: "10:55",
-      name: { zh: "做", en: "Make" },
-      lines: [
-        { zh: "AI 生成和修改", en: "Build it with AI" },
-        { zh: "部署到 GitHub Pages", en: "Ship to GitHub Pages" },
-      ],
-    },
-    {
-      at: "12:40",
-      name: { zh: "秀", en: "Show" },
-      lines: [
-        { zh: "上台讲 2 分钟", en: "Two minutes on stage" },
-        { zh: "合影", en: "Group photo" },
-      ],
     },
   ],
   bring: [
