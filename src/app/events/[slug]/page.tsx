@@ -215,25 +215,22 @@ async function EventDetail({ slug }: { slug: string }) {
           </div>
         </dl>
 
-        {page && <Intro page={page} end={formatTime(event.endsAt)} />}
+        {page && <Bring page={page} />}
 
         <div className="evp-block" id="signup">
           <Head
-            n={page ? "02" : "01"}
+            n="01"
             eyebrow={{ zh: "报名", en: "Sign up" }}
             title={
               phase === "open"
                 ? full
-                  ? {
-                      zh: "名额已满，可以报候补",
-                      en: "Full: join the waitlist",
-                    }
-                  : { zh: "留个位置给你", en: "Save yourself a seat" }
+                  ? "Waitlist open."
+                  : "Save a seat."
                 : phase === "closed"
-                  ? { zh: "报名已截止", en: "Sign-up has closed" }
+                  ? "Sign-up closed."
                   : phase === "past"
-                    ? { zh: "这场已经结束了", en: "This one's over" }
-                    : { zh: "现场见", en: "See you there" }
+                    ? "That's a wrap."
+                    : "See you there."
             }
           />
           {phase === "open" && event.registrationClosesAt && (
@@ -384,7 +381,8 @@ function Head({
 }: {
   n: string;
   eyebrow: { zh: string; en: string };
-  title: { zh: string; en: string };
+  /** Short English, the same in both languages, like the page titles. */
+  title: string;
 }) {
   return (
     <div className="evp-head">
@@ -392,69 +390,29 @@ function Head({
         <span>[{n}]</span> <T {...eyebrow} />
         <span className="evp-rule" aria-hidden />
       </p>
-      <h2 className="evp-h2">
-        <T {...title} />
-      </h2>
+      <h2 className="evp-h2">{title}</h2>
     </div>
   );
 }
 
-const minutes = (hhmm: string) => {
-  const [h, m] = hhmm.split(":").map(Number);
-  return h * 60 + m;
-};
-
-/** What happens, as four stops on a rail (with how long each runs), and what to bring. */
-function Intro({ page, end }: { page: EventPage; end: string }) {
+/** What to bring, in a strip under the readouts. */
+function Bring({ page }: { page: EventPage }) {
   return (
-    <div className="evp-block">
-      <Head
-        n="01"
-        eyebrow={{ zh: "这场做什么", en: "What happens" }}
-        title={{ zh: "聊 → 学 → 做 → 秀", en: "Talk → Learn → Make → Show" }}
-      />
-      <ol className="evp-rail">
-        <span className="evp-rail-line" aria-hidden />
-        {page.steps.map((step, i) => {
-          const len = minutes(page.steps[i + 1]?.at ?? end) - minutes(step.at);
+    <div className="evp-bring">
+      <span className="mono mute">
+        <T zh="带上 / Bring" en="Bring" />
+      </span>
+      <ul>
+        {page.bring.map((b) => {
+          const Glyph = ICONS[b.icon];
           return (
-            <li key={step.at}>
-              <span className="evp-node mono">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <span className="mono mute evp-at">
-                {step.at} · <T zh={`${len} 分钟`} en={`${len} min`} />
-              </span>
-              <b className="evp-act-glyph">
-                <T {...step.name} />
-              </b>
-              <ul className="evp-lines mute">
-                {step.lines.map((l) => (
-                  <li key={l.en}>
-                    <T {...l} />
-                  </li>
-                ))}
-              </ul>
+            <li key={b.label.en}>
+              <Glyph weight="light" size={18} aria-hidden />
+              <T {...b.label} />
             </li>
           );
         })}
-      </ol>
-      <div className="evp-bring">
-        <span className="mono mute">
-          <T zh="带上 / Bring" en="Bring" />
-        </span>
-        <ul>
-          {page.bring.map((b) => {
-            const Glyph = ICONS[b.icon];
-            return (
-              <li key={b.label.en}>
-                <Glyph weight="light" size={18} aria-hidden />
-                <T {...b.label} />
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+      </ul>
     </div>
   );
 }
