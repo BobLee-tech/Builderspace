@@ -63,8 +63,8 @@ const putYourselfOnline: EventPage = {
       at: "12:40",
       name: { zh: "秀", en: "Show" },
       body: {
-        zh: "成果墙投屏，上台讲 1 分钟，合影收尾。",
-        en: "Results wall on screen, one-minute show and tell, group photo.",
+        zh: "成果墙投屏，上台讲 2 分钟，合影收尾。",
+        en: "Results wall on screen, two-minute show and tell, group photo.",
       },
     },
   ],
