@@ -17,8 +17,57 @@ function words(text: string) {
 type Readout = { k: Bi; v: { zh: string; en: string } };
 
 /**
- * Shared inner-page header from the prototype: a terminal path bar, a two-line
- * title (chrome letters + an outline lit by a moving light) and three readouts.
+ * The two-line display title: chrome letters that rise in one by one, then an
+ * outline lit by a moving light (wrap it in PageHeadFx for the light).
+ */
+export function LitTitle({
+  title: [first, second],
+  as: Tag = "h1",
+  className = "page-title",
+}: {
+  title: [string, string?];
+  as?: "h1" | "h2";
+  className?: string;
+}) {
+  return (
+    <Tag
+      className={`display ${className}`}
+      aria-label={second ? `${first} ${second}` : first}
+    >
+      <span className="line" aria-hidden>
+        <span className="ttl-a">
+          {words(first).map(({ word, at }, w) => (
+            <Fragment key={w}>
+              {w > 0 && " "}
+              {/* Letters animate one by one; words stay unbroken. */}
+              <span style={{ whiteSpace: "nowrap" }}>
+                {[...word].map((c, i) => (
+                  <span
+                    key={i}
+                    className="c2"
+                    style={{ "--i": at + i } as React.CSSProperties}
+                  >
+                    {c}
+                  </span>
+                ))}
+              </span>
+            </Fragment>
+          ))}
+        </span>
+      </span>
+      {second && (
+        <span className="line" aria-hidden>
+          <span className="outline lit">{second}</span>
+        </span>
+      )}
+    </Tag>
+  );
+}
+
+/**
+ * Shared inner-page header from the prototype: one slim terminal bar (path,
+ * eyebrow, page number), a two-line title (chrome letters + an outline lit by
+ * a moving light) and three readouts.
  */
 export function PageHead({
   path,
@@ -35,56 +84,26 @@ export function PageHead({
   const idx = NAV_LINKS.findIndex((l) => l.href === `/${path.split("/")[0]}`);
   return (
     <PageHeadFx>
-      <div className="ph-bar mono" aria-hidden>
-        <span className="ph-path">
+      <div className="ph-bar mono">
+        <span className="ph-path" aria-hidden>
           <span className="mute">~/builderspace/</span>
           <b>{path}</b>
         </span>
-        <span className="ph-rule">
+        <p className="ph-eye">
+          <T {...eyebrow} />
+        </p>
+        <span className="ph-rule" aria-hidden>
           <i />
         </span>
         {idx >= 0 && (
-          <span className="ph-idx">
+          <span className="ph-idx" aria-hidden>
             <b>{String(idx + 1).padStart(2, "0")}</b> /{" "}
             {String(NAV_LINKS.length).padStart(2, "0")}
           </span>
         )}
       </div>
       <div style={{ minWidth: 0 }}>
-        <p className="eyebrow mono">
-          <T {...eyebrow} />
-        </p>
-        <h1
-          className="display page-title"
-          aria-label={second ? `${first} ${second}` : first}
-        >
-          <span className="line" aria-hidden>
-            <span className="ttl-a">
-              {words(first).map(({ word, at }, w) => (
-                <Fragment key={w}>
-                  {w > 0 && " "}
-                  {/* Letters animate one by one; words stay unbroken. */}
-                  <span style={{ whiteSpace: "nowrap" }}>
-                    {[...word].map((c, i) => (
-                      <span
-                        key={i}
-                        className="c2"
-                        style={{ "--i": at + i } as React.CSSProperties}
-                      >
-                        {c}
-                      </span>
-                    ))}
-                  </span>
-                </Fragment>
-              ))}
-            </span>
-          </span>
-          {second && (
-            <span className="line" aria-hidden>
-              <span className="outline lit">{second}</span>
-            </span>
-          )}
-        </h1>
+        <LitTitle title={[first, second]} />
       </div>
       {aside && (
         <dl className="page-aside">

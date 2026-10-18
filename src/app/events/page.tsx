@@ -4,7 +4,8 @@ import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
 import { getEventSchedule, getEventSignups, getTutorials } from "@/lib/data";
-import { formatShortDate, formatTime, formatTimeRange } from "@/lib/format";
+import { formatShortDate, formatTimeRange } from "@/lib/format";
+import { roadmapWeek } from "@/lib/roadmap";
 import {
   EVENT_KIND_LABEL,
   type EventSignups,
@@ -13,6 +14,8 @@ import {
 import { siteUrl } from "@/lib/site-url";
 import { T } from "@/components/t";
 import { CopyButton, EventList, Roadmap } from "./events-fx";
+import { NextUp } from "./next-up";
+import "./events.css";
 
 export const metadata: Metadata = { title: "活动" };
 
@@ -24,11 +27,23 @@ export default async function EventsPage() {
   ]);
   const withMaterials = new Set(tutorials.map((t) => t.eventSlug));
   const calendarUrl = `${siteUrl.replace(/^https?:/, "webcal:")}/events.ics`;
-  const next = upcoming[0];
-  const inPerson = [...upcoming, ...past].filter(
-    (e) => e.kind !== "online",
-  ).length;
-  const kinds = [...new Set([...upcoming, ...past].map((e) => e.kind))];
+  const [next, ...later] = upcoming;
+  // The next event has its own ticket up top; the list holds the rest.
+  const kinds = [...new Set([...later, ...past].map((e) => e.kind))];
+  const onStrip = [...upcoming, ...past].flatMap((e) => {
+    const week = roadmapWeek(e.startsAt);
+    return week < 0
+      ? []
+      : [
+          {
+            slug: e.slug,
+            title: e.title,
+            kind: e.kind,
+            date: formatShortDate(e.startsAt),
+            week,
+          },
+        ];
+  });
 
   return (
     <section className="sec first">
@@ -37,34 +52,14 @@ export default async function EventsPage() {
           path="events"
           eyebrow={{ zh: "活动 / Events · T3 2026", en: "Events · T3 2026" }}
           title={["Every week,", "same time."]}
-          aside={[
-            {
-              k: { zh: "下一场", en: "Next up" },
-              v: next
-                ? {
-                    zh: `${formatShortDate(next.startsAt)} · ${formatTime(next.startsAt)}`,
-                    en: `${formatShortDate(next.startsAt)} · ${formatTime(next.startsAt)}`,
-                  }
-                : { zh: "筹备中", en: "TBA" },
-            },
-            {
-              k: { zh: "Build Night", en: "Build Night" },
-              v: { zh: "时间待定", en: "Time TBA" },
-            },
-            {
-              k: { zh: "本学期线下", en: "In person this term" },
-              v: { zh: `${inPerson} 场`, en: String(inPerson) },
-            },
-          ]}
         />
-        <p className="lede">
-          <T
-            zh="每周 1 场固定 Build Night，隔周 1 场 Demo 或主题活动。11 月 20 日是 T3 最后一个教学日，之后只做线上答疑。"
-            en="A Build Night every week, plus a demo or themed session every other week. 20 November is the last T3 teaching day; after that it's online Q&A only."
-          />
-        </p>
+        {/* The next event stands in for the header readouts. */}
+        {next && <NextUp slug={next.slug} />}
+        <div style={{ marginTop: 16 }}>
+          <SampleNotice />
+        </div>
 
-        <Roadmap />
+        <Roadmap events={onStrip} />
 
         <div className="cal-row">
           <div>
@@ -91,36 +86,35 @@ export default async function EventsPage() {
           </div>
         </div>
 
-        <div style={{ marginTop: 32 }}>
-          <SampleNotice />
-        </div>
-        <EventList kinds={kinds}>
-          {upcoming.length === 0 && (
-            <p className="empty">
-              <T
-                zh="下一场活动筹备中，进群第一时间收到通知。"
-                en="The next event is being planned — join the group to hear first."
+        {!next && (
+          <p className="empty">
+            <T
+              zh="下一场活动筹备中，进群第一时间收到通知。"
+              en="The next event is being planned — join the group to hear first."
+            />
+          </p>
+        )}
+        {later.length + past.length > 0 && (
+          <EventList kinds={kinds}>
+            {later.map((event, i) => (
+              <EventRow
+                key={event.slug}
+                event={event}
+                n={i + 1}
+                signups={signups[event.slug]}
               />
-            </p>
-          )}
-          {upcoming.map((event, i) => (
-            <EventRow
-              key={event.slug}
-              event={event}
-              n={i + 1}
-              signups={signups[event.slug]}
-            />
-          ))}
-          {past.map((event, i) => (
-            <EventRow
-              key={event.slug}
-              event={event}
-              n={upcoming.length + i + 1}
-              past
-              materials={withMaterials.has(event.slug)}
-            />
-          ))}
-        </EventList>
+            ))}
+            {past.map((event, i) => (
+              <EventRow
+                key={event.slug}
+                event={event}
+                n={later.length + i + 1}
+                past
+                materials={withMaterials.has(event.slug)}
+              />
+            ))}
+          </EventList>
+        )}
 
         <div className="empty" style={{ marginTop: 56 }}>
           <span className="mono mute">

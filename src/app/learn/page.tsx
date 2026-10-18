@@ -47,8 +47,8 @@ export default async function LearnPage() {
           />
           <p className="lede">
             <T
-              zh="我们教的是软件开发，AI 只是工具。每一期都落在同一条路径上：会拆需求、读得懂代码、写得出测试、部署得上线。"
-              en="We teach software development; AI is just the tool. Every session lands on the same path: break the problem down, read the code, test it, ship it."
+              zh="教的是软件开发，AI 只是工具。每期都走同一条路："
+              en="We teach software; AI is just the tool. Every session takes the same path:"
             />
           </p>
 

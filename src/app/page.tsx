@@ -44,21 +44,6 @@ export default function Home() {
             }
           >
             <div>
-              <p className="hero-zh">
-                <T
-                  zh={
-                    <>
-                      带着想法来，<b>两小时</b>做出第一个能用的页面。
-                    </>
-                  }
-                  en={
-                    <>
-                      Bring an idea. Ship your <b>first working page</b> in two
-                      hours.
-                    </>
-                  }
-                />
-              </p>
               <p className="hero-note mute">
                 <T
                   zh="从 UNSW 起步的中英双语创客社：找队友，每周一起把项目做上线。"

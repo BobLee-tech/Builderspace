@@ -1,11 +1,10 @@
 /* Event detail page (/events/[slug]). A launch console: terminal bar, a chrome
    title, a live countdown, numbered readouts on hairlines. Black / white /
-   chrome only; the mascots stay the only colour on the site. */
+   chrome only; the mascots stay the only colour on the site. The countdown
+   and address bar are shared with /events (../events.css). */
 
 .evp {
   --evp-gap: clamp(88px, 11vw, 160px);
-  /* Dot-matrix digits for live numbers only. */
-  --f-dot: var(--font-doto), var(--f-mono);
 }
 
 /* ---------- terminal bar ---------- */
@@ -13,7 +12,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: clamp(32px, 5vw, 64px);
+  margin-bottom: clamp(18px, 2.4vw, 32px);
 }
 .evp-bar > .mute {
   flex: none;
@@ -31,40 +30,40 @@
   flex-direction: column;
   gap: clamp(20px, 2.6vw, 32px);
 }
-.evp-title {
-  margin: 0;
-  font-family: var(--f-display);
-  font-weight: 800;
-  font-size: clamp(56px, 10.4vw, 156px);
-  line-height: 0.92;
-  letter-spacing: -0.05em;
-  padding-bottom: 0.06em;
-  background: var(--mat-chrome);
-  background-size: 100% 220%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: chromeShift 2.6s var(--ease) 0.2s both;
-}
-/* The title breaks after its comma, like the poster. */
-.evp-title .ln {
-  display: block;
-}
-.evp-title .ln + .ln {
-  padding-left: 0.9em;
-}
-.evp-hero-grid {
+/* Title on the left, countdown on the right, bottoms aligned. */
+.evp-hero-top {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 520px);
-  gap: clamp(28px, 5vw, 80px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
+  gap: clamp(24px, 4vw, 64px);
   align-items: end;
-  margin-top: clamp(8px, 2vw, 24px);
 }
-.evp-hero-copy {
+/* Tags, the Chinese name (.evn-zh, ../events.css), the English title. */
+.evp-name {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 12px;
   min-width: 0;
+}
+.evp-name .evn-zh {
+  margin-top: 6px;
+}
+/* A size under the page titles so two lines sit beside the countdown. */
+.evp-name .page-title {
+  font-size: clamp(48px, 6.2vw, 90px);
+}
+/* What you leave with beside the three promises. */
+.evp-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 64px);
+  align-items: end;
+}
+.evp-hero-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 32px;
 }
 .evp-lede {
   margin: 0;
@@ -73,83 +72,20 @@
   line-height: 1.6;
   color: #d9d9d6;
 }
-/* What you leave with: an address bar typing out usernames. */
-.evp-take {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.evp-take > p {
-  margin: 0;
-}
-.evp-url {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  max-width: 560px;
-  height: 64px;
-  padding: 0 24px;
-  border: 1px solid var(--line-2);
-  border-radius: 999px;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)),
-    var(--panel);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 24px 48px -28px rgba(0, 0, 0, 0.9);
-  font-size: clamp(16px, 1.8vw, 22px);
-  letter-spacing: 0;
-  text-transform: none;
-}
-.evp-url-dots {
-  display: flex;
-  gap: 6px;
-  flex: none;
-}
-.evp-url-dots i {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  border: 1px solid var(--line-2);
-}
-.evp-url-addr {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
-.evp-url-addr b {
-  font-weight: 500;
-  color: var(--paper);
-}
-.evp-caret {
-  flex: none;
-  width: 2px;
-  height: 1.1em;
-  margin: 0 1px;
-  background: var(--paper);
-  animation: evpBlink 1s steps(1) infinite;
-}
-@keyframes evpBlink {
-  50% {
-    opacity: 0;
-  }
-}
 .evp-points {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  max-width: 560px;
   margin: 0;
   padding: 0;
   list-style: none;
   border-block: 1px solid var(--line);
 }
 .evp-points li {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 18px 16px 20px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 12px;
+  padding: 14px 18px;
 }
 .evp-points li:first-child {
   padding-left: 0;
@@ -158,7 +94,7 @@
   border-left: 1px solid var(--line);
 }
 .evp-points svg {
-  margin-bottom: 6px;
+  grid-row: span 2;
 }
 .evp-points b {
   font-size: var(--fs-md);
@@ -173,78 +109,11 @@
   letter-spacing: 0.06em;
 }
 
-/* ---------- countdown ---------- */
-.evp-cd,
-.evp-status {
-  position: relative;
-  border: 1px solid var(--line-2);
-  border-radius: var(--radius);
-  background-image: var(--mat-frost);
-  background-color: var(--panel);
-  overflow: hidden;
-}
-/* A slow scan line sweeps the panel. */
-.evp-cd::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.05) 48%,
-    transparent 52%
-  );
-  background-size: 100% 300%;
-  animation: evpScan 6s linear infinite;
-  pointer-events: none;
-}
-@keyframes evpScan {
-  from {
-    background-position: 0 100%;
-  }
-  to {
-    background-position: 0 -200%;
-  }
-}
-.evp-cd-head {
-  display: flex;
-  justify-content: space-between;
-  margin: 0;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--line);
-  font-size: var(--fs-xs);
-}
-.evp-cd-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-.evp-cd-grid > div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: clamp(20px, 3vw, 32px) 8px;
-}
-.evp-cd-grid > div + div {
-  border-left: 1px solid var(--line);
-}
-.evp-cd-grid b {
-  font-family: var(--f-dot);
-  font-weight: 900;
-  font-size: clamp(40px, 5vw, 64px);
-  line-height: 1;
-  letter-spacing: 0;
-  font-variant-numeric: tabular-nums;
-}
-.evp-cd-grid .mono {
-  font-size: var(--fs-xs);
-}
-
 /* ---------- readouts ---------- */
 .evp-kv {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: clamp(48px, 7vw, 96px) 0 0;
+  margin: clamp(28px, 3vw, 40px) 0 0;
   border-block: 1px solid var(--line);
 }
 .evp-kv > div {
@@ -436,6 +305,11 @@
   align-items: start;
 }
 .evp-status {
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background-image: var(--mat-frost);
+  background-color: var(--panel);
+  overflow: hidden;
   position: sticky;
   top: 96px;
   display: flex;
@@ -448,14 +322,6 @@
   align-items: center;
   gap: 8px;
   margin: 0;
-}
-.evp-live {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--paper);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
-  animation: ping 1.8s infinite;
 }
 .evp-count {
   display: flex;
@@ -545,12 +411,15 @@
 }
 
 @media (max-width: 960px) {
+  .evp-hero-top,
   .evp-hero-grid,
   .evp-sign {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
+  /* Not sticky, but still the box its corner marks hang on. */
   .evp-status {
-    position: static;
+    position: relative;
+    top: auto;
   }
   .evp-kv {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -596,19 +465,8 @@
   .evp-bar > .mute {
     display: none;
   }
-  .evp-title .ln + .ln {
-    padding-left: 0;
-  }
   .evp-bring {
     grid-template-columns: 1fr;
-  }
-  .evp-url {
-    height: 54px;
-    padding: 0 18px;
-    font-size: 15px;
-  }
-  .evp-url-dots {
-    display: none;
   }
   /* Points stack as rows: icon, then title and line side by side. */
   .evp-points {
@@ -626,7 +484,7 @@
     border-top: 1px solid var(--line);
   }
   .evp-points svg {
-    margin: 0;
+    grid-row: auto;
   }
   .evp-kv > div {
     padding: 18px 14px 20px;
@@ -634,9 +492,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .evp-grid i.on,
-  .evp-caret,
-  .evp-cd::after,
-  .evp-live,
   .evp-rail > li:first-child .evp-node::after {
     animation: none;
   }
