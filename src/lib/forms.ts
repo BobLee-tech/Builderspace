@@ -187,6 +187,106 @@ export const projectCommentSchema = z
   .transform((c) => (c.parentId ? { ...c, kind: null } : c));
 export type ProjectCommentSubmission = z.infer<typeof projectCommentSchema>;
 
+// Event sign-up (20261018000000_event_registrations.sql). The name and WeChat
+// ID are for check-in and the participants' group; no student card, no zID.
+// A GitHub profile link or "@name" is reduced to the username.
+const githubUsername = z
+  .string()
+  .trim()
+  .transform(
+    (v) =>
+      v
+        .replace(/^(?:https?:\/\/)?(?:www\.)?github\.com\//i, "")
+        .replace(/^@/, "")
+        .replace(/\/.*$/, "") || null,
+  )
+  .pipe(
+    z
+      .string()
+      .regex(
+        /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/i,
+        "GitHub 用户名只有字母、数字和连字符|A GitHub username is letters, digits and hyphens",
+      )
+      .nullable(),
+  );
+
+export const registrationSchema = z
+  .object({
+    slug: z.string().regex(/^[a-z0-9-]+$/),
+    fullName: text(40),
+    wechat: text(60),
+    // "yes" is a UNSW student; otherwise the group they picked.
+    unswStudent: z.enum(["yes", "no"], { error: "请选一项|Pick one" }),
+    otherGroup: z
+      .enum(["usyd", "other_school", "external"])
+      .nullable()
+      .catch(null),
+    zid: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .transform((v) => v || null),
+    school: optionalText(80),
+    occupation: optionalText(80),
+    githubUsername,
+    photoConsent: z.boolean(),
+    channel: z.string().transform(normalizeChannel),
+  })
+  .superRefine((r, ctx) => {
+    const need = (path: string, message: string) =>
+      ctx.addIssue({ code: "custom", path: [path], message });
+    if (r.unswStudent === "yes") {
+      if (!r.zid) need("zid", "必填|Required");
+      else if (!/^z\d{7}$/.test(r.zid))
+        need("zid", "zID 是 z 加 7 位数字|A zID is z followed by 7 digits");
+    } else if (!r.otherGroup) {
+      need("otherGroup", "请选一项|Pick one");
+    } else if (r.otherGroup === "other_school" && !r.school) {
+      need("school", "填一下学校名|Which university?");
+    } else if (r.otherGroup === "external" && !r.occupation) {
+      need("occupation", "填一下职业|What do you do?");
+    }
+  })
+  .transform(({ unswStudent, otherGroup, zid, school, occupation, ...r }) => {
+    const seatGroup = unswStudent === "yes" ? "unsw" : otherGroup!;
+    // Only what belongs to the chosen group is kept.
+    return {
+      ...r,
+      seatGroup,
+      zid: seatGroup === "unsw" ? zid : null,
+      school: seatGroup === "other_school" ? school : null,
+      occupation: seatGroup === "external" ? occupation : null,
+    };
+  });
+export type RegistrationInput = z.infer<typeof registrationSchema>;
+
+export function parseRegistrationForm(form: FormData) {
+  return registrationSchema.safeParse({
+    slug: form.get("slug") ?? "",
+    fullName: form.get("fullName") ?? "",
+    wechat: form.get("wechat") ?? "",
+    unswStudent: form.get("unswStudent") ?? null,
+    otherGroup: form.get("otherGroup") ?? null,
+    zid: form.get("zid") ?? "",
+    school: form.get("school") ?? "",
+    occupation: form.get("occupation") ?? "",
+    githubUsername: form.get("githubUsername") ?? "",
+    photoConsent: form.get("photoConsent") === "on",
+    channel: form.get("channel") ?? "",
+  });
+}
+
+export type RegistrationState =
+  | { status: "idle" }
+  | { status: "error"; message: string; fieldErrors?: Record<string, string> }
+  | {
+      status: "ok";
+      name: string;
+      result: "confirmed" | "waitlist";
+      /** This WeChat ID had already signed up; nothing new was stored. */
+      already: boolean;
+    };
+
 export function parseVolunteerForm(form: FormData) {
   return volunteerSchema.safeParse({
     nickname: form.get("nickname") ?? "",

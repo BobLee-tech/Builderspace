@@ -1,0 +1,643 @@
+/* Event detail page (/events/[slug]). A launch console: terminal bar, a chrome
+   title, a live countdown, numbered readouts on hairlines. Black / white /
+   chrome only; the mascots stay the only colour on the site. */
+
+.evp {
+  --evp-gap: clamp(88px, 11vw, 160px);
+  /* Dot-matrix digits for live numbers only. */
+  --f-dot: var(--font-doto), var(--f-mono);
+}
+
+/* ---------- terminal bar ---------- */
+.evp-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: clamp(32px, 5vw, 64px);
+}
+.evp-bar > .mute {
+  flex: none;
+}
+.evp-rule {
+  flex: 1;
+  height: 1px;
+  min-width: 24px;
+  background: linear-gradient(90deg, var(--line-2), transparent);
+}
+
+/* ---------- hero ---------- */
+.evp-hero {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 2.6vw, 32px);
+}
+.evp-title {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(56px, 10.4vw, 156px);
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+  padding-bottom: 0.06em;
+  background: var(--mat-chrome);
+  background-size: 100% 220%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: chromeShift 2.6s var(--ease) 0.2s both;
+}
+/* The title breaks after its comma, like the poster. */
+.evp-title .ln {
+  display: block;
+}
+.evp-title .ln + .ln {
+  padding-left: 0.9em;
+}
+.evp-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 520px);
+  gap: clamp(28px, 5vw, 80px);
+  align-items: end;
+  margin-top: clamp(8px, 2vw, 24px);
+}
+.evp-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.evp-lede {
+  margin: 0;
+  max-width: 34ch;
+  font-size: clamp(18px, 1.7vw, 22px);
+  line-height: 1.6;
+  color: #d9d9d6;
+}
+/* What you leave with: an address bar typing out usernames. */
+.evp-take {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.evp-take > p {
+  margin: 0;
+}
+.evp-url {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 560px;
+  height: 64px;
+  padding: 0 24px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)),
+    var(--panel);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 48px -28px rgba(0, 0, 0, 0.9);
+  font-size: clamp(16px, 1.8vw, 22px);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.evp-url-dots {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+.evp-url-dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+}
+.evp-url-addr {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.evp-url-addr b {
+  font-weight: 500;
+  color: var(--paper);
+}
+.evp-caret {
+  flex: none;
+  width: 2px;
+  height: 1.1em;
+  margin: 0 1px;
+  background: var(--paper);
+  animation: evpBlink 1s steps(1) infinite;
+}
+@keyframes evpBlink {
+  50% {
+    opacity: 0;
+  }
+}
+.evp-points {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 560px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block: 1px solid var(--line);
+}
+.evp-points li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 16px 20px;
+}
+.evp-points li:first-child {
+  padding-left: 0;
+}
+.evp-points li + li {
+  border-left: 1px solid var(--line);
+}
+.evp-points svg {
+  margin-bottom: 6px;
+}
+.evp-points b {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.evp-points span {
+  font-size: var(--fs-sm);
+}
+.evp-hosts {
+  margin: 0;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+}
+
+/* ---------- countdown ---------- */
+.evp-cd,
+.evp-status {
+  position: relative;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background-image: var(--mat-frost);
+  background-color: var(--panel);
+  overflow: hidden;
+}
+/* A slow scan line sweeps the panel. */
+.evp-cd::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 48%,
+    transparent 52%
+  );
+  background-size: 100% 300%;
+  animation: evpScan 6s linear infinite;
+  pointer-events: none;
+}
+@keyframes evpScan {
+  from {
+    background-position: 0 100%;
+  }
+  to {
+    background-position: 0 -200%;
+  }
+}
+.evp-cd-head {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-xs);
+}
+.evp-cd-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.evp-cd-grid > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: clamp(20px, 3vw, 32px) 8px;
+}
+.evp-cd-grid > div + div {
+  border-left: 1px solid var(--line);
+}
+.evp-cd-grid b {
+  font-family: var(--f-dot);
+  font-weight: 900;
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.evp-cd-grid .mono {
+  font-size: var(--fs-xs);
+}
+
+/* ---------- readouts ---------- */
+.evp-kv {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: clamp(48px, 7vw, 96px) 0 0;
+  border-block: 1px solid var(--line);
+}
+.evp-kv > div {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 24px 24px 28px;
+}
+.evp-kv > div:first-child {
+  padding-left: 0;
+}
+.evp-kv > div + div {
+  border-left: 1px solid var(--line);
+}
+.evp-kv dt,
+.evp-kv dd {
+  margin: 0;
+}
+.evp-kv dd {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: clamp(18px, 1.9vw, 24px);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.evp-kv dd small {
+  font-weight: 400;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+}
+
+/* ---------- section heads ---------- */
+.evp-block {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(32px, 4vw, 48px);
+  margin-top: var(--evp-gap);
+  scroll-margin-top: 96px;
+}
+.evp-head {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.evp-idx {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--mute);
+}
+.evp-idx > span:first-child {
+  color: var(--paper);
+}
+.evp-h2 {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(36px, 5.2vw, 72px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+/* ---------- 01 four stops on a rail ---------- */
+.evp-rail {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(20px, 3vw, 40px);
+}
+.evp-rail-line {
+  position: absolute;
+  left: 28px;
+  right: 0;
+  top: 27px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--paper), var(--line-2) 70%);
+}
+.evp-rail > li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.evp-node {
+  position: relative;
+  z-index: 1;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: var(--ink);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  transition:
+    background 0.4s var(--ease),
+    color 0.4s var(--ease),
+    border-color 0.4s var(--ease);
+}
+.evp-rail > li:first-child .evp-node {
+  border-color: var(--paper);
+}
+.evp-rail > li:first-child .evp-node::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 1px dashed var(--paper);
+  animation: evpSpin 10s linear infinite;
+}
+@keyframes evpSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.evp-rail > li:hover .evp-node {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--paper);
+}
+.evp-at {
+  margin-top: 12px;
+}
+.evp-act-glyph {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(56px, 7vw, 104px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  background: var(--mat-chrome);
+  background-size: 100% 220%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.evp-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-md);
+}
+.evp-lines li::before {
+  content: "— ";
+  color: var(--line-2);
+}
+.evp-bring {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px 32px;
+  align-items: center;
+  padding: 24px 0;
+  border-block: 1px dashed var(--line-2);
+}
+.evp-bring ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.evp-bring li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  font-size: var(--fs-sm);
+}
+
+/* ---------- 02 sign-up: live seats beside the form ---------- */
+.evp-sign {
+  display: grid;
+  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+  gap: clamp(20px, 3vw, 40px);
+  align-items: start;
+}
+.evp-status {
+  position: sticky;
+  top: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: var(--pad);
+}
+.evp-status-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.evp-live {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+  animation: ping 1.8s infinite;
+}
+.evp-count {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.evp-count b {
+  font-family: var(--f-dot);
+  font-weight: 900;
+  font-size: clamp(64px, 7vw, 92px);
+  letter-spacing: 0;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+.evp-count > span {
+  font-family: var(--f-display);
+  font-size: 24px;
+}
+.evp-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.evp-group > .mono {
+  display: flex;
+  justify-content: space-between;
+}
+/* One cell per seat, 15 to a row; taken seats light up in order. */
+.evp-grid {
+  display: grid;
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+  gap: 4px;
+}
+.evp-grid i {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  border: 1px solid var(--line-2);
+}
+.evp-grid i.on {
+  background: var(--paper);
+  border-color: var(--paper);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
+  animation: evpSeat 0.5s var(--ease) both;
+  animation-delay: calc(var(--i) * 18ms);
+}
+@keyframes evpSeat {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+.evp-left {
+  margin: 0;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  line-height: 1.9;
+}
+.evp-next {
+  list-style: none;
+  margin: 0;
+  padding: 16px 0 0;
+  border-top: 1px dashed var(--line-2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: var(--fs-sm);
+  color: var(--mute);
+}
+.evp-next li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+}
+.evp-next .mono {
+  color: var(--paper);
+}
+.evp-block .chip[data-off] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.evp-note {
+  margin: 0;
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+}
+.evp-done .d-cta {
+  margin-top: 4px;
+}
+
+@media (max-width: 960px) {
+  .evp-hero-grid,
+  .evp-sign {
+    grid-template-columns: 1fr;
+  }
+  .evp-status {
+    position: static;
+  }
+  .evp-kv {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .evp-kv > div:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .evp-kv > div:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+  /* The rail turns vertical. */
+  .evp-rail {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .evp-rail-line {
+    left: 27px;
+    right: auto;
+    top: 28px;
+    bottom: 0;
+    width: 1px;
+    height: auto;
+    background: linear-gradient(180deg, var(--paper), var(--line-2) 70%);
+  }
+  .evp-rail > li {
+    display: grid;
+    grid-template-columns: 55px minmax(0, 1fr);
+    column-gap: 20px;
+    row-gap: 6px;
+  }
+  .evp-node {
+    grid-row: span 3;
+  }
+  .evp-at {
+    margin-top: 4px;
+  }
+  .evp-act-glyph {
+    font-size: 56px;
+  }
+}
+@media (max-width: 640px) {
+  .evp-bar > .mute {
+    display: none;
+  }
+  .evp-title .ln + .ln {
+    padding-left: 0;
+  }
+  .evp-bring {
+    grid-template-columns: 1fr;
+  }
+  .evp-url {
+    height: 54px;
+    padding: 0 18px;
+    font-size: 15px;
+  }
+  .evp-url-dots {
+    display: none;
+  }
+  /* Points stack as rows: icon, then title and line side by side. */
+  .evp-points {
+    grid-template-columns: 1fr;
+  }
+  .evp-points li {
+    display: grid;
+    grid-template-columns: 22px auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 12px;
+    padding: 14px 0;
+  }
+  .evp-points li + li {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .evp-points svg {
+    margin: 0;
+  }
+  .evp-kv > div {
+    padding: 18px 14px 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .evp-grid i.on,
+  .evp-caret,
+  .evp-cd::after,
+  .evp-live,
+  .evp-rail > li:first-child .evp-node::after {
+    animation: none;
+  }
+}

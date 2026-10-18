@@ -11,6 +11,8 @@ import {
 } from "./sample-data";
 import {
   NO_MEDIA,
+  NO_SIGNUPS,
+  type EventSignups,
   type Project,
   type ProjectComment,
   type ProjectUpdate,
@@ -33,7 +35,7 @@ export async function getEvents(): Promise<SiteEvent[]> {
   const { data, error } = await db
     .from("events")
     .select(
-      "slug,title,kind,starts_at,ends_at,location,summary,signup_url,capacity",
+      "slug,title,kind,starts_at,ends_at,location,summary,signup_url,capacity,registration_closes_at,seat_quotas",
     )
     .eq("published", true)
     .order("starts_at");
@@ -49,7 +51,48 @@ export async function getEvents(): Promise<SiteEvent[]> {
     summary: e.summary,
     signupUrl: e.signup_url,
     capacity: e.capacity,
+    registrationClosesAt: e.registration_closes_at,
+    seatQuotas: e.seat_quotas,
   }));
+}
+
+export async function getEvent(slug: string): Promise<SiteEvent | null> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("events");
+
+  return (await getEvents()).find((e) => e.slug === slug) ?? null;
+}
+
+/**
+ * Head-counts for events people sign up for on the site, by slug. Numbers
+ * only (event_signup_stats() in 20261018000000_event_registrations.sql); a
+ * new sign-up refreshes the tag so the person sees themselves counted.
+ */
+export async function getEventSignups(): Promise<Record<string, EventSignups>> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("event-signups");
+
+  const db = getSupabase();
+  if (!db) return {};
+
+  const { data, error } = await db.rpc("event_signup_stats");
+  if (error) throw error;
+
+  return Object.fromEntries(
+    (
+      data as {
+        slug: string;
+        confirmed: number;
+        waitlist: number;
+        by_group: EventSignups["byGroup"];
+      }[]
+    ).map((s) => [
+      s.slug,
+      { confirmed: s.confirmed, waitlist: s.waitlist, byGroup: s.by_group },
+    ]),
+  );
 }
 
 /** Splits events around "now"; refreshed with the cache, so at most minutes stale. */
@@ -66,6 +109,46 @@ export async function getEventSchedule(): Promise<{
   return {
     upcoming: events.filter((e) => Date.parse(e.endsAt) > now),
     past: events.filter((e) => Date.parse(e.endsAt) <= now).reverse(),
+  };
+}
+
+/**
+ * One event with its head-count and where sign-up stands. "now" is read in
+ * the cache, so the page flips to closed within a minute of the deadline; the
+ * database refuses late sign-ups on its own.
+ */
+export async function getEventDetail(slug: string): Promise<{
+  event: SiteEvent;
+  signups: EventSignups;
+  phase: "open" | "closed" | "past" | "external";
+} | null> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("events", "event-signups");
+
+  const [event, signups] = await Promise.all([
+    getEvent(slug),
+    getEventSignups(),
+  ]);
+  if (!event) return null;
+  const now = Date.now();
+  const closes = event.registrationClosesAt
+    ? Math.min(
+        Date.parse(event.registrationClosesAt),
+        Date.parse(event.startsAt),
+      )
+    : null;
+  return {
+    event,
+    signups: signups[slug] ?? NO_SIGNUPS,
+    phase:
+      now >= Date.parse(event.endsAt)
+        ? "past"
+        : closes === null
+          ? "external"
+          : now < closes
+            ? "open"
+            : "closed",
   };
 }
 

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getProjects } from "@/lib/data";
+import { getEvents, getProjects } from "@/lib/data";
 import { siteUrl } from "@/lib/site-url";
 
 const PAGES = [
@@ -13,9 +13,10 @@ const PAGES = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const projects = await getProjects();
+  const [projects, events] = await Promise.all([getProjects(), getEvents()]);
   return [
     ...PAGES.map((p) => ({ url: `${siteUrl}${p}` })),
+    ...events.map((e) => ({ url: `${siteUrl}/events/${e.slug}` })),
     ...projects.map((p) => ({ url: `${siteUrl}/projects/${p.slug}` })),
   ];
 }

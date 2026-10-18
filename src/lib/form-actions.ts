@@ -31,7 +31,10 @@ export function withoutDatabase(
   return ok;
 }
 
-export function submitFailed(scope: string, error: PostgrestError): FormState {
+export function submitFailed(
+  scope: string,
+  error: PostgrestError,
+): Extract<FormState, { status: "error" }> {
   if (error.code === THROTTLED) {
     return {
       status: "error",

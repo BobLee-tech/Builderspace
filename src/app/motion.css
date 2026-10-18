@@ -679,7 +679,6 @@ html.fx .top {
     .ev,
     .fields,
     .timeline li,
-    .bn-flow > *,
     .road,
     .dist,
     .path li,
@@ -1624,44 +1623,6 @@ html.fx .top {
   border-radius: 50%;
   background: var(--paper);
   animation: ping 1.8s infinite;
-}
-.bn-flow {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 28px;
-  border-top: 1px solid var(--line);
-}
-.bn-flow > div {
-  padding: 22px 22px 6px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  position: relative;
-}
-.bn-flow > div + div {
-  padding-left: 22px;
-  border-left: 1px solid var(--line);
-}
-.bn-flow > div::before {
-  content: "";
-  position: absolute;
-  top: -4px;
-  left: 0;
-  width: 7px;
-  height: 7px;
-  background: var(--paper);
-}
-.bn-flow > div + div::before {
-  left: -4px;
-}
-.bn-flow b {
-  font-family: var(--f-display);
-  font-weight: 600;
-  font-size: 20px;
-  letter-spacing: -0.02em;
-}
-.bn-flow p {
-  font-size: 13.5px;
 }
 .ev-cols {
   display: grid;
@@ -3779,17 +3740,6 @@ html.fx .top {
   .page-aside dd {
     font-size: 14px;
     white-space: normal;
-  }
-  .bn-flow {
-    grid-template-columns: 1fr;
-  }
-  .bn-flow > div + div {
-    padding-left: 0;
-    border-left: 0;
-    border-top: 1px solid var(--line);
-  }
-  .bn-flow > div + div::before {
-    left: 0;
   }
   .ev-cols,
   .ev-i,

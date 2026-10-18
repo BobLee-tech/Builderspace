@@ -67,7 +67,7 @@ export function buildCalendar(
       `DTEND:${utcStamp(event.endsAt)}`,
       `SUMMARY:${escapeText(event.title)}`,
       `LOCATION:${escapeText(event.location)}`,
-      `URL:${options.siteUrl}/events#${event.slug}`,
+      `URL:${options.siteUrl}/events/${event.slug}`,
     );
     if (description) lines.push(`DESCRIPTION:${escapeText(description)}`);
     lines.push("END:VEVENT");

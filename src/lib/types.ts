@@ -89,7 +89,37 @@ export type SiteEvent = {
   summary: string | null;
   signupUrl: string | null;
   capacity: number | null;
+  /** Set when people sign up on the event page; null for outside sign-up. */
+  registrationClosesAt: string | null;
+  /** Seats per group, e.g. { unsw: 30, usyd: 10 }; groups left out aren't open. */
+  seatQuotas: Partial<Record<SeatGroup, number>> | null;
 };
+
+// Who a sign-up seat is for (event_registrations.seat_group). The form first
+// asks whether you're a UNSW student; if not, which of the other groups.
+export const SEAT_GROUPS = [
+  "unsw",
+  "usyd",
+  "other_school",
+  "external",
+] as const;
+export type SeatGroup = (typeof SEAT_GROUPS)[number];
+
+/** Public head-count for an event with on-site sign-up; numbers only. */
+export type EventSignups = {
+  confirmed: number;
+  waitlist: number;
+  /** Confirmed seats per group. */
+  byGroup: Partial<Record<SeatGroup, number>>;
+};
+
+export const NO_SIGNUPS: EventSignups = {
+  confirmed: 0,
+  waitlist: 0,
+  byGroup: {},
+};
+
+export type RegistrationStatus = "confirmed" | "waitlist";
 
 export type Project = {
   slug: string;
@@ -240,6 +270,13 @@ export const EVENT_INTEREST_LABEL: Record<EventInterest, Bi> = {
   yes: { zh: "想来", en: "I'm in" },
   maybe: { zh: "看时间", en: "Depends on timing" },
   no: { zh: "这次不来", en: "Not this time" },
+};
+
+export const SEAT_GROUP_LABEL: Record<SeatGroup, Bi> = {
+  unsw: { zh: "UNSW", en: "UNSW" },
+  usyd: { zh: "悉大 USYD", en: "USYD" },
+  other_school: { zh: "其他学校", en: "Other universities" },
+  external: { zh: "校外成员", en: "Non-students" },
 };
 
 export const POSITION_LABEL: Record<VolunteerPosition, Bi> = {
