@@ -1,12 +1,26 @@
 import type { Metadata } from "next";
+import { Doto } from "next/font/google";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import {
+  Code,
+  ForkKnife,
+  GithubLogo,
+  Laptop,
+  Sparkle,
+  UsersThree,
+} from "@phosphor-icons/react/dist/ssr";
+import type { Icon } from "@phosphor-icons/react";
 import { Arr } from "@/components/fx/arr";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { getEventDetail } from "@/lib/data";
-import { getEventPage, type EventPage } from "@/lib/event-pages";
+import {
+  getEventPage,
+  type EventIcon,
+  type EventPage,
+} from "@/lib/event-pages";
 import {
   formatDate,
   formatShortDate,
@@ -21,9 +35,26 @@ import {
   type EventSignups,
   type SiteEvent,
 } from "@/lib/types";
+import { AddressBar } from "./address-bar";
 import { Countdown } from "./countdown";
 import { SignupForm } from "./signup-form";
 import "./event.css";
+
+// Dot-matrix digits for the live numbers (countdown, seats) only.
+const doto = Doto({
+  subsets: ["latin"],
+  weight: ["900"],
+  variable: "--font-doto",
+});
+
+const ICONS: Record<EventIcon, Icon> = {
+  code: Code,
+  sparkle: Sparkle,
+  people: UsersThree,
+  laptop: Laptop,
+  github: GithubLogo,
+  snack: ForkKnife,
+};
 
 export async function generateMetadata({
   params,
@@ -34,7 +65,7 @@ export async function generateMetadata({
   const page = getEventPage(event.slug);
   return {
     title: event.title,
-    description: page?.lede.zh ?? event.summary ?? undefined,
+    description: page?.summary.zh ?? event.summary ?? undefined,
   };
 }
 
@@ -88,7 +119,7 @@ async function EventDetail({ slug }: { slug: string }) {
   const groups = seatGroups(event);
 
   return (
-    <section className="sec first evp">
+    <section className={`sec first evp ${doto.variable}`}>
       <div className="wrap">
         <div className="evp-bar mono">
           <Crumb />
@@ -119,9 +150,34 @@ async function EventDetail({ slug }: { slug: string }) {
           </h1>
           <div className="evp-hero-grid">
             <div className="evp-hero-copy">
-              <p className="evp-lede">
-                {page ? <T {...page.lede} /> : event.summary}
-              </p>
+              {page ? (
+                <>
+                  <div className="evp-take">
+                    <p className="mono mute">
+                      <T zh="13:00 离场时，你会有" en="By 13:00 you'll have" />
+                    </p>
+                    <AddressBar handles={page.handles} />
+                  </div>
+                  <ul className="evp-points">
+                    {page.points.map((pt) => {
+                      const Glyph = ICONS[pt.icon];
+                      return (
+                        <li key={pt.title.en}>
+                          <Glyph weight="light" size={22} aria-hidden />
+                          <b>
+                            <T {...pt.title} />
+                          </b>
+                          <span className="mute">
+                            <T {...pt.sub} />
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              ) : (
+                <p className="evp-lede">{event.summary}</p>
+              )}
               <div className="d-cta">
                 {phase === "open" && (
                   <a href="#signup" className="btn solid primary">
@@ -399,9 +455,13 @@ function Intro({ page }: { page: EventPage }) {
             <b className="evp-act-glyph">
               <T {...step.name} />
             </b>
-            <p className="mute">
-              <T {...step.body} />
-            </p>
+            <ul className="evp-lines mute">
+              {step.lines.map((l) => (
+                <li key={l.en}>
+                  <T {...l} />
+                </li>
+              ))}
+            </ul>
           </li>
         ))}
       </ol>
@@ -410,11 +470,15 @@ function Intro({ page }: { page: EventPage }) {
           <T zh="带上 / Bring" en="Bring" />
         </span>
         <ul>
-          {page.bring.map((b) => (
-            <li key={b.en}>
-              <T {...b} />
-            </li>
-          ))}
+          {page.bring.map((b) => {
+            const Glyph = ICONS[b.icon];
+            return (
+              <li key={b.label.en}>
+                <Glyph weight="light" size={18} aria-hidden />
+                <T {...b.label} />
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>

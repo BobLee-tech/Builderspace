@@ -8,75 +8,104 @@
 
 type Bi = { zh: string; en: string };
 
+/** Icons the page can draw next to a short line (Phosphor, see page.tsx). */
+export type EventIcon =
+  "code" | "sparkle" | "people" | "laptop" | "github" | "snack";
+
 export type EventPage = {
-  /** The one-line promise under the title. */
-  lede: Bi;
+  /** For search results and link previews; the page itself shows `points`. */
+  summary: Bi;
   highlights: Bi[];
   hosts: Bi;
-  /** How the session runs, in order: a time, a word and one line each. */
-  steps: { at: string; name: Bi; body: Bi }[];
-  /** What to bring or do beforehand. */
-  bring: Bi[];
+  /** Usernames the address bar in the hero types out, in turn. */
+  handles: string[];
+  /** Three short promises under the address bar. */
+  points: { icon: EventIcon; title: Bi; sub: Bi }[];
+  /** How the session runs, in order: a time, a word and two short lines. */
+  steps: { at: string; name: Bi; lines: Bi[] }[];
+  /** What to bring, a few words each. */
+  bring: { icon: EventIcon; label: Bi }[];
   /** Ask for a GitHub username on sign-up (a build-along workshop). */
   asksGithub: boolean;
 };
 
 const putYourselfOnline: EventPage = {
-  lede: {
-    zh: "零基础也能做。带上电脑，用 AI 做一个个人网站并发布上线，离场时带走自己的「用户名.github.io」和一桌新朋友。",
-    en: "No experience needed. Bring a laptop, build a personal site with AI and put it online. You leave with your own username.github.io and a table of new friends.",
+  summary: {
+    zh: "零基础也能做：带上电脑，用 AI 做一个个人网站并发布到 GitHub Pages，离场时带走自己的网址和一桌新朋友。",
+    en: "No experience needed: bring a laptop, build a personal site with AI and publish it on GitHub Pages. Leave with your own address and a table of new friends.",
   },
   highlights: [
     { zh: "免费", en: "Free" },
-    { zh: "不用会写代码", en: "No coding needed" },
+    { zh: "3 小时", en: "3 hours" },
   ],
   hosts: {
     zh: "主办 BuilderSpace（UNSW）· 协办 悉大合作社团",
     en: "Hosted by BuilderSpace (UNSW) with a University of Sydney partner society",
   },
+  handles: ["yuki", "alex-chen", "mia-design", "your-name"],
+  points: [
+    {
+      icon: "code",
+      title: { zh: "零基础", en: "Zero experience" },
+      sub: { zh: "不用会写代码", en: "No coding needed" },
+    },
+    {
+      icon: "sparkle",
+      title: { zh: "AI 做网站", en: "Built with AI" },
+      sub: { zh: "生成、修改、上线", en: "Generate, refine, ship" },
+    },
+    {
+      icon: "people",
+      title: { zh: "一桌新朋友", en: "New friends" },
+      sub: { zh: "按主题坐，一起做", en: "Sit by topic, build together" },
+    },
+  ],
   steps: [
     {
       at: "10:00",
       name: { zh: "聊", en: "Talk" },
-      body: {
-        zh: "按主题选桌，听嘉宾分享，和同桌聊出你想要的网站。",
-        en: "Pick a table by topic, hear a guest talk, and work out the site you want.",
-      },
+      lines: [
+        { zh: "按主题选桌", en: "Tables by topic" },
+        { zh: "嘉宾分享", en: "Guest talk" },
+      ],
     },
     {
       at: "10:40",
       name: { zh: "学", en: "Learn" },
-      body: {
-        zh: "做网站的五关：想清楚、生成、改、上线、更新。",
-        en: "Five levels of making a site: decide, generate, refine, ship, update.",
-      },
+      lines: [
+        { zh: "做网站的五关", en: "Five levels of a site" },
+        { zh: "现场演示", en: "Live demo" },
+      ],
     },
     {
       at: "10:55",
       name: { zh: "做", en: "Make" },
-      body: {
-        zh: "用 AI 生成、改到满意，全场一起部署到 GitHub Pages。",
-        en: "Generate it with AI, refine it, then deploy to GitHub Pages together.",
-      },
+      lines: [
+        { zh: "AI 生成和修改", en: "Build it with AI" },
+        { zh: "部署到 GitHub Pages", en: "Ship to GitHub Pages" },
+      ],
     },
     {
       at: "12:40",
       name: { zh: "秀", en: "Show" },
-      body: {
-        zh: "成果墙投屏，上台讲 2 分钟，合影收尾。",
-        en: "Results wall on screen, two-minute show and tell, group photo.",
-      },
+      lines: [
+        { zh: "上台讲 2 分钟", en: "Two minutes on stage" },
+        { zh: "合影", en: "Group photo" },
+      ],
     },
   ],
   bring: [
-    { zh: "电脑和充电器", en: "A laptop and charger" },
+    { icon: "laptop", label: { zh: "电脑和充电器", en: "Laptop and charger" } },
     {
-      zh: "一个验证过邮箱的 GitHub 账号，用户名就是你的网址",
-      en: "A GitHub account with a verified email: your username becomes your address",
+      icon: "github",
+      label: {
+        zh: "GitHub 账号（已验证邮箱）",
+        en: "GitHub account (email verified)",
+      },
     },
     {
-      zh: "不含午饭，中间有零食和水",
-      en: "No lunch; snacks and water at the break",
+      icon: "snack",
+      label: { zh: "不含午饭，有零食和水", en: "No lunch; snacks and water" },
     },
   ],
   asksGithub: true,
