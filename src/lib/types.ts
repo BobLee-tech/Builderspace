@@ -55,7 +55,7 @@ export const REFERRAL_SOURCES = [
 // on the form.
 export const DEPARTMENTS = [
   {
-    name: { zh: "宣传部", en: "Marketing" },
+    name: { zh: "运营部", en: "Operations" },
     positions: ["content", "design_media", "recruiting"],
   },
   {
