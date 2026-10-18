@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
+import { SpecRow } from "@/components/spec-row";
 import { getProjects } from "@/lib/data";
 import { ROLE_LABEL, type Role } from "@/lib/types";
 import { Plaza } from "./plaza";
-import { T } from "@/components/t";
 
 export const metadata: Metadata = { title: "项目广场" };
 
@@ -42,15 +42,26 @@ export default async function ProjectsPage() {
             },
           ]}
         />
-        <p className="lede">
-          <T
-            zh="每张卡写清楚问题、目标用户、进度和缺的角色。投稿经人工审核后公开，发起人每两周更新一次进展。"
-            en="Each card states the problem, who it is for, progress and the roles needed. Submissions go live after review; owners post an update every two weeks."
-          />
-        </p>
-        <div style={{ marginTop: 16 }}>
-          <SampleNotice />
-        </div>
+        <SpecRow
+          items={[
+            {
+              k: { zh: "每张卡", en: "Each card" },
+              v: {
+                zh: "问题 · 目标用户 · 进度 · 缺的角色",
+                en: "Problem · users · progress · roles needed",
+              },
+            },
+            {
+              k: { zh: "公开", en: "Goes live" },
+              v: { zh: "人工审核后", en: "After review" },
+            },
+            {
+              k: { zh: "更新", en: "Updates" },
+              v: { zh: "发起人每两周一次", en: "Every two weeks" },
+            },
+          ]}
+        />
+        <SampleNotice />
         <Plaza projects={projects} />
       </div>
     </section>

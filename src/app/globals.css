@@ -290,6 +290,8 @@ main {
 }
 .sec.first {
   border-top: 0;
+  /* Inner pages start right under the bar; the home hero has its own. */
+  padding-top: clamp(20px, 2.4vw, 36px);
 }
 .sec-head {
   display: grid;
@@ -424,19 +426,9 @@ main {
   align-items: end;
   animation: rv-in 1s var(--ease-out) 0.45s both;
 }
-.hero-zh {
-  font-size: clamp(18px, 2.2vw, 24px);
-  font-weight: 500;
-  line-height: 1.5;
-  max-width: 22em;
-}
-.hero-zh b {
-  font-weight: 900;
-  background: linear-gradient(transparent 62%, rgba(255, 255, 255, 0.22) 0);
-}
 .hero-note {
   max-width: 34em;
-  margin-top: 10px;
+  margin: 0;
 }
 .hero-cta {
   display: flex;

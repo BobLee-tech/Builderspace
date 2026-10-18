@@ -6,50 +6,31 @@ type Bi = { zh: string; en: string };
 export const ROADMAP_START = "2026-10-12";
 export const ROADMAP_DAYS = 56;
 
-export const ROADMAP_WEEKS: { label: string; off?: boolean; plan: Bi }[] = [
+/**
+ * The school calendar for each week (`term`) and anything already settled
+ * that isn't an event (`plan`). Events themselves come from the events table
+ * and land in their week; a later week with neither reads "TBD".
+ */
+export const ROADMAP_WEEKS: {
+  label: string;
+  off?: boolean;
+  term?: Bi;
+  plan?: Bi;
+}[] = [
   { label: "W1", plan: { zh: "预热 · 官网上线", en: "Warm-up · site live" } },
-  {
-    label: "W2",
-    off: true,
-    plan: { zh: "停课周 · 首场工作坊", en: "Flex week · first workshop" },
-  },
-  {
-    label: "W3",
-    plan: { zh: "组队 Pitch · Build Night", en: "Team pitch · Build Night" },
-  },
-  {
-    label: "W4",
-    plan: { zh: "Demo Night 1 · 中期检查", en: "Demo Night 1 · check-in" },
-  },
-  { label: "W5", plan: { zh: "Build Night", en: "Build Night" } },
-  {
-    label: "W6",
-    plan: {
-      zh: "Demo Night 2 · 线下最后一场",
-      en: "Demo Night 2 · last in person",
-    },
-  },
-  {
-    label: "W7",
-    off: true,
-    plan: { zh: "复习周 · 线上答疑", en: "Study week · online Q&A" },
-  },
-  { label: "W8", off: true, plan: { zh: "考试期", en: "Exams" } },
+  { label: "W2", off: true, term: { zh: "停课周", en: "Flex week" } },
+  { label: "W3" },
+  { label: "W4" },
+  { label: "W5" },
+  { label: "W6" },
+  { label: "W7", off: true, term: { zh: "复习周", en: "Study week" } },
+  { label: "W8", off: true, term: { zh: "考试期", en: "Exams" } },
 ];
 
-export const ROADMAP_MARKS: {
-  date: string;
-  kind: "checkpoint" | "lastday";
-  label: Bi;
-}[] = [
-  {
-    date: "2026-11-08",
-    kind: "checkpoint",
-    label: { zh: "中期检查 11/8", en: "Check-in 11/8" },
-  },
+/** Dates worth a line on the strip: the school calendar only. */
+export const ROADMAP_MARKS: { date: string; label: Bi }[] = [
   {
     date: "2026-11-20",
-    kind: "lastday",
     label: { zh: "T3 最后教学日 11/20", en: "Last T3 teaching day 11/20" },
   },
 ];
@@ -62,6 +43,12 @@ const sydneyDay = (d: string) => Date.parse(`${d}T00:00:00+11:00`);
 export function roadmapOffset(at: string | number) {
   const t = typeof at === "string" ? sydneyDay(at) : at;
   return (t - sydneyDay(ROADMAP_START)) / (ROADMAP_DAYS * DAY);
+}
+
+/** Index of the week a moment falls in, or -1 outside the strip. */
+export function roadmapWeek(at: string | number) {
+  const k = roadmapOffset(typeof at === "string" ? Date.parse(at) : at);
+  return k < 0 || k >= 1 ? -1 : Math.floor(k * ROADMAP_WEEKS.length);
 }
 
 /** Monday of week `i`, formatted m/d. */

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SpecRow } from "@/components/spec-row";
 import { ProjectForm } from "./project-form";
 import { T } from "@/components/t";
 
@@ -17,12 +18,29 @@ export default function NewProjectPage() {
             <span>Pitch it.</span>
           </span>
         </h1>
-        <p className="lede" style={{ marginBottom: 40 }}>
-          <T
-            zh="写清楚问题、目标用户和缺的角色。人工审核后公开，不需要已经写好代码。项目归你和队友所有。"
-            en="Describe the problem, who it is for and the roles you need. It goes live after review, no code required. The project stays yours."
-          />
-        </p>
+        <SpecRow
+          items={[
+            {
+              k: { zh: "写清", en: "Describe" },
+              v: {
+                zh: "问题 · 目标用户 · 缺的角色",
+                en: "Problem · users · roles needed",
+              },
+            },
+            {
+              k: { zh: "代码", en: "Code" },
+              v: { zh: "还没写也可以", en: "Not needed yet" },
+            },
+            {
+              k: { zh: "公开", en: "Goes live" },
+              v: { zh: "人工审核后", en: "After review" },
+            },
+            {
+              k: { zh: "归属", en: "Ownership" },
+              v: { zh: "项目归你和队友", en: "Yours and your team's" },
+            },
+          ]}
+        />
         <ProjectForm />
       </div>
     </section>

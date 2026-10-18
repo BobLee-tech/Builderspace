@@ -8,7 +8,13 @@ import { hasFinePointer, prefersReducedMotion, rafThrottle } from "./motion";
  * pointer takes over as the light. The title itself stays put; letting it
  * drift after the pointer read as sticky.
  */
-export function PageHeadFx({ children }: { children: ReactNode }) {
+export function PageHeadFx({
+  children,
+  className = "page-head",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -64,7 +70,7 @@ export function PageHeadFx({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="page-head" ref={ref}>
+    <div className={className} ref={ref}>
       {children}
     </div>
   );

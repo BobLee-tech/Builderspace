@@ -1,26 +1,14 @@
 import type { Metadata } from "next";
-import { Doto } from "next/font/google";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import {
-  Code,
-  ForkKnife,
-  GithubLogo,
-  Laptop,
-  Sparkle,
-  UsersThree,
-} from "@phosphor-icons/react/dist/ssr";
-import type { Icon } from "@phosphor-icons/react";
 import { Arr } from "@/components/fx/arr";
+import { PageHeadFx } from "@/components/fx/page-head-fx";
+import { LitTitle } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { getEventDetail } from "@/lib/data";
-import {
-  getEventPage,
-  type EventIcon,
-  type EventPage,
-} from "@/lib/event-pages";
+import { getEventPage, type EventPage } from "@/lib/event-pages";
 import {
   formatDate,
   formatShortDate,
@@ -30,31 +18,17 @@ import {
 import { siteUrl } from "@/lib/site-url";
 import {
   EVENT_KIND_LABEL,
-  SEAT_GROUPS,
   SEAT_GROUP_LABEL,
   type EventSignups,
   type SiteEvent,
 } from "@/lib/types";
-import { AddressBar } from "./address-bar";
-import { Countdown } from "./countdown";
+import { AddressBar } from "../address-bar";
+import { Countdown } from "../countdown";
+import { doto } from "../doto";
+import { EVENT_ICONS as ICONS, eventIsFull, seatGroups } from "../event-parts";
 import { SignupForm } from "./signup-form";
+import "../events.css";
 import "./event.css";
-
-// Dot-matrix digits for the live numbers (countdown, seats) only.
-const doto = Doto({
-  subsets: ["latin"],
-  weight: ["900"],
-  variable: "--font-doto",
-});
-
-const ICONS: Record<EventIcon, Icon> = {
-  code: Code,
-  sparkle: Sparkle,
-  people: UsersThree,
-  laptop: Laptop,
-  github: GithubLogo,
-  snack: ForkKnife,
-};
 
 export async function generateMetadata({
   params,
@@ -105,16 +79,7 @@ async function EventDetail({ slug }: { slug: string }) {
   if (!detail) notFound();
   const { event, signups, phase } = detail;
   const page = getEventPage(event.slug);
-  // Full once every group that's open has no seat left.
-  const full =
-    (event.capacity !== null && signups.confirmed >= event.capacity) ||
-    (event.seatQuotas !== null &&
-      Object.entries(event.seatQuotas).every(
-        ([g, n]) =>
-          (signups.byGroup[g as keyof typeof signups.byGroup] ?? 0) >= n,
-      ));
-  // "3 小时，把自己放上网" → two lines, like the poster.
-  const lines = event.title.split(/(?<=，)/);
+  const full = eventIsFull(event, signups);
   const calendarUrl = `${siteUrl.replace(/^https?:/, "webcal:")}/events.ics`;
   const groups = seatGroups(event);
 
@@ -131,77 +96,83 @@ async function EventDetail({ slug }: { slug: string }) {
         </div>
 
         <header className="evp-hero">
-          <div className="need">
-            <span className="tag fill">
-              <T {...EVENT_KIND_LABEL[event.kind]} />
-            </span>
-            {page?.highlights.map((h) => (
-              <span key={h.en} className="tag">
-                <T {...h} />
-              </span>
-            ))}
-          </div>
-          <h1 className="evp-title">
-            {lines.map((l) => (
-              <span key={l} className="ln">
-                {l}
-              </span>
-            ))}
-          </h1>
-          <div className="evp-hero-grid">
-            <div className="evp-hero-copy">
-              {page ? (
-                <>
-                  <div className="evp-take">
-                    <p className="mono mute">
-                      <T zh="13:00 离场时，你会有" en="By 13:00 you'll have" />
-                    </p>
-                    <AddressBar handles={page.handles} />
-                  </div>
-                  <ul className="evp-points">
-                    {page.points.map((pt) => {
-                      const Glyph = ICONS[pt.icon];
-                      return (
-                        <li key={pt.title.en}>
-                          <Glyph weight="light" size={22} aria-hidden />
-                          <b>
-                            <T {...pt.title} />
-                          </b>
-                          <span className="mute">
-                            <T {...pt.sub} />
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </>
-              ) : (
-                <p className="evp-lede">{event.summary}</p>
-              )}
-              <div className="d-cta">
-                {phase === "open" && (
-                  <a href="#signup" className="btn solid primary">
-                    {full ? (
-                      <T zh="报名候补" en="Join the waitlist" />
-                    ) : (
-                      <T zh="立即报名" en="Sign up" />
-                    )}{" "}
-                    <Arr />
-                  </a>
-                )}
-                {phase !== "past" && (
-                  <a href={calendarUrl} className="btn ghost">
-                    <T zh="加入日历" en="Add to calendar" /> <Arr />
-                  </a>
-                )}
+          {/* Title and countdown side by side, so the first screen holds the
+              whole hero. */}
+          <div className="evp-hero-top">
+            <PageHeadFx className="evp-name">
+              <div className="need">
+                <span className="tag fill">
+                  <T {...EVENT_KIND_LABEL[event.kind]} />
+                </span>
+                {page?.highlights.map((h) => (
+                  <span key={h.en} className="tag">
+                    <T {...h} />
+                  </span>
+                ))}
               </div>
-              {page && (
-                <p className="mono mute evp-hosts">
-                  <T {...page.hosts} />
+              {/* The Chinese name in mono, then the English title lit like
+                  the page titles. */}
+              <p className="evn-zh mono">
+                <span className="mute">{"//"}</span> {event.title}
+              </p>
+              <LitTitle title={page?.display ?? [event.title]} />
+            </PageHeadFx>
+            {phase !== "past" && <Countdown to={event.startsAt} />}
+          </div>
+          {page ? (
+            <div className="evp-hero-grid">
+              <div className="evp-take">
+                <p className="mono mute">
+                  <T
+                    zh={`${formatTime(event.endsAt)} 离场时，你会有`}
+                    en={`By ${formatTime(event.endsAt)} you'll have`}
+                  />
                 </p>
+                <AddressBar handles={page.handles} />
+              </div>
+              <ul className="evp-points">
+                {page.points.map((pt) => {
+                  const Glyph = ICONS[pt.icon];
+                  return (
+                    <li key={pt.title.en}>
+                      <Glyph weight="light" size={22} aria-hidden />
+                      <b>
+                        <T {...pt.title} />
+                      </b>
+                      <span className="mute">
+                        <T {...pt.sub} />
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : (
+            <p className="evp-lede">{event.summary}</p>
+          )}
+          <div className="evp-hero-foot">
+            <div className="d-cta">
+              {phase === "open" && (
+                <a href="#signup" className="btn solid primary">
+                  {full ? (
+                    <T zh="报名候补" en="Join the waitlist" />
+                  ) : (
+                    <T zh="立即报名" en="Sign up" />
+                  )}{" "}
+                  <Arr />
+                </a>
+              )}
+              {phase !== "past" && (
+                <a href={calendarUrl} className="btn ghost">
+                  <T zh="加入日历" en="Add to calendar" /> <Arr />
+                </a>
               )}
             </div>
-            {phase !== "past" && <Countdown to={event.startsAt} />}
+            {page && (
+              <p className="mono mute evp-hosts">
+                <T {...page.hosts} />
+              </p>
+            )}
           </div>
         </header>
 
@@ -244,7 +215,7 @@ async function EventDetail({ slug }: { slug: string }) {
           </div>
         </dl>
 
-        {page && <Intro page={page} />}
+        {page && <Intro page={page} end={formatTime(event.endsAt)} />}
 
         <div className="evp-block" id="signup">
           <Head
@@ -314,13 +285,6 @@ async function EventDetail({ slug }: { slug: string }) {
       </div>
     </section>
   );
-}
-
-function seatGroups(event: SiteEvent) {
-  return SEAT_GROUPS.flatMap((g) => {
-    const n = event.seatQuotas?.[g];
-    return n === undefined ? [] : [[g, n] as const];
-  });
 }
 
 /** Live seat count per group, the deadline and what happens after signing up. */
@@ -435,8 +399,13 @@ function Head({
   );
 }
 
-/** What happens, as four stops on a rail, and what to bring. */
-function Intro({ page }: { page: EventPage }) {
+const minutes = (hhmm: string) => {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+};
+
+/** What happens, as four stops on a rail (with how long each runs), and what to bring. */
+function Intro({ page, end }: { page: EventPage; end: string }) {
   return (
     <div className="evp-block">
       <Head
@@ -446,24 +415,29 @@ function Intro({ page }: { page: EventPage }) {
       />
       <ol className="evp-rail">
         <span className="evp-rail-line" aria-hidden />
-        {page.steps.map((step, i) => (
-          <li key={step.at}>
-            <span className="evp-node mono">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <span className="mono mute evp-at">{step.at}</span>
-            <b className="evp-act-glyph">
-              <T {...step.name} />
-            </b>
-            <ul className="evp-lines mute">
-              {step.lines.map((l) => (
-                <li key={l.en}>
-                  <T {...l} />
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
+        {page.steps.map((step, i) => {
+          const len = minutes(page.steps[i + 1]?.at ?? end) - minutes(step.at);
+          return (
+            <li key={step.at}>
+              <span className="evp-node mono">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span className="mono mute evp-at">
+                {step.at} · <T zh={`${len} 分钟`} en={`${len} min`} />
+              </span>
+              <b className="evp-act-glyph">
+                <T {...step.name} />
+              </b>
+              <ul className="evp-lines mute">
+                {step.lines.map((l) => (
+                  <li key={l.en}>
+                    <T {...l} />
+                  </li>
+                ))}
+              </ul>
+            </li>
+          );
+        })}
       </ol>
       <div className="evp-bring">
         <span className="mono mute">

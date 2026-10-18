@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PageHead } from "@/components/page-head";
-import { T } from "@/components/t";
+import { SpecRow } from "@/components/spec-row";
 import { getSession } from "@/lib/auth";
 import { JoinFlow } from "./join-flow";
 import "../members.css";
@@ -38,12 +38,28 @@ export default function JoinPage() {
             },
           ]}
         />
-        <p className="lede" style={{ marginBottom: 32 }}>
-          <T
-            zh="加入就是注册：拿到一张属于你的成员卡，编号按真实的加入顺序发。零基础也行；我们不收学生证，zID 只在你自愿登记支持社团申请时填写，数据可随时要求删除。"
-            en="Joining is signing up: you get your own member card, numbered in the order people joined. Beginners welcome. We never ask for your student card, your zID only if you opt in to back our club application, and your data is deleted on request."
-          />
-        </p>
+        <SpecRow
+          items={[
+            {
+              k: { zh: "加入即注册", en: "Join = sign up" },
+              v: {
+                zh: "领一张成员卡，按加入顺序编号",
+                en: "Your own member card, numbered in join order",
+              },
+            },
+            {
+              k: { zh: "门槛", en: "Experience" },
+              v: { zh: "零基础也行", en: "None needed" },
+            },
+            {
+              k: { zh: "隐私", en: "Privacy" },
+              v: {
+                zh: "不收学生证 · zID 自愿 · 随时可删",
+                en: "No student card · zID opt-in · delete anytime",
+              },
+            },
+          ]}
+        />
         <Suspense fallback={<div className="join-wait" aria-busy />}>
           <JoinGate />
         </Suspense>

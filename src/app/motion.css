@@ -1290,18 +1290,40 @@ html.fx .top {
   align-items: end;
   margin-bottom: 28px;
 }
+/* One slim line: path, eyebrow, page number. The title follows right under. */
 .ph-bar {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: clamp(24px, 3.4vw, 44px);
+  gap: 14px;
   color: var(--mute);
 }
 .ph-path {
   white-space: nowrap;
   text-transform: none;
   letter-spacing: 0.02em;
+}
+.ph-eye {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ph-eye::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 10px 0 1px;
+  vertical-align: 0.1em;
+  border: 1px solid var(--paper);
+  transform: rotate(45deg);
+}
+@media (max-width: 640px) {
+  .ph-path {
+    display: none;
+  }
 }
 .ph-path b {
   color: var(--paper);
@@ -1460,6 +1482,68 @@ html.fx .top {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- spec row: short facts on hairlines instead of an intro paragraph ---------- */
+.spec-row {
+  display: grid;
+  grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr));
+  margin: 0 0 clamp(28px, 4vw, 40px);
+  border-block: 1px solid var(--line);
+}
+.spec-row > div {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 16px 20px 18px;
+  transition: background 0.4s;
+}
+.spec-row > div:first-child {
+  padding-left: 0;
+}
+.spec-row > div + div {
+  border-left: 1px solid var(--line);
+}
+.spec-row > div::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--paper), transparent);
+  transform: scaleX(0);
+  transition: transform 0.45s var(--ease);
+}
+.spec-row > div:hover::before {
+  transform: scaleX(1);
+}
+.spec-row dt {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+}
+.spec-row dt span {
+  color: var(--paper);
+}
+.spec-row dd {
+  margin: 0;
+  font-size: var(--fs-md);
+  line-height: 1.5;
+}
+@media (max-width: 720px) {
+  .spec-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .spec-row > div {
+    padding: 14px 0;
+  }
+  .spec-row > div + div {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+}
+
 /* ---------- events: 8-week roadmap, rhythm, list with floating preview ---------- */
 .road {
   margin-top: 40px;
@@ -1498,9 +1582,9 @@ html.fx .top {
   );
   border: 1px solid var(--line-2);
 }
-.lg-cp {
-  background: var(--paper);
-  transform: rotate(45deg) scale(0.8);
+.lg-tbd {
+  border: 1px dashed var(--mute);
+  border-radius: 3px;
 }
 .lg-now {
   width: 2px;
@@ -1516,7 +1600,7 @@ html.fx .top {
 .road-inner {
   position: relative;
   min-width: 760px;
-  padding-bottom: 58px;
+  padding-bottom: 30px;
 }
 .weeks {
   display: grid;
@@ -1561,6 +1645,97 @@ html.fx .top {
   font-size: 11.5px;
   line-height: 1.35;
 }
+.wk-term {
+  font-size: 10px;
+}
+.wk.now .wk-term {
+  color: #55555a;
+}
+/* Nothing scheduled yet. */
+.wk .pill.tbd {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border: 1px dashed var(--line-2);
+  border-radius: 999px;
+  color: var(--mute);
+}
+.wk.now .pill.tbd {
+  border-color: rgba(0, 0, 0, 0.3);
+  color: #55555a;
+}
+/* A scheduled event: a lit ticket that opens the event. */
+.wk.has-ev {
+  background:
+    radial-gradient(
+      120% 80% at 50% 100%,
+      rgba(255, 255, 255, 0.1),
+      transparent 70%
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0 6px,
+      rgba(255, 255, 255, 0.05) 6px 7px
+    );
+}
+.wk-ev {
+  position: relative;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px 9px;
+  border: 1px solid var(--paper);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 18px -4px rgba(255, 255, 255, 0.35);
+  transition:
+    background var(--dur-2) var(--ease),
+    color var(--dur-2) var(--ease),
+    transform var(--dur-2) var(--ease);
+}
+.wk-ev .mono {
+  font-size: 9.5px;
+  color: var(--mute);
+  transition: color var(--dur-2);
+}
+.wk-ev-t {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.wk-ev-t::after {
+  content: "→";
+  display: inline-block;
+  margin-left: 5px;
+  transition: transform var(--dur-2) var(--ease);
+}
+.wk-ev:hover {
+  background: var(--paper);
+  color: var(--ink);
+  transform: translateY(-2px);
+}
+.wk-ev:hover .mono {
+  color: #55555a;
+}
+.wk-ev:hover .wk-ev-t::after {
+  transform: translateX(3px);
+}
+/* The event's own week is "now": ink ticket on the lit cell. */
+.wk.now.has-ev {
+  background: var(--paper);
+}
+.wk.now .wk-ev {
+  border-color: var(--ink);
+  background: rgba(0, 0, 0, 0.04);
+  box-shadow: none;
+}
+.wk.now .wk-ev .mono {
+  color: #55555a;
+}
+.wk.now .wk-ev:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
 .road-marks {
   position: absolute;
   inset: 0;
@@ -1584,19 +1759,9 @@ html.fx .top {
   white-space: nowrap;
   color: var(--mute);
 }
-.cp i {
-  position: absolute;
-  bottom: 30px;
-  left: -7px;
-  width: 14px;
-  height: 14px;
-  background: var(--paper);
-  transform: rotate(45deg);
-  box-shadow: 0 0 0 4px var(--ink);
-}
 .lastday {
   border-left: 1px dashed var(--paper);
-  bottom: 52px !important;
+  bottom: 24px !important;
   opacity: 0.8;
 }
 .lastday em {
@@ -1606,7 +1771,7 @@ html.fx .top {
 }
 .today {
   border-left: 2px solid var(--paper);
-  bottom: 52px !important;
+  bottom: 24px !important;
   box-shadow: 0 0 12px var(--paper);
 }
 .today em {
@@ -3729,7 +3894,7 @@ html.fx .top {
     top: 16px;
   }
   .page-head {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .page-aside {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -4803,9 +4968,6 @@ html.fx:not(.booted) .top {
   margin-top: clamp(16px, 2vw, 32px);
   padding-top: clamp(16px, 1.8vw, 24px);
   border-top: 1px solid var(--line);
-}
-.hside .hero-zh {
-  font-size: clamp(18px, 1.7vw, 23px);
 }
 .hside .hero-note {
   max-width: 52ch;

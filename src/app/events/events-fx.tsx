@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { hasFinePointer, prefersReducedMotion } from "@/components/fx/motion";
 import { T } from "@/components/t";
@@ -13,8 +14,20 @@ import { EVENT_KIND_LABEL, type EventKind } from "@/lib/types";
 
 const pct = (k: number) => `${(Math.max(0, Math.min(1, k)) * 100).toFixed(2)}%`;
 
-/** Eight-week strip with checkpoints; "today" is placed on the client. */
-export function Roadmap() {
+/** An event placed on the strip; dates are formatted on the server. */
+export type RoadmapEvent = {
+  slug: string;
+  title: string;
+  kind: EventKind;
+  date: string;
+  week: number;
+};
+
+/**
+ * Eight-week strip: each week shows its events (linked), something already
+ * settled, or "TBD". "Today" is placed on the client.
+ */
+export function Roadmap({ events }: { events: RoadmapEvent[] }) {
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
     const id = requestAnimationFrame(() => setNow(Date.now()));
@@ -48,8 +61,8 @@ export function Roadmap() {
             <T zh="停课 / 考试期" en="No classes / exams" />
           </span>
           <span>
-            <i className="lg lg-cp" />
-            <T zh="检查点" en="Checkpoint" />
+            <i className="lg lg-tbd" />
+            <T zh="待定" en="TBD" />
           </span>
           <span>
             <i className="lg lg-now" />
@@ -60,27 +73,53 @@ export function Roadmap() {
       <div className="road-scroll">
         <div className="road-inner">
           <div className="weeks">
-            {ROADMAP_WEEKS.map((w, i) => (
-              <div
-                key={w.label}
-                className={`wk${w.off ? " off" : ""}${i === week ? " now" : ""}`}
-              >
-                <span className="mono mute">{roadmapWeekStart(i)}</span>
-                <b>{w.label}</b>
-                <span className="pill">
-                  <T {...w.plan} />
-                </span>
-              </div>
-            ))}
+            {ROADMAP_WEEKS.map((w, i) => {
+              const here = events.filter((e) => e.week === i);
+              return (
+                <div
+                  key={w.label}
+                  className={`wk${w.off ? " off" : ""}${i === week ? " now" : ""}${here.length ? " has-ev" : ""}`}
+                >
+                  <span className="mono mute">{roadmapWeekStart(i)}</span>
+                  <b>{w.label}</b>
+                  {w.term && (
+                    <span className="wk-term mono mute">
+                      <T {...w.term} />
+                    </span>
+                  )}
+                  {here.length > 0 ? (
+                    here.map((e) => (
+                      <Link
+                        key={e.slug}
+                        href={`/events/${e.slug}`}
+                        className="wk-ev"
+                      >
+                        <span className="mono">
+                          {e.date} · <T {...EVENT_KIND_LABEL[e.kind]} />
+                        </span>
+                        <span className="wk-ev-t">{e.title}</span>
+                      </Link>
+                    ))
+                  ) : w.plan ? (
+                    <span className="pill">
+                      <T {...w.plan} />
+                    </span>
+                  ) : (
+                    <span className="pill tbd">
+                      <T zh="待定" en="TBD" />
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
           <div className="road-marks" aria-hidden>
             {ROADMAP_MARKS.map((m) => (
               <span
                 key={m.date}
-                className={m.kind === "checkpoint" ? "cp" : "lastday"}
+                className="lastday"
                 style={{ left: pct(roadmapOffset(m.date)) }}
               >
-                {m.kind === "checkpoint" && <i />}
                 <em>
                   <T {...m.label} />
                 </em>

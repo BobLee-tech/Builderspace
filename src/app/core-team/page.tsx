@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageHead } from "@/components/page-head";
-import { T } from "@/components/t";
+import { SpecRow } from "@/components/spec-row";
 import { DEPARTMENTS, VOLUNTEER_POSITIONS } from "@/lib/types";
 import { VolunteerForm } from "./volunteer-form";
 
@@ -38,12 +38,31 @@ export default function VolunteerPage() {
             },
           ]}
         />
-        <p className="lede" style={{ marginBottom: 32 }}>
-          <T
-            zh="核心成员没有工资，可以提供参与证明。没有相关经验也可以申请；可以只选一个职位，也可以跨几个。我们不收学生证和 zID，邮箱只用来联系你和开通内部协作系统的账号。"
-            en="Core-team roles are unpaid; a certificate of participation is available. No experience needed. Pick one position or several. We never ask for your student card or zID, and your email is only used to reach you and to open your account on our internal workspace."
-          />
-        </p>
+        <SpecRow
+          items={[
+            {
+              k: { zh: "报酬", en: "Pay" },
+              v: {
+                zh: "无工资 · 可开参与证明",
+                en: "Unpaid · certificate available",
+              },
+            },
+            {
+              k: { zh: "经验", en: "Experience" },
+              v: {
+                zh: "不要求 · 职位可多选",
+                en: "Not required · one role or several",
+              },
+            },
+            {
+              k: { zh: "隐私", en: "Privacy" },
+              v: {
+                zh: "不收学生证和 zID · 邮箱只用于联系和开通内部账号",
+                en: "No student card or zID · email only to reach you and set up your workspace account",
+              },
+            },
+          ]}
+        />
         <VolunteerForm />
       </div>
     </section>

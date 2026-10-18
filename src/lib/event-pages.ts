@@ -13,6 +13,11 @@ export type EventIcon =
   "code" | "sparkle" | "people" | "laptop" | "github" | "snack";
 
 export type EventPage = {
+  /**
+   * The English display title, chrome line then outlined line, like the page
+   * titles; the Chinese title runs above it in mono.
+   */
+  display: [string, string];
   /** For search results and link previews; the page itself shows `points`. */
   summary: Bi;
   highlights: Bi[];
@@ -21,7 +26,10 @@ export type EventPage = {
   handles: string[];
   /** Three short promises under the address bar. */
   points: { icon: EventIcon; title: Bi; sub: Bi }[];
-  /** How the session runs, in order: a time, a word and two short lines. */
+  /**
+   * How the session runs, in order: a start time (each runs until the next,
+   * the last until the event ends), a word and two short lines.
+   */
   steps: { at: string; name: Bi; lines: Bi[] }[];
   /** What to bring, a few words each. */
   bring: { icon: EventIcon; label: Bi }[];
@@ -30,6 +38,7 @@ export type EventPage = {
 };
 
 const putYourselfOnline: EventPage = {
+  display: ["Put yourself", "online."],
   summary: {
     zh: "零基础也能做：带上电脑，用 AI 做一个个人网站并发布到 GitHub Pages，离场时带走自己的网址和一桌新朋友。",
     en: "No experience needed: bring a laptop, build a personal site with AI and publish it on GitHub Pages. Leave with your own address and a table of new friends.",

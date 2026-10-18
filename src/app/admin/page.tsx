@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SpecRow } from "@/components/spec-row";
 import { T } from "@/components/t";
 import { AdminForm } from "./admin-form";
 
@@ -17,12 +18,25 @@ export default function AdminPage() {
         <h1 className="h2">
           <T zh="管理员登录" en="Admin sign-in" />
         </h1>
-        <p className="lede">
-          <T
-            zh="输入管理员口令后，这个浏览器打开任意项目页，讨论区里每条评论旁都会出现「删除」。口令 30 天内有效，在公用电脑上用完请退出。"
-            en="With the admin key, every comment on a project page shows a Delete button in this browser. It stays signed in for 30 days; sign out on shared computers."
-          />
-        </p>
+        <SpecRow
+          items={[
+            {
+              k: { zh: "作用", en: "What it does" },
+              v: {
+                zh: "这个浏览器里，每条评论旁出现「删除」",
+                en: "A Delete button on every comment, in this browser",
+              },
+            },
+            {
+              k: { zh: "有效期", en: "Lasts" },
+              v: { zh: "30 天", en: "30 days" },
+            },
+            {
+              k: { zh: "公用电脑", en: "Shared computer" },
+              v: { zh: "用完请退出", en: "Sign out when done" },
+            },
+          ]}
+        />
         <AdminForm />
       </div>
     </section>
