@@ -47,25 +47,24 @@ export const REFERRAL_SOURCES = [
   "other",
 ] as const;
 
-// The nine core-team positions, grouped into two departments. The keys are
+// The nine core-team positions, grouped into three departments. The keys are
 // stored in volunteer_applications.positions and checked by the database; the
 // database still accepts the retired `secretary` and `finance` so older
-// applications stay valid. Positions are listed only here so every one of
-// them shows up on the form.
+// applications stay valid. Finance and admin are held by the organisers, not
+// a department. Positions are listed only here so every one of them shows up
+// on the form.
 export const DEPARTMENTS = [
   {
-    name: { zh: "市场运营部", en: "Marketing & Operations" },
-    positions: [
-      "events",
-      "content",
-      "design_media",
-      "partnerships",
-      "recruiting",
-    ],
+    name: { zh: "宣传部", en: "Marketing" },
+    positions: ["content", "design_media", "recruiting"],
   },
   {
-    name: { zh: "产品技术部", en: "Product & Technology" },
+    name: { zh: "技术部", en: "Tech" },
     positions: ["product", "web_tools", "teaching", "tech_explore"],
+  },
+  {
+    name: { zh: "活动部", en: "Events" },
+    positions: ["events", "partnerships"],
   },
 ] as const satisfies readonly { name: Bi; positions: readonly string[] }[];
 
