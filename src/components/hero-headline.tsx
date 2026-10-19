@@ -275,7 +275,6 @@ export function HeroHeadline({
       e.stopPropagation();
       build();
     };
-    works.addEventListener("pointerenter", build);
     works.addEventListener("click", clickBuild);
     stage.classList.add("headline-ready");
     later(decode, 350);
@@ -298,7 +297,6 @@ export function HeroHeadline({
       h1.removeEventListener("click", decode);
       desk.removeEventListener("change", mode);
       reduce.removeEventListener("change", mode);
-      works.removeEventListener("pointerenter", build);
       works.removeEventListener("click", clickBuild);
       chars.forEach((c, i) => {
         c.textContent = finals[i];

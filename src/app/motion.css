@@ -4866,7 +4866,7 @@ html.fx:not(.booted) .top {
     visibility: hidden;
   }
 }
-/* "works": liquid metal (Paper Shaders) + a build that runs on hover / click */
+/* "works": liquid metal (Paper Shaders) + a build that runs on click */
 .works-wrap {
   position: relative;
   display: inline-block;
