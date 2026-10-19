@@ -4,7 +4,7 @@ import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
 import { getEventSchedule, getEventSignups, getTutorials } from "@/lib/data";
-import { getEventPage } from "@/lib/event-pages";
+import { eventCopy, getEventPage } from "@/lib/event-pages";
 import { formatShortDate, formatTimeRange } from "@/lib/format";
 import { roadmapWeek } from "@/lib/roadmap";
 import {
@@ -40,7 +40,7 @@ export default async function EventsPage() {
       : [
           {
             slug: e.slug,
-            title: e.title,
+            title: eventCopy(e).title,
             kind: e.kind,
             date: formatShortDate(e.startsAt),
             week,
@@ -156,6 +156,7 @@ function EventRow({
   signups?: EventSignups;
 }) {
   const cost = getEventPage(event.slug)?.cost;
+  const copy = eventCopy(event);
   const seats = shownSeats(event, signups ?? NO_SIGNUPS);
   const body = (
     <>
@@ -184,9 +185,15 @@ function EventRow({
             </span>
           )}
         </div>
-        <h3>{event.title}</h3>
+        <h3>
+          <T {...copy.title} />
+        </h3>
         {/* One line on what you'll do, so the list reads at a glance. */}
-        {event.summary && <p className="ev-what mute">{event.summary}</p>}
+        {copy.summary && (
+          <p className="ev-what mute">
+            <T {...copy.summary} />
+          </p>
+        )}
         {materials && (
           <span className="mono mute">
             <T zh="讲义 · 示例仓库 · 录屏" en="Slides · repo · recording" />

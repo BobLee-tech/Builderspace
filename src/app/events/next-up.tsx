@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Arr } from "@/components/fx/arr";
 import { T } from "@/components/t";
 import { getEventDetail } from "@/lib/data";
-import { getEventPage } from "@/lib/event-pages";
+import { eventCopy, getEventPage } from "@/lib/event-pages";
 import { formatDate, formatTime, formatTimeRange } from "@/lib/format";
 import { EVENT_KIND_LABEL } from "@/lib/types";
 import { TimeLeft } from "./countdown";
@@ -25,6 +25,7 @@ export async function NextUp({ slug }: { slug: string }) {
   if (!detail) return null;
   const { event, signups, phase } = detail;
   const page = getEventPage(event.slug);
+  const { title, summary } = eventCopy(event);
   const href = `/events/${event.slug}`;
   const full = eventIsFull(event, signups);
   const { capacity: cap, confirmed, left } = shownSeats(event, signups);
@@ -41,10 +42,18 @@ export async function NextUp({ slug }: { slug: string }) {
             <T {...EVENT_KIND_LABEL[event.kind]} />
           </p>
           <h2 className="evn-title">
-            {event.title}
-            {page && <small className="mono mute">{page.display}</small>}
+            <T {...title} />
+            {page && (
+              <small data-l="zh" className="mono mute">
+                {page.display}
+              </small>
+            )}
           </h2>
-          {event.summary && <p className="evn-what">{event.summary}</p>}
+          {summary && (
+            <p className="evn-what">
+              <T {...summary} />
+            </p>
+          )}
           <ul className="evn-facts">
             <li>
               <CalendarBlank weight="light" size={16} aria-hidden />
