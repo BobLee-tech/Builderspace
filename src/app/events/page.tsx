@@ -9,12 +9,14 @@ import { formatShortDate, formatTimeRange } from "@/lib/format";
 import { roadmapWeek } from "@/lib/roadmap";
 import {
   EVENT_KIND_LABEL,
+  NO_SIGNUPS,
   type EventSignups,
   type SiteEvent,
 } from "@/lib/types";
 import { siteUrl } from "@/lib/site-url";
 import { T } from "@/components/t";
 import { CopyButton, EventList, Roadmap } from "./events-fx";
+import { shownSeats } from "./event-parts";
 import { NextUp } from "./next-up";
 import "./events.css";
 
@@ -154,6 +156,7 @@ function EventRow({
   signups?: EventSignups;
 }) {
   const cost = getEventPage(event.slug)?.cost;
+  const seats = shownSeats(event, signups ?? NO_SIGNUPS);
   const body = (
     <>
       <span className="ev-i">{String(n).padStart(2, "0")}</span>
@@ -175,8 +178,8 @@ function EventRow({
           )}
           {!past && event.registrationClosesAt && (
             <span className="tag dash">
-              {signups?.confirmed ?? 0}
-              {event.capacity !== null && ` / ${event.capacity}`}{" "}
+              {seats.confirmed}
+              {seats.capacity !== null && ` / ${seats.capacity}`}{" "}
               <T zh="已报名" en="signed up" />
             </span>
           )}
