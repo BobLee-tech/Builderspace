@@ -1,7 +1,7 @@
-// Short copy for event detail pages, keyed by event slug. The event row
-// (time, place, capacity, sign-up deadline) lives in Supabase; this is the
-// intro ops would otherwise paste into a description field. An event without
-// an entry still gets a plain detail page.
+// Short copy for event pages, keyed by event slug. The event row (title, the
+// one-line summary, time, place, capacity, sign-up deadline) lives in
+// Supabase; this is the extra detail ops would otherwise paste into a
+// description field. An event without an entry still gets a plain page.
 //
 // Only what participants should see goes here: no staffing, KPIs or names of
 // guests who haven't confirmed.
@@ -13,13 +13,12 @@ export type EventIcon =
   "code" | "sparkle" | "people" | "laptop" | "github" | "snack";
 
 export type EventPage = {
-  /**
-   * The English display title, chrome line then outlined line, like the page
-   * titles; the Chinese title runs above it in mono.
-   */
-  display: [string, string];
-  /** For search results and link previews; the page itself shows `points`. */
-  summary: Bi;
+  /** The English title, a small line under the Chinese one. */
+  display: string;
+  /** What it costs, shown with the time and place. */
+  cost: Bi;
+  costNote?: Bi;
+  /** One or two words each, shown as tags beside the cost. */
   highlights: Bi[];
   hosts: Bi;
   /** Usernames the address bar in the hero types out, in turn. */
@@ -33,15 +32,10 @@ export type EventPage = {
 };
 
 const putYourselfOnline: EventPage = {
-  display: ["Put yourself", "online."],
-  summary: {
-    zh: "零基础也能做：带上电脑，用 AI 做一个个人网站并发布到 GitHub Pages，离场时带走自己的网址和一桌新朋友。",
-    en: "No experience needed: bring a laptop, build a personal site with AI and publish it on GitHub Pages. Leave with your own address and a table of new friends.",
-  },
-  highlights: [
-    { zh: "免费", en: "Free" },
-    { zh: "3 小时", en: "3 hours" },
-  ],
+  display: "Put yourself online.",
+  cost: { zh: "免费", en: "Free" },
+  costNote: { zh: "有零食和水，不含午饭", en: "Snacks and water; no lunch" },
+  highlights: [{ zh: "零基础", en: "No experience needed" }],
   hosts: {
     zh: "主办 BuilderSpace（UNSW）· 协办 悉大合作社团",
     en: "Hosted by BuilderSpace (UNSW) with a University of Sydney partner society",

@@ -3,26 +3,22 @@
 import { useEffect, useState } from "react";
 import { T } from "@/components/t";
 
-// Each unit: milliseconds per unit and how many fit in the next one up.
-const UNITS = [
-  { ms: 86_400_000, wrap: Infinity, zh: "天", en: "Days" },
-  { ms: 3_600_000, wrap: 24, zh: "时", en: "Hrs" },
-  { ms: 60_000, wrap: 60, zh: "分", en: "Min" },
-  { ms: 1_000, wrap: 60, zh: "秒", en: "Sec" },
-] as const;
+const DAY = 86_400_000;
+const HOUR = 3_600_000;
 
 /**
- * Days / hours / minutes / seconds until the event starts. The time is read
- * on the client only, so the server render shows dashes instead of a number
- * that would be stale by the time it arrives.
+ * Days and hours until the event, for the small spots: big dot-matrix digits
+ * on the /events ticket, a one-line chip beside the sign-up form. The time is
+ * read on the client only, so the server render shows dashes instead of a
+ * number that would be stale by the time it arrives.
  */
-export function Countdown({ to }: { to: string }) {
+export function TimeLeft({ to, chip }: { to: string; chip?: boolean }) {
   const target = Date.parse(to);
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
     const tick = () => setNow(Date.now());
     const first = requestAnimationFrame(tick);
-    const id = window.setInterval(tick, 1000);
+    const id = window.setInterval(tick, 30_000);
     return () => {
       cancelAnimationFrame(first);
       window.clearInterval(id);
@@ -30,39 +26,46 @@ export function Countdown({ to }: { to: string }) {
   }, []);
 
   const left = now === null ? null : Math.max(target - now, 0);
-  const parts = UNITS.map((u) =>
+  const d = left === null ? "--" : String(Math.floor(left / DAY));
+  const h =
     left === null
       ? "--"
-      : String(Math.floor(left / u.ms) % u.wrap).padStart(2, "0"),
-  );
-  const started = now !== null && now >= target;
+      : String(Math.floor(left / HOUR) % 24).padStart(2, "0");
+  const started = left === 0;
 
+  if (chip) {
+    return (
+      <span className="evp-chip mono" role="timer" aria-live="off">
+        <span className="evp-live" aria-hidden />
+        {started ? (
+          <T zh="进行中" en="Live now" />
+        ) : (
+          <T zh={`${d} 天 ${h} 时后开始`} en={`Starts in ${d}d ${h}h`} />
+        )}
+      </span>
+    );
+  }
   return (
-    <div className="evp-cd hud" role="timer" aria-live="off">
-      <span className="c tl" aria-hidden />
-      <span className="c tr" aria-hidden />
-      <span className="c bl" aria-hidden />
-      <span className="c br" aria-hidden />
-      <p className="mono mute evp-cd-head">
-        <span>T-minus</span>
-        <span>
-          {started ? (
-            <T zh="进行中" en="Live now" />
-          ) : (
-            <T zh="距开场" en="Until doors open" />
-          )}
-        </span>
+    <div className="evn-cd" role="timer" aria-live="off">
+      <p className="mono mute">
+        {started ? (
+          <T zh="进行中" en="Live now" />
+        ) : (
+          <T zh="距开场" en="Starts in" />
+        )}
       </p>
-      <div className="evp-cd-grid">
-        {UNITS.map((u, i) => (
-          <div key={u.en}>
-            <b>{parts[i]}</b>
-            <span className="mono mute">
-              <T zh={u.zh} en={u.en} />
-            </span>
-          </div>
-        ))}
-      </div>
+      {!started && (
+        <p className="evn-cd-n">
+          <b>{d}</b>
+          <span className="mono mute">
+            <T zh="天" en="d" />
+          </span>
+          <b>{h}</b>
+          <span className="mono mute">
+            <T zh="时" en="h" />
+          </span>
+        </p>
+      )}
     </div>
   );
 }

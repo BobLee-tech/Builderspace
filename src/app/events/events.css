@@ -1,6 +1,6 @@
 /* Shared by /events and /events/[slug]: the typing address bar, the live
-   countdown and the pulsing "live" dot, plus the next-event ticket on
-   /events. Black / white / chrome; the mascots bring the only colour. */
+   countdown chip, the seats bar and the pulsing "live" dot, plus the next-event
+   ticket on /events. Black / white / chrome; the mascots bring the only colour. */
 
 .evp,
 .evn {
@@ -17,14 +17,6 @@
 }
 
 /* What you leave with: an address bar typing out usernames. */
-.evp-take {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.evp-take > p {
-  margin: 0;
-}
 .evp-url {
   display: flex;
   align-items: center;
@@ -80,70 +72,37 @@
   }
 }
 
-/* ---------- countdown ---------- */
-.evp-cd {
-  position: relative;
-  border: 1px solid var(--line-2);
-  border-radius: var(--radius);
-  background-image: var(--mat-frost);
-  background-color: var(--panel);
+/* ---------- /events list: one line on what you'll do under the title ---------- */
+.ev-what {
+  margin: -4px 0 0;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
+/* ---------- seats bar and countdown chip (both pages) ---------- */
+.evp-meter {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
   overflow: hidden;
 }
-/* A slow scan line sweeps the panel. */
-.evp-cd::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.05) 48%,
-    transparent 52%
-  );
-  background-size: 100% 300%;
-  animation: evpScan 6s linear infinite;
-  pointer-events: none;
+.evp-meter i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--paper);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
 }
-@keyframes evpScan {
-  from {
-    background-position: 0 100%;
-  }
-  to {
-    background-position: 0 -200%;
-  }
-}
-.evp-cd-head {
-  display: flex;
-  justify-content: space-between;
-  margin: 0;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--line);
-  font-size: var(--fs-xs);
-}
-.evp-cd-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-.evp-cd-grid > div {
-  display: flex;
-  flex-direction: column;
+.evp-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: clamp(20px, 3vw, 32px) 8px;
-}
-.evp-cd-grid > div + div {
-  border-left: 1px solid var(--line);
-}
-.evp-cd-grid b {
-  font-family: var(--f-dot);
-  font-weight: 900;
-  font-size: clamp(40px, 5vw, 64px);
-  line-height: 1;
-  letter-spacing: 0;
-  font-variant-numeric: tabular-nums;
-}
-.evp-cd-grid .mono {
+  gap: 8px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
   font-size: var(--fs-xs);
+  white-space: nowrap;
 }
 
 /* ---------- /events: the next event as a ticket ---------- */
@@ -171,32 +130,12 @@
   z-index: 1;
   border-radius: inherit;
 }
-.evn-top {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 13px var(--pad);
-  border-bottom: 1px solid var(--line);
-  color: var(--paper);
-  white-space: nowrap;
-}
-.evn-rule {
-  flex: 1;
-  min-width: 24px;
-  height: 1px;
-  background: linear-gradient(90deg, var(--line-2), transparent);
-}
-.evn-when {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--mute);
-}
 .evn-body {
-  --pad: clamp(20px, 2.4vw, 28px);
+  --pad: clamp(20px, 2.4vw, 32px);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
 }
+/* What, then when / where / cost: enough to decide from the ticket alone. */
 .evn-main {
   display: flex;
   flex-direction: column;
@@ -204,34 +143,39 @@
   min-width: 0;
   padding: var(--pad);
 }
-.evn-side {
+.evn-top {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: var(--pad);
-  border-left: 1px solid var(--line);
-}
-
-/* Title: the page-title treatment, a size down; the Chinese name above it. */
-.evn-zh {
+  align-items: center;
+  gap: 10px;
   margin: 0;
   color: var(--paper);
+}
+.evn-title {
+  margin: 0;
+  font-family: var(--f-body);
+  font-weight: 900;
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.evn-title small {
+  display: block;
+  margin-top: 8px;
+  font-size: var(--fs-sm);
+  font-weight: 400;
+  letter-spacing: 0.02em;
   text-transform: none;
-  letter-spacing: 0.04em;
 }
-.evn .evn-title {
-  margin-top: -6px;
-  font-size: clamp(44px, 5vw, 72px);
+.evn-what {
+  margin: 0;
+  max-width: 34em;
+  font-size: clamp(16px, 1.6vw, 19px);
+  line-height: 1.6;
+  color: #d9d9d6;
 }
-.evn .evp-take {
-  gap: 8px;
-}
-.evn .evp-url {
-  height: 50px;
-  max-width: 500px;
-  font-size: clamp(15px, 1.4vw, 18px);
-}
-.evn-points {
+.evn-facts {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -239,33 +183,53 @@
   padding: 0;
   list-style: none;
 }
-.evn-points li {
+.evn-facts li {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  height: 30px;
-  padding: 0 12px 0 10px;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px;
   border: 1px solid var(--line-2);
-  border-radius: 999px;
-  color: var(--paper);
-  text-transform: none;
-  letter-spacing: 0.02em;
+  border-radius: 10px;
+  font-size: var(--fs-sm);
   transition: border-color var(--dur-2);
 }
-.evn:hover .evn-points li {
+.evn-facts svg {
+  color: var(--mute);
+}
+.evn:hover .evn-facts li {
   border-color: rgba(255, 255, 255, 0.28);
 }
 
-/* Side: a compact countdown, live seats, the way in. */
-.evn .evp-cd-head {
-  padding: 10px 16px;
+/* Side: time left, seats, the way in. */
+.evn-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: space-between;
+  padding: var(--pad);
+  border-left: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.015);
 }
-.evn .evp-cd-grid > div {
+.evn-cd > p {
+  margin: 0;
+}
+.evn-cd-n {
+  display: flex;
+  align-items: baseline;
   gap: 6px;
-  padding: 12px 4px;
+  margin-top: 8px !important;
 }
-.evn .evp-cd-grid b {
-  font-size: clamp(30px, 2.8vw, 38px);
+.evn-cd-n b {
+  font-family: var(--f-dot);
+  font-weight: 900;
+  font-size: 44px;
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.evn-cd-n span {
+  margin-right: 8px;
 }
 .evn-seats {
   display: flex;
@@ -274,66 +238,51 @@
 }
 .evn-seats-head {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
   margin: 0;
 }
 .evn-count {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  margin-left: auto;
+  gap: 6px;
 }
 .evn-count b {
-  font-family: var(--f-dot);
-  font-weight: 900;
-  font-size: 32px;
-  line-height: 0.8;
-  letter-spacing: 0;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.02em;
   color: var(--paper);
-  font-variant-numeric: tabular-nums;
 }
 .evn-count span {
-  font-family: var(--f-display);
-  font-size: 15px;
-  color: var(--mute);
+  font-family: var(--f-body);
+  font-size: var(--fs-sm);
   text-transform: none;
-}
-/* One cell per seat; taken ones light up in order. */
-.evn-grid {
-  display: grid;
-  grid-template-columns: repeat(20, minmax(0, 1fr));
-  gap: 3px;
-}
-.evn-grid i {
-  aspect-ratio: 1;
-  border-radius: 2px;
-  border: 1px solid var(--line-2);
-  transition: border-color var(--dur-2);
-  transition-delay: calc(var(--i) * 8ms);
-}
-.evn:hover .evn-grid i {
-  border-color: rgba(255, 255, 255, 0.3);
-}
-.evn-grid i.on {
-  background: var(--paper);
-  border-color: var(--paper);
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.35);
 }
 .evn-note {
   margin: 0;
-  line-height: 1.7;
 }
 .evn-cta {
   position: relative;
   z-index: 2;
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: auto;
+  flex-direction: column;
+  gap: 12px;
+}
+.evn-cta .btn {
+  justify-content: space-between;
+}
+.evn-more {
+  align-self: center;
+  font-size: var(--fs-sm);
+  color: var(--mute);
+  transition: color var(--dur-1);
+}
+.evn-more:hover {
+  color: var(--paper);
 }
 
-@media (max-width: 960px) {
+@media (max-width: 860px) {
   .evn-body {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -351,22 +300,9 @@
   .evp-url-dots {
     display: none;
   }
-  .evn .evp-url {
-    height: 48px;
-  }
-  /* The date and place drop under "Next up" instead of being cut. */
-  .evn-top {
-    flex-wrap: wrap;
-    row-gap: 6px;
-  }
-  .evn-when {
-    flex-basis: 100%;
-    white-space: normal;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .evp-caret,
-  .evp-cd::after,
   .evp-live {
     animation: none;
   }

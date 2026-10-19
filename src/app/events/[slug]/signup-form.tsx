@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { FieldError, TextField, errorId } from "@/components/form-fields";
-import { Arr, Hud } from "@/components/fx/arr";
+import { Arr } from "@/components/fx/arr";
 import { useCelebration } from "@/components/fx/celebrate";
 import { SpamGuard } from "@/components/spam-guard";
 import { useRevealResult } from "@/components/use-reveal-result";
@@ -11,6 +11,8 @@ import { Msg, T, type Bi } from "@/components/t";
 import { channelFromSearch, type RegistrationState } from "@/lib/forms";
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 import {
+  CODING_LEVELS,
+  CODING_LEVEL_LABEL,
   SEAT_GROUP_LABEL,
   type EventSignups,
   type SeatGroup,
@@ -40,6 +42,7 @@ export function SignupForm({
     "join",
     state.status === "ok" && state.result === "confirmed" && !state.already,
   );
+  const [coding, setCoding] = useState("");
   const [unsw, setUnsw] = useState<"yes" | "no" | "">("");
   const [kind, setKind] = useState<"school" | "external" | "">("");
   const [otherSchool, setOtherSchool] = useState<SeatGroup | "">("");
@@ -69,10 +72,9 @@ export function SignupForm({
           reveal(node);
           celebrate(node);
         }}
-        className="form hud evp-done"
+        className="evp-form evp-done"
         role="status"
       >
-        <Hud />
         <p className="mono mute">
           {state.already ? (
             <T zh="之前报过了" en="Already signed up" />
@@ -82,7 +84,7 @@ export function SignupForm({
             <T zh="报名成功" en="You're in" />
           )}
         </p>
-        <h2 className="h2" style={{ fontSize: 32 }}>
+        <h2 className="h2" style={{ fontSize: 28 }}>
           {waitlist ? (
             <T
               zh={`${state.name}，你在候补名单上。`}
@@ -141,10 +143,9 @@ export function SignupForm({
         data.set("channel", channelFromSearch(window.location.search) ?? "");
         action(data);
       })}
-      className="form hud"
+      className="evp-form"
       noValidate
     >
-      <Hud />
       <SpamGuard />
       <input type="hidden" name="slug" value={slug} />
       <div className="row2">
@@ -161,6 +162,15 @@ export function SignupForm({
           max={60}
         />
       </div>
+
+      <Choice
+        name="codingLevel"
+        legend={<T zh="有编程基础吗？" en="Have you coded before?" />}
+        value={coding}
+        onPick={setCoding}
+        options={CODING_LEVELS.map((l) => [l, CODING_LEVEL_LABEL[l], false])}
+        error={err.codingLevel}
+      />
 
       <Choice
         name="unswStudent"
@@ -266,16 +276,6 @@ export function SignupForm({
         />
       )}
 
-      <label className="consent">
-        <input type="checkbox" name="photoConsent" />
-        <span>
-          <T
-            zh="可以把我的现场照片和网站截图发到社团账号（选填）"
-            en="You may post my event photos and a screenshot of my site on the society's channels (optional)"
-          />
-        </span>
-      </label>
-
       {state.status === "error" && (
         <p className="form-status err" role="alert">
           <Msg s={state.message} />
@@ -283,9 +283,8 @@ export function SignupForm({
       )}
       <button
         type="submit"
-        className="btn solid primary"
+        className="btn solid primary evp-submit"
         disabled={pending}
-        style={{ alignSelf: "start" }}
       >
         {pending ? (
           <T zh="提交中…" en="Sending…" />
