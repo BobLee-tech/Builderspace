@@ -4850,11 +4850,21 @@ html.fx:not(.booted) .top {
     0 0,
     0 var(--cy, 70%);
 }
-/* A thin caret, so "work." keeps the weight of the last line. */
+/* A thin caret, so "work." keeps the weight of the last line. It blinks with
+   `visibility`, not the shared opacity `blink`: an opacity animation runs on
+   the compositor, and inside this 3D headline (re-transformed every frame
+   while the pointer is over the hero) it could strobe at frame rate instead
+   of blinking once a second. `visibility` is never composited. */
 .h1x .cursor {
   width: 0.14em;
   height: 0.7em;
   vertical-align: -0.02em;
+  animation-name: caret-blink;
+}
+@keyframes caret-blink {
+  50% {
+    visibility: hidden;
+  }
 }
 /* "works": liquid metal (Paper Shaders) + a build that runs on hover / click */
 .works-wrap {
