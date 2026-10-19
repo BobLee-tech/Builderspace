@@ -17,7 +17,7 @@ const pct = (k: number) => `${(Math.max(0, Math.min(1, k)) * 100).toFixed(2)}%`;
 /** An event placed on the strip; dates are formatted on the server. */
 export type RoadmapEvent = {
   slug: string;
-  title: string;
+  title: { zh: string; en: string };
   kind: EventKind;
   date: string;
   week: number;
@@ -97,7 +97,9 @@ export function Roadmap({ events }: { events: RoadmapEvent[] }) {
                         <span className="mono">
                           {e.date} · <T {...EVENT_KIND_LABEL[e.kind]} />
                         </span>
-                        <span className="wk-ev-t">{e.title}</span>
+                        <span className="wk-ev-t">
+                          <T {...e.title} />
+                        </span>
                       </Link>
                     ))
                   ) : w.plan ? (

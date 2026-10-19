@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Arr } from "@/components/fx/arr";
 import { T } from "@/components/t";
 
@@ -17,7 +17,7 @@ export function SignupDock({
   en,
   waitlist,
 }: {
-  title: string;
+  title: ReactNode;
   zh: string;
   en: string;
   waitlist: boolean;

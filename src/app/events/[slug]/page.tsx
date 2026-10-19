@@ -12,7 +12,7 @@ import { Arr } from "@/components/fx/arr";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { getEventDetail } from "@/lib/data";
-import { getEventPage } from "@/lib/event-pages";
+import { eventCopy, getEventPage } from "@/lib/event-pages";
 import {
   formatDate,
   formatShortDate,
@@ -82,6 +82,7 @@ async function EventDetail({ slug }: { slug: string }) {
   if (!detail) notFound();
   const { event, signups, phase } = detail;
   const page = getEventPage(event.slug);
+  const { title, summary } = eventCopy(event);
   const full = eventIsFull(event, signups);
   const calendarUrl = `${siteUrl.replace(/^https?:/, "webcal:")}/events.ics`;
   const { capacity, left, groups } = shownSeats(event, signups);
@@ -118,14 +119,27 @@ async function EventDetail({ slug }: { slug: string }) {
                 </span>
               ))}
             </div>
-            <h1
-              className="evp-title"
-              style={{ "--ems": titleEms(event.title) } as React.CSSProperties}
-            >
-              {event.title}
-            </h1>
-            {page && <p className="evp-en mono mute">{page.display}</p>}
-            {event.summary && <p className="evp-lede">{event.summary}</p>}
+            {(["zh", "en"] as const).map((l) => (
+              <h1
+                key={l}
+                data-l={l}
+                lang={l === "en" ? "en" : undefined}
+                className="evp-title"
+                style={{ "--ems": titleEms(title[l]) } as React.CSSProperties}
+              >
+                {title[l]}
+              </h1>
+            ))}
+            {page && (
+              <p data-l="zh" className="evp-en mono mute">
+                {page.display}
+              </p>
+            )}
+            {summary && (
+              <p className="evp-lede">
+                <T {...summary} />
+              </p>
+            )}
 
             <dl className="evp-kv">
               <div>
@@ -328,7 +342,7 @@ async function EventDetail({ slug }: { slug: string }) {
       </div>
       {open && (
         <SignupDock
-          title={event.title}
+          title={<T {...title} />}
           zh={`${formatDate(event.startsAt)}${left === null ? "" : ` · 剩 ${left} 个名额`}`}
           en={`${formatDate(event.startsAt)}${left === null ? "" : ` · ${left} seats left`}`}
           waitlist={full}

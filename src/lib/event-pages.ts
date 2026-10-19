@@ -15,8 +15,13 @@ export type EventIcon =
   "code" | "sparkle" | "people" | "laptop" | "github" | "snack";
 
 export type EventPage = {
-  /** The English title, a small line under the Chinese one. */
+  /**
+   * The English title: a small line under the Chinese one, and the title
+   * itself when the site is in English.
+   */
   display: string;
+  /** The one-line summary in English (the Chinese one is the event row's). */
+  summaryEn: string;
   /** What it costs, shown with the time and place. */
   cost: Bi;
   costNote?: Bi;
@@ -40,6 +45,8 @@ export type EventPage = {
 
 const putYourselfOnline: EventPage = {
   display: "Put yourself online.",
+  summaryEn:
+    "Bring a laptop, build a personal website with AI and publish it on GitHub Pages.",
   cost: { zh: "免费", en: "Free" },
   costNote: { zh: "有零食和水，不含午饭", en: "Snacks and water; no lunch" },
   highlights: [{ zh: "零基础", en: "No experience needed" }],
@@ -91,4 +98,23 @@ const PAGES: Record<string, EventPage> = {
 
 export function getEventPage(slug: string): EventPage | null {
   return PAGES[slug] ?? null;
+}
+
+/**
+ * An event's title and summary in both languages. English comes from the
+ * event page; an event without one shows its Chinese row in both.
+ */
+export function eventCopy(event: {
+  slug: string;
+  title: string;
+  summary: string | null;
+}) {
+  const page = PAGES[event.slug];
+  return {
+    title: { zh: event.title, en: page?.display ?? event.title },
+    summary:
+      event.summary === null
+        ? null
+        : { zh: event.summary, en: page?.summaryEn ?? event.summary },
+  };
 }
