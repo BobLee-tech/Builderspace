@@ -4,6 +4,7 @@ import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
 import { getEventSchedule, getEventSignups, getTutorials } from "@/lib/data";
+import { getEventPage } from "@/lib/event-pages";
 import { formatShortDate, formatTimeRange } from "@/lib/format";
 import { roadmapWeek } from "@/lib/roadmap";
 import {
@@ -51,7 +52,6 @@ export default async function EventsPage() {
         <PageHead
           path="events"
           eyebrow={{ zh: "活动 / Events · T3 2026", en: "Events · T3 2026" }}
-          title={["Every week,", "same time."]}
         />
         {/* The next event stands in for the header readouts. */}
         {next && <NextUp slug={next.slug} />}
@@ -153,6 +153,7 @@ function EventRow({
   /** Head-count when people sign up on the site. */
   signups?: EventSignups;
 }) {
+  const cost = getEventPage(event.slug)?.cost;
   const body = (
     <>
       <span className="ev-i">{String(n).padStart(2, "0")}</span>
@@ -181,13 +182,23 @@ function EventRow({
           )}
         </div>
         <h3>{event.title}</h3>
+        {/* One line on what you'll do, so the list reads at a glance. */}
+        {event.summary && <p className="ev-what mute">{event.summary}</p>}
         {materials && (
           <span className="mono mute">
             <T zh="讲义 · 示例仓库 · 录屏" en="Slides · repo · recording" />
           </span>
         )}
       </div>
-      <p className="ev-where mute">{event.location}</p>
+      <p className="ev-where mute">
+        {event.location}
+        {cost && (
+          <>
+            {" · "}
+            <T {...cost} />
+          </>
+        )}
+      </p>
       <span className="ev-go" aria-hidden>
         {materials || !past ? "→" : "·"}
       </span>

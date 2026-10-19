@@ -67,18 +67,19 @@ export function LitTitle({
 /**
  * Shared inner-page header from the prototype: one slim terminal bar (path,
  * eyebrow, page number), a two-line title (chrome letters + an outline lit by
- * a moving light) and three readouts.
+ * a moving light) and three readouts. A page that leads with its own content
+ * can leave the title out and keep just the bar.
  */
 export function PageHead({
   path,
   eyebrow,
-  title: [first, second],
+  title,
   aside,
 }: {
   /** Segment after ~/builderspace/, also used to number the page. */
   path: string;
   eyebrow: Bi;
-  title: [string, string?];
+  title?: [string, string?];
   aside?: Readout[];
 }) {
   const idx = NAV_LINKS.findIndex((l) => l.href === `/${path.split("/")[0]}`);
@@ -102,9 +103,11 @@ export function PageHead({
           </span>
         )}
       </div>
-      <div style={{ minWidth: 0 }}>
-        <LitTitle title={[first, second]} />
-      </div>
+      {title && (
+        <div style={{ minWidth: 0 }}>
+          <LitTitle title={title} />
+        </div>
+      )}
       {aside && (
         <dl className="page-aside">
           {aside.map(({ k, v }, i) => (

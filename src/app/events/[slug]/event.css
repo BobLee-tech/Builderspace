@@ -1,18 +1,15 @@
-/* Event detail page (/events/[slug]). A launch console: terminal bar, a chrome
-   title, a live countdown, numbered readouts on hairlines. Black / white /
-   chrome only; the mascots stay the only colour on the site. The countdown
-   and address bar are shared with /events (../events.css). */
-
-.evp {
-  --evp-gap: clamp(56px, 7vw, 104px);
-}
+/* Event detail page (/events/[slug]). Wide screens read on the left and sign
+   up on the right, the form pinned beside the intro; narrow screens run
+   intro, form, then the rest. Black / white / chrome only; the mascots stay
+   the only colour on the site. The address bar, seats bar and countdown
+   chip are shared with /events (../events.css). */
 
 /* ---------- terminal bar ---------- */
 .evp-bar {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: clamp(18px, 2.4vw, 32px);
+  margin-bottom: clamp(20px, 2.4vw, 32px);
 }
 .evp-bar > .mute {
   flex: none;
@@ -24,77 +21,159 @@
   background: linear-gradient(90deg, var(--line-2), transparent);
 }
 
-/* ---------- hero ---------- */
-.evp-hero {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(20px, 2.6vw, 32px);
-}
-/* Title on the left, countdown on the right, bottoms aligned. */
-.evp-hero-top {
+/* ---------- layout ---------- */
+.evp-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
-  gap: clamp(24px, 4vw, 64px);
-  align-items: end;
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 440px);
+  grid-template-areas: "intro side" "more side";
+  grid-template-rows: auto 1fr;
+  column-gap: clamp(32px, 5vw, 72px);
+  align-items: start;
 }
-/* Tags, the Chinese name (.evn-zh, ../events.css), the English title. */
-.evp-name {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.evp-intro {
+  grid-area: intro;
+  container-type: inline-size;
   min-width: 0;
 }
-.evp-name .evn-zh {
-  margin-top: 6px;
-}
-/* A size under the page titles so two lines sit beside the countdown. */
-.evp-name .page-title {
-  font-size: clamp(48px, 6.2vw, 90px);
-}
-/* What you leave with beside the three promises. */
-.evp-hero-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
-  gap: clamp(24px, 4vw, 64px);
-  align-items: end;
-}
-.evp-hero-foot {
+.evp-more {
+  grid-area: more;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px 32px;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.evp-side {
+  grid-area: side;
+  position: sticky;
+  top: 88px;
+  /* A jump to #signup leaves the page at the top here: the form is already
+     beside the title, and scrolling to it would hide the title. */
+  scroll-margin-top: 100vh;
+}
+
+/* ---------- left: what it is, in one screen ---------- */
+.evp-intro .need {
+  margin-bottom: 18px;
+}
+/* Sized to its column so a short title stays on one line (--ems is its
+   rough width, set in page.tsx); a long one wraps in balanced lines. */
+.evp-title {
+  margin: 0;
+  font-family: var(--f-body);
+  font-weight: 900;
+  font-size: clamp(28px, calc(100cqi / var(--ems, 10) - 1px), 60px);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.evp-en {
+  margin: 12px 0 0;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 .evp-lede {
-  margin: 0;
-  max-width: 34ch;
-  font-size: clamp(18px, 1.7vw, 22px);
+  margin: 22px 0 0;
+  max-width: 32em;
+  font-size: clamp(17px, 1.7vw, 20px);
   line-height: 1.6;
   color: #d9d9d6;
+}
+
+/* When / where / cost / seats in a 2 × 2 grid. */
+.evp-kv {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 32px 0 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.evp-kv > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 12px;
+  align-content: start;
+  min-width: 0;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.evp-kv > div:nth-child(odd) {
+  border-right: 1px solid var(--line);
+}
+/* The last row has no line under it, whether there are three cells or four. */
+.evp-kv > div:nth-last-child(1),
+.evp-kv > div:nth-last-child(2):nth-child(odd) {
+  border-bottom: 0;
+}
+.evp-kv svg {
+  grid-row: span 2;
+  margin-top: 2px;
+  color: var(--mute);
+}
+.evp-kv dt,
+.evp-kv dd {
+  margin: 0;
+}
+.evp-kv dt {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+}
+.evp-kv dd {
+  display: flex;
+  flex-direction: column;
+  margin-top: 2px;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.evp-kv dd small {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* ---------- left, below: what you leave with, what to bring ---------- */
+.evp-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 40px;
+}
+.evp-sec-h {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: var(--fs-xs);
+  font-weight: 400;
+}
+.evp-sec-h::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.evp-more .evp-url {
+  max-width: none;
+  height: 56px;
+  border-radius: 16px;
+  font-size: 17px;
 }
 .evp-points {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
-  border-block: 1px solid var(--line);
 }
 .evp-points li {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 4px 12px;
-  padding: 14px 18px;
-}
-.evp-points li:first-child {
-  padding-left: 0;
-}
-.evp-points li + li {
-  border-left: 1px solid var(--line);
-}
-.evp-points svg {
-  grid-row: span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
 }
 .evp-points b {
   font-size: var(--fs-md);
@@ -103,215 +182,139 @@
 .evp-points span {
   font-size: var(--fs-sm);
 }
-.evp-hosts {
-  margin: 0;
-  font-size: var(--fs-xs);
-  letter-spacing: 0.06em;
-}
-
-/* ---------- readouts ---------- */
-.evp-kv {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: clamp(28px, 3vw, 40px) 0 0;
-  border-block: 1px solid var(--line);
-}
-.evp-kv > div {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
-  padding: 24px 24px 28px;
-}
-.evp-kv > div:first-child {
-  padding-left: 0;
-}
-.evp-kv > div + div {
-  border-left: 1px solid var(--line);
-}
-.evp-kv dt,
-.evp-kv dd {
-  margin: 0;
-}
-.evp-kv dd {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-family: var(--f-display);
-  font-weight: 500;
-  font-size: clamp(18px, 1.9vw, 24px);
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-}
-.evp-kv dd small {
-  font-weight: 400;
-  font-size: var(--fs-xs);
-  letter-spacing: 0.06em;
-}
-
-/* ---------- section heads ---------- */
-.evp-block {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(32px, 4vw, 48px);
-  margin-top: var(--evp-gap);
-  scroll-margin-top: 96px;
-}
-.evp-head {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.evp-idx {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  color: var(--mute);
-}
-.evp-idx > span:first-child {
-  color: var(--paper);
-}
-.evp-h2 {
-  margin: 0;
-  font-family: var(--f-display);
-  font-weight: 700;
-  font-size: clamp(36px, 5.2vw, 72px);
-  line-height: 1;
-  letter-spacing: -0.04em;
-}
-
-/* ---------- what to bring, under the readouts ---------- */
 .evp-bring {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 12px 32px;
-  align-items: center;
-  padding: 20px 0;
-  border-bottom: 1px dashed var(--line-2);
-}
-.evp-bring ul {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .evp-bring li {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border: 1px solid var(--line-2);
-  border-radius: 999px;
-  font-size: var(--fs-sm);
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: var(--fs-md);
+}
+.evp-bring li:last-child {
+  border-bottom: 0;
+}
+.evp-bring svg {
+  color: var(--mute);
+}
+.evp-hosts {
+  margin: 16px 0 0;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
 }
 
-/* ---------- 02 sign-up: live seats beside the form ---------- */
-.evp-sign {
-  display: grid;
-  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
-  gap: clamp(20px, 3vw, 40px);
-  align-items: start;
-}
-.evp-status {
-  border: 1px solid var(--line-2);
-  border-radius: var(--radius);
-  background-image: var(--mat-frost);
-  background-color: var(--panel);
-  overflow: hidden;
-  position: sticky;
-  top: 96px;
+/* ---------- right: the sign-up card ---------- */
+.evp-panel {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: var(--pad);
+  gap: 18px;
+  padding: 24px;
 }
-.evp-status-head {
+.evp-panel.ping {
+  animation: evpPing 1.2s var(--ease-out);
+}
+@keyframes evpPing {
+  from {
+    box-shadow:
+      0 0 0 1px var(--paper),
+      0 0 0 8px rgba(255, 255, 255, 0.12);
+  }
+  to {
+    box-shadow:
+      0 0 0 1px transparent,
+      0 0 0 16px transparent;
+  }
+}
+.evp-panel-top {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px 12px;
+}
+.evp-h2 {
   margin: 0;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+}
+.evp-status {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
 }
 .evp-count {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  justify-content: space-between;
+  margin: 0;
 }
 .evp-count b {
-  font-family: var(--f-dot);
-  font-weight: 900;
-  font-size: clamp(64px, 7vw, 92px);
-  letter-spacing: 0;
-  line-height: 0.9;
-  font-variant-numeric: tabular-nums;
-}
-.evp-count > span {
   font-family: var(--f-display);
-  font-size: 24px;
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.03em;
 }
-.evp-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.evp-group > .mono {
-  display: flex;
-  justify-content: space-between;
-}
-/* One cell per seat, 15 to a row; taken seats light up in order. */
-.evp-grid {
-  display: grid;
-  grid-template-columns: repeat(15, minmax(0, 1fr));
-  gap: 4px;
-}
-.evp-grid i {
-  aspect-ratio: 1;
-  border-radius: 3px;
-  border: 1px solid var(--line-2);
-}
-.evp-grid i.on {
-  background: var(--paper);
-  border-color: var(--paper);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
-  animation: evpSeat 0.5s var(--ease) both;
-  animation-delay: calc(var(--i) * 18ms);
-}
-@keyframes evpSeat {
-  from {
-    transform: scale(0.4);
-    opacity: 0;
-  }
+.evp-count b span {
+  font-family: var(--f-body);
+  font-size: var(--fs-sm);
+  font-weight: 400;
 }
 .evp-left {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
   margin: 0;
   font-size: var(--fs-xs);
-  letter-spacing: 0.06em;
-  line-height: 1.9;
+  letter-spacing: 0.02em;
 }
-.evp-next {
-  list-style: none;
-  margin: 0;
-  padding: 16px 0 0;
-  border-top: 1px dashed var(--line-2);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  font-size: var(--fs-sm);
-  color: var(--mute);
-}
-.evp-next li {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-}
-.evp-next .mono {
+.evp-left b {
+  font-weight: 500;
   color: var(--paper);
 }
-.evp-block .chip[data-off] {
+
+/* The form sits flat in the card. */
+.evp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.evp-form .row2 {
+  gap: 10px;
+}
+.evp-form .field {
+  gap: 6px;
+}
+.evp-form .field > span:first-child,
+.evp-form legend {
+  font-size: var(--fs-xs);
+}
+.evp-form .field input[type="text"] {
+  height: 44px;
+  padding: 0 14px;
+}
+.evp-form .filters {
+  margin-bottom: 0;
+}
+.evp-form .chip[data-off] {
   opacity: 0.4;
   cursor: not-allowed;
+}
+.evp-submit {
+  justify-content: space-between;
 }
 .evp-note {
   margin: 0;
@@ -321,60 +324,129 @@
 .evp-done .d-cta {
   margin-top: 4px;
 }
+.evp-next {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+  font-size: 12px;
+  color: var(--mute);
+}
+.evp-next li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.evp-next .mono {
+  font-size: var(--fs-xs);
+  color: var(--paper);
+}
+.evp-msg {
+  margin: 0;
+  line-height: 1.7;
+}
+
+/* ---------- narrow: a bar that jumps to the form ---------- */
+.evp-dock {
+  display: none;
+}
 
 @media (max-width: 960px) {
-  .evp-hero-top,
-  .evp-hero-grid,
-  .evp-sign {
+  .evp-grid {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "intro" "side" "more";
   }
-  /* Not sticky, but still the box its corner marks hang on. */
-  .evp-status {
-    position: relative;
-    top: auto;
+  .evp-side {
+    position: static;
+    margin: 32px 0 8px;
+    scroll-margin-top: 80px;
   }
-  .evp-kv {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .evp-dock {
+    position: fixed;
+    z-index: 50;
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 8px 8px 16px;
+    border-radius: 18px;
+    background: rgba(14, 14, 15, 0.97);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    backdrop-filter: blur(18px) saturate(1.5);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+      0 20px 40px -16px #000;
+    transition:
+      transform var(--dur-2) var(--ease),
+      opacity var(--dur-2);
   }
-  .evp-kv > div:nth-child(3) {
-    padding-left: 0;
-    border-left: 0;
+  .evp-dock[data-away] {
+    transform: translateY(16px);
+    opacity: 0;
+    pointer-events: none;
   }
-  .evp-kv > div:nth-child(n + 3) {
-    border-top: 1px solid var(--line);
+  .evp-dock p {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: var(--fs-xs);
+    line-height: 1.4;
+  }
+  .evp-dock b {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--fs-sm);
+  }
+  .evp-dock .btn {
+    --h: 40px;
+  }
+}
+/* The site dock takes the bottom of the screen up to 900px; sit above it. */
+@media (max-width: 900px) {
+  .evp-dock {
+    bottom: calc(92px + env(safe-area-inset-bottom, 0px));
   }
 }
 @media (max-width: 640px) {
   .evp-bar > .mute {
     display: none;
   }
-  .evp-bring {
-    grid-template-columns: 1fr;
-  }
-  /* Points stack as rows: icon, then title and line side by side. */
   .evp-points {
     grid-template-columns: 1fr;
   }
   .evp-points li {
-    display: grid;
-    grid-template-columns: 22px auto minmax(0, 1fr);
+    flex-direction: row;
     align-items: center;
-    column-gap: 12px;
-    padding: 14px 0;
+    gap: 12px;
   }
-  .evp-points li + li {
-    border-left: 0;
-    border-top: 1px solid var(--line);
+  .evp-points li span {
+    margin-left: auto;
   }
-  .evp-points svg {
-    grid-row: auto;
-  }
+}
+@media (max-width: 480px) {
   .evp-kv > div {
-    padding: 18px 14px 20px;
+    padding: 14px 12px;
+  }
+  .evp-kv svg {
+    display: none;
+  }
+  .evp-kv dd {
+    font-size: var(--fs-md);
+  }
+  .evp-panel {
+    padding: 20px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .evp-grid i.on {
+  .evp-panel.ping {
     animation: none;
   }
 }

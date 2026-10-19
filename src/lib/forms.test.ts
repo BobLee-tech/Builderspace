@@ -364,6 +364,7 @@ const validSignup: [string, string][] = [
   ["slug", "put-yourself-online"],
   ["fullName", " Yuki Tan "],
   ["wechat", "yuki_t"],
+  ["codingLevel", "none"],
   ["unswStudent", "yes"],
   ["zid", "Z1234567"],
   ["githubUsername", ""],
@@ -385,7 +386,7 @@ describe("parseRegistrationForm", () => {
       school: null,
       occupation: null,
       githubUsername: null,
-      photoConsent: false,
+      codingLevel: "none",
     });
   });
 
@@ -433,11 +434,15 @@ describe("parseRegistrationForm", () => {
     });
   });
 
-  it("reads the photo consent checkbox", () => {
-    const result = parseRegistrationForm(
-      form([...validSignup, ["photoConsent", "on"]]),
-    );
-    expect(result.data?.photoConsent).toBe(true);
+  it("requires a coding level", () => {
+    expect(
+      parseRegistrationForm(
+        form(validSignup.filter(([k]) => k !== "codingLevel")),
+      ).success,
+    ).toBe(false);
+    expect(
+      parseRegistrationForm(form(swap("codingLevel", "expert"))).success,
+    ).toBe(false);
   });
 
   it("reduces a GitHub link or @name to the username", () => {

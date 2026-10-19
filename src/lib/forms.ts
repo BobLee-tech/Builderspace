@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { MEDIA_PATH, VIDEO_MAX_SECONDS } from "./media";
 import {
+  CODING_LEVELS,
   COMMENT_KINDS,
   ROLES,
   UPDATE_KINDS,
@@ -187,7 +188,8 @@ export const projectCommentSchema = z
   .transform((c) => (c.parentId ? { ...c, kind: null } : c));
 export type ProjectCommentSubmission = z.infer<typeof projectCommentSchema>;
 
-// Event sign-up (20261018000000_event_registrations.sql). The name and WeChat
+// Event sign-up (20261018000000_event_registrations.sql, coding level from
+// 20261019000000_event_coding_level.sql). The name and WeChat
 // ID are for check-in and the participants' group; no student card, no zID.
 // A GitHub profile link or "@name" is reduced to the username.
 const githubUsername = z
@@ -216,6 +218,7 @@ export const registrationSchema = z
     fullName: text(40),
     wechat: text(60),
     // "yes" is a UNSW student; otherwise the group they picked.
+    codingLevel: z.enum(CODING_LEVELS, { error: "请选一项|Pick one" }),
     unswStudent: z.enum(["yes", "no"], { error: "请选一项|Pick one" }),
     otherGroup: z
       .enum(["usyd", "other_school", "external"])
@@ -229,7 +232,6 @@ export const registrationSchema = z
     school: optionalText(80),
     occupation: optionalText(80),
     githubUsername,
-    photoConsent: z.boolean(),
     channel: z.string().transform(normalizeChannel),
   })
   .superRefine((r, ctx) => {
@@ -265,13 +267,13 @@ export function parseRegistrationForm(form: FormData) {
     slug: form.get("slug") ?? "",
     fullName: form.get("fullName") ?? "",
     wechat: form.get("wechat") ?? "",
+    codingLevel: form.get("codingLevel") ?? null,
     unswStudent: form.get("unswStudent") ?? null,
     otherGroup: form.get("otherGroup") ?? null,
     zid: form.get("zid") ?? "",
     school: form.get("school") ?? "",
     occupation: form.get("occupation") ?? "",
     githubUsername: form.get("githubUsername") ?? "",
-    photoConsent: form.get("photoConsent") === "on",
     channel: form.get("channel") ?? "",
   });
 }

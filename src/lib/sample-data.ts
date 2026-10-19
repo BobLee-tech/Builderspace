@@ -14,13 +14,12 @@ import {
 export const sampleEvents: SiteEvent[] = [
   {
     slug: "put-yourself-online",
-    title: "3 小时，把自己放上网",
+    title: "做一个自己的个人网站",
     kind: "workshop",
     startsAt: "2026-10-22T10:00:00+11:00",
     endsAt: "2026-10-22T13:00:00+11:00",
     location: "UNSW MCIC",
-    summary:
-      "零基础也能做。带上电脑，用 AI 做一个个人网站并发布到 GitHub Pages，离场时带走自己的「用户名.github.io」网址和一桌新朋友。",
+    summary: "带上电脑，用 AI 做一个个人网站，发布到 GitHub Pages。",
     signupUrl: null,
     capacity: 40,
     registrationClosesAt: "2026-10-21T23:59:59+11:00",

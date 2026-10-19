@@ -91,7 +91,7 @@ export async function registerForEvent(
       p_school: r.school,
       p_occupation: r.occupation,
       p_github_username: r.githubUsername,
-      p_photo_consent: r.photoConsent,
+      p_coding_level: r.codingLevel,
       p_channel: r.channel,
     })
     .single<{ status: RegistrationStatus; already_registered: boolean }>();

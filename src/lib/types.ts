@@ -104,6 +104,10 @@ export const SEAT_GROUPS = [
 ] as const;
 export type SeatGroup = (typeof SEAT_GROUPS)[number];
 
+/** How much coding someone has done (event_registrations.coding_level). */
+export const CODING_LEVELS = ["none", "some", "yes"] as const;
+export type CodingLevel = (typeof CODING_LEVELS)[number];
+
 /** Public head-count for an event with on-site sign-up; numbers only. */
 export type EventSignups = {
   confirmed: number;
@@ -276,6 +280,12 @@ export const SEAT_GROUP_LABEL: Record<SeatGroup, Bi> = {
   usyd: { zh: "悉大 USYD", en: "USYD" },
   other_school: { zh: "其他学校", en: "Other universities" },
   external: { zh: "校外成员", en: "Non-students" },
+};
+
+export const CODING_LEVEL_LABEL: Record<CodingLevel, Bi> = {
+  none: { zh: "完全没有", en: "None" },
+  some: { zh: "学过一点", en: "A little" },
+  yes: { zh: "有", en: "Yes" },
 };
 
 export const POSITION_LABEL: Record<VolunteerPosition, Bi> = {
