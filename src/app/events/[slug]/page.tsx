@@ -28,7 +28,7 @@ import {
 } from "@/lib/types";
 import { AddressBar } from "../address-bar";
 import { TimeLeft } from "../countdown";
-import { EVENT_ICONS as ICONS, eventIsFull, seatGroups } from "../event-parts";
+import { EVENT_ICONS as ICONS, eventIsFull, shownSeats } from "../event-parts";
 import { SignupDock, SignupFocus } from "./signup-dock";
 import { SignupForm } from "./signup-form";
 import "../events.css";
@@ -84,12 +84,8 @@ async function EventDetail({ slug }: { slug: string }) {
   const page = getEventPage(event.slug);
   const full = eventIsFull(event, signups);
   const calendarUrl = `${siteUrl.replace(/^https?:/, "webcal:")}/events.ics`;
-  const groups = seatGroups(event);
+  const { capacity, left, groups } = shownSeats(event, signups);
   const open = phase === "open" && event.registrationClosesAt !== null;
-  const left =
-    event.capacity === null
-      ? null
-      : Math.max(event.capacity - signups.confirmed, 0);
 
   return (
     <section className="sec first evp">
@@ -173,10 +169,10 @@ async function EventDetail({ slug }: { slug: string }) {
                   <T zh="名额" en="Seats" />
                 </dt>
                 <dd>
-                  {event.capacity === null ? (
+                  {capacity === null ? (
                     <T zh="不限" en="Open" />
                   ) : (
-                    <T zh={`${event.capacity} 人`} en={`${event.capacity}`} />
+                    <T zh={`${capacity} 人`} en={`${capacity}`} />
                   )}
                   {groups.length > 0 && (
                     <small className="mute">
@@ -361,9 +357,7 @@ function SeatStatus({
   event: SiteEvent;
   signups: EventSignups;
 }) {
-  const cap = event.capacity;
-  const left = cap === null ? null : Math.max(cap - signups.confirmed, 0);
-  const groups = seatGroups(event);
+  const { capacity: cap, confirmed, left, groups } = shownSeats(event, signups);
   const closes = event.registrationClosesAt!;
   return (
     <div className="evp-status">
@@ -372,7 +366,7 @@ function SeatStatus({
           <T zh="已报名" en="Signed up" />
         </span>
         <b>
-          {signups.confirmed}
+          {confirmed}
           {cap !== null && <span className="mute"> / {cap}</span>}
         </b>
       </p>
@@ -380,11 +374,9 @@ function SeatStatus({
         <div
           className="evp-meter"
           role="img"
-          aria-label={`${signups.confirmed} / ${cap}`}
+          aria-label={`${confirmed} / ${cap}`}
         >
-          <i
-            style={{ width: `${Math.min(signups.confirmed / cap, 1) * 100}%` }}
-          />
+          <i style={{ width: `${Math.min(confirmed / cap, 1) * 100}%` }} />
         </div>
       )}
       <p className="evp-left mono mute">

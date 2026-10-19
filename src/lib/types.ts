@@ -283,7 +283,7 @@ export const SEAT_GROUP_LABEL: Record<SeatGroup, Bi> = {
 };
 
 export const CODING_LEVEL_LABEL: Record<CodingLevel, Bi> = {
-  none: { zh: "完全没有", en: "None" },
+  none: { zh: "暂时没有", en: "Not yet" },
   some: { zh: "学过一点", en: "A little" },
   yes: { zh: "有", en: "Yes" },
 };

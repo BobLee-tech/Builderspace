@@ -8,7 +8,7 @@ import {
   UsersThree,
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
-import type { EventIcon } from "@/lib/event-pages";
+import { getEventPage, type EventIcon } from "@/lib/event-pages";
 import { SEAT_GROUPS, type EventSignups, type SiteEvent } from "@/lib/types";
 
 export const EVENT_ICONS: Record<EventIcon, Icon> = {
@@ -38,4 +38,21 @@ export function eventIsFull(event: SiteEvent, signups: EventSignups) {
           (signups.byGroup[g as keyof typeof signups.byGroup] ?? 0) >= n,
       ))
   );
+}
+
+/**
+ * The seats the site shows: total, taken, left and per group, leaving out
+ * the groups the event page lists as unlisted.
+ */
+export function shownSeats(event: SiteEvent, signups: EventSignups) {
+  const unlisted = getEventPage(event.slug)?.unlistedSeats ?? [];
+  const groups = seatGroups(event).filter(([g]) => !unlisted.includes(g));
+  let capacity = event.capacity;
+  let confirmed = signups.confirmed;
+  for (const g of unlisted) {
+    if (capacity !== null) capacity -= event.seatQuotas?.[g] ?? 0;
+    confirmed -= signups.byGroup[g] ?? 0;
+  }
+  const left = capacity === null ? null : Math.max(capacity - confirmed, 0);
+  return { capacity, confirmed, left, groups };
 }

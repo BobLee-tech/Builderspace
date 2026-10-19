@@ -6,6 +6,8 @@
 // Only what participants should see goes here: no staffing, KPIs or names of
 // guests who haven't confirmed.
 
+import type { SeatGroup } from "./types";
+
 type Bi = { zh: string; en: string };
 
 /** Icons the page can draw next to a short line (Phosphor, see page.tsx). */
@@ -29,6 +31,11 @@ export type EventPage = {
   bring: { icon: EventIcon; label: Bi }[];
   /** Ask for a GitHub username on sign-up (a build-along workshop). */
   asksGithub: boolean;
+  /**
+   * Seat groups that can sign up but aren't advertised: their seats sit on
+   * top of the rest, and the head-counts on the site leave them out.
+   */
+  unlistedSeats?: SeatGroup[];
 };
 
 const putYourselfOnline: EventPage = {
@@ -73,6 +80,9 @@ const putYourselfOnline: EventPage = {
     },
   ],
   asksGithub: true,
+  // USYD students sign up through the partner society; non-students still
+  // can here, but the page only shows the 30 UNSW seats.
+  unlistedSeats: ["external"],
 };
 
 const PAGES: Record<string, EventPage> = {

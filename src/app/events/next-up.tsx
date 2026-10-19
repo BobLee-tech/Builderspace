@@ -13,7 +13,7 @@ import { formatDate, formatTime, formatTimeRange } from "@/lib/format";
 import { EVENT_KIND_LABEL } from "@/lib/types";
 import { TimeLeft } from "./countdown";
 import { doto } from "./doto";
-import { eventIsFull } from "./event-parts";
+import { eventIsFull, shownSeats } from "./event-parts";
 
 /**
  * The next event as a ticket at the top of /events: what it is in one line,
@@ -27,8 +27,7 @@ export async function NextUp({ slug }: { slug: string }) {
   const page = getEventPage(event.slug);
   const href = `/events/${event.slug}`;
   const full = eventIsFull(event, signups);
-  const cap = event.capacity;
-  const left = cap === null ? null : Math.max(cap - signups.confirmed, 0);
+  const { capacity: cap, confirmed, left } = shownSeats(event, signups);
   const closes = event.registrationClosesAt;
 
   return (
@@ -78,7 +77,7 @@ export async function NextUp({ slug }: { slug: string }) {
               <p className="evn-seats-head mono mute">
                 <T zh="已报名" en="Signed up" />
                 <span className="evn-count">
-                  <b>{signups.confirmed}</b>
+                  <b>{confirmed}</b>
                   {cap !== null && <span>/ {cap}</span>}
                 </span>
               </p>
@@ -86,11 +85,11 @@ export async function NextUp({ slug }: { slug: string }) {
                 <div
                   className="evp-meter"
                   role="img"
-                  aria-label={`${signups.confirmed} / ${cap}`}
+                  aria-label={`${confirmed} / ${cap}`}
                 >
                   <i
                     style={{
-                      width: `${Math.min(signups.confirmed / cap, 1) * 100}%`,
+                      width: `${Math.min(confirmed / cap, 1) * 100}%`,
                     }}
                   />
                 </div>

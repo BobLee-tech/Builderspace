@@ -23,7 +23,7 @@ export const sampleEvents: SiteEvent[] = [
     signupUrl: null,
     capacity: 40,
     registrationClosesAt: "2026-10-21T23:59:59+11:00",
-    seatQuotas: { unsw: 30, usyd: 10 },
+    seatQuotas: { unsw: 30, external: 10 },
   },
 ];
 
