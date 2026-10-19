@@ -21,7 +21,20 @@ import {
   POSITION_LABEL,
   WEEKLY_HOURS,
 } from "@/lib/types";
+import { SPARK_INFO, type Spark } from "@/lib/members";
 import { submitVolunteer } from "./actions";
+
+// Order along the bottom edge; the middle one (Momo) hops and says thanks.
+const CREW: Spark[] = ["vivi", "lumi", "momo", "geo", "kiko"];
+
+/** Title words that rise in one after another. */
+function Words({ parts }: { parts: string[] }) {
+  return parts.map((w, i) => (
+    <span key={i} className="w" style={{ "--i": i } as React.CSSProperties}>
+      {w}
+    </span>
+  ));
+}
 
 export function VolunteerForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(
@@ -38,32 +51,73 @@ export function VolunteerForm() {
           reveal(node);
           celebrate(node);
         }}
-        className="form hud"
+        className="form hud thanks"
         role="status"
       >
         <Hud />
-        <p className="mono mute">
-          <T zh="已提交" en="Submitted" />
-        </p>
-        <h2 className="h2" style={{ fontSize: 32 }}>
+        <div className="thanks-head">
+          <svg className="thanks-stamp" viewBox="0 0 56 56" aria-hidden="true">
+            <circle cx="28" cy="28" r="25" />
+            <path d="M18 29 l7 7 l13 -15" />
+          </svg>
+          <p className="mono mute">
+            <T zh="已提交" en="Submitted" />
+            <br />
+            <b>Core team · Application received</b>
+          </p>
+        </div>
+        <h2 className="h2 thanks-title">
           <T
-            zh={`收到了，${state.nickname}。`}
-            en={`Got it, ${state.nickname}.`}
+            zh={<Words parts={[`收到了，${state.nickname}。`, "谢谢申请！"]} />}
+            en={<Words parts={[`Got it, ${state.nickname}.`, "Thank you!"]} />}
           />
         </h2>
-        <p className="mute">
-          <T
-            zh="审核通过后，我们会用这个邮箱给你开通内部协作系统的账号，具体分工再一起聊。"
-            en="Once we've reviewed it, we'll open an account on our internal workspace with this email. Who does what is something we settle together."
-          />
-        </p>
-        <Link
-          href="/people"
-          className="btn ghost"
-          style={{ alignSelf: "start" }}
-        >
+        <div className="thanks-body">
+          <p className="thanks-lede">
+            <T
+              zh="谢谢你愿意一起把 BuilderSpace 做起来。"
+              en="Thank you for wanting to build BuilderSpace with us."
+            />
+          </p>
+          <p className="mute">
+            <T
+              zh="审核通过后，我们会用这个邮箱给你开通内部协作系统的账号。"
+              en="Once we've reviewed it, we'll open an account on our internal workspace with this email."
+            />
+          </p>
+        </div>
+        <Link href="/people" className="btn ghost thanks-cta">
           <T zh="回成员页" en="Back to People" /> <Arr />
         </Link>
+        <div className="thanks-crew" aria-hidden="true">
+          {CREW.map((s, i) => (
+            <div
+              key={s}
+              className={i === 2 ? "m lead" : "m"}
+              style={{ "--i": i } as React.CSSProperties}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- static SVG art */}
+              <img src={`/mascots/${s}.svg`} alt="" />
+              {[-26, 0, 24].map((dx) => (
+                <i
+                  key={dx}
+                  className="spark"
+                  style={
+                    {
+                      "--c": SPARK_INFO[s].color,
+                      "--dx": `${dx + (i - 2) * 6}px`,
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
+              {i === 2 && (
+                <span className="bubble">
+                  <T zh="谢谢你！" en="Thanks!" />
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

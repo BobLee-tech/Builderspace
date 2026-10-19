@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { PageHead } from "@/components/page-head";
-import { SpecRow } from "@/components/spec-row";
 import { DEPARTMENTS, VOLUNTEER_POSITIONS } from "@/lib/types";
 import { VolunteerForm } from "./volunteer-form";
 
@@ -35,31 +34,6 @@ export default function VolunteerPage() {
             {
               k: { zh: "形式", en: "Format" },
               v: { zh: "无薪", en: "Unpaid" },
-            },
-          ]}
-        />
-        <SpecRow
-          items={[
-            {
-              k: { zh: "报酬", en: "Pay" },
-              v: {
-                zh: "无工资 · 可开参与证明",
-                en: "Unpaid · certificate available",
-              },
-            },
-            {
-              k: { zh: "经验", en: "Experience" },
-              v: {
-                zh: "不要求 · 职位可多选",
-                en: "Not required · one role or several",
-              },
-            },
-            {
-              k: { zh: "隐私", en: "Privacy" },
-              v: {
-                zh: "不收学生证和 zID · 邮箱只用于联系和开通内部账号",
-                en: "No student card or zID · email only to reach you and set up your workspace account",
-              },
             },
           ]}
         />

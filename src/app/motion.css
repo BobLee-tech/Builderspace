@@ -6184,3 +6184,259 @@ html.lenis body {
     animation: none;
   }
 }
+
+/* ---------- core-team thank-you ----------
+   Stamp draws, title rises word by word, then the five mascots peek up over
+   the bottom edge and the middle one hops and says thanks. */
+.thanks {
+  overflow: hidden;
+  gap: 0;
+  animation: thanks-rise 0.6s var(--ease) both;
+}
+@keyframes thanks-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+.thanks::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--paper), transparent);
+  transform: scaleX(0);
+  animation: thanks-sweep 1.1s 0.15s var(--ease) both;
+}
+@keyframes thanks-sweep {
+  60% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 0.25;
+  }
+}
+.thanks-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.thanks-head p {
+  margin: 0;
+  line-height: 1.7;
+}
+.thanks-head b {
+  color: var(--paper);
+  font-weight: 400;
+}
+.thanks-stamp {
+  width: 56px;
+  height: 56px;
+  flex: none;
+}
+.thanks-stamp circle,
+.thanks-stamp path {
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.thanks-stamp circle {
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  animation: thanks-draw 0.7s 0.35s var(--ease) forwards;
+}
+.thanks-stamp path {
+  stroke-width: 2;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: thanks-draw 0.35s 0.95s var(--ease) forwards;
+}
+@keyframes thanks-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.thanks-title {
+  font-size: clamp(26px, 4vw, 34px);
+  margin: 28px 0 0;
+}
+.thanks-title .w {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.4em);
+  filter: blur(6px);
+  animation: thanks-word 0.5s var(--ease) forwards;
+  animation-delay: calc(1.05s + var(--i) * 90ms);
+}
+[data-l="en"] > .w + .w {
+  margin-left: 0.25em;
+}
+@keyframes thanks-word {
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.thanks-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 34em;
+  margin: 20px 0 0;
+  padding-left: 16px;
+  border-left: 1px solid var(--line-2);
+}
+.thanks-body p {
+  margin: 0;
+  font-size: var(--fs-md);
+  line-height: 1.8;
+}
+.thanks-lede {
+  color: var(--paper);
+  font-size: var(--fs-lg) !important;
+}
+.thanks-cta {
+  align-self: start;
+  margin-top: 28px;
+}
+.thanks-body,
+.thanks-cta {
+  animation: thanks-fade 0.5s 1.5s var(--ease) both;
+}
+.thanks-cta {
+  animation-delay: 1.65s;
+}
+@keyframes thanks-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.thanks-crew {
+  position: relative;
+  height: 104px;
+  margin: 32px calc(-1 * var(--pad)) calc(-1 * var(--pad));
+  border-top: 1px dashed var(--line-2);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: clamp(4px, 2vw, 18px);
+  overflow: hidden;
+}
+.thanks-crew .m {
+  position: relative;
+  width: clamp(52px, 12vw, 76px);
+  transform: translateY(105%);
+  animation:
+    thanks-peek 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+    thanks-bob 2.6s ease-in-out infinite;
+  animation-delay:
+    calc(1.25s + var(--i) * 110ms), calc(2.2s + var(--i) * 180ms);
+}
+.thanks-crew .m.lead {
+  animation:
+    thanks-peek 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+    thanks-hop 0.6s var(--ease) forwards,
+    thanks-bob 2.6s ease-in-out infinite;
+  animation-delay: 1.47s, 2.15s, 2.8s;
+}
+.thanks-crew img {
+  display: block;
+  width: 100%;
+}
+@keyframes thanks-peek {
+  to {
+    transform: translateY(22%);
+  }
+}
+@keyframes thanks-bob {
+  0%,
+  100% {
+    transform: translateY(22%);
+  }
+  50% {
+    transform: translateY(16%);
+  }
+}
+@keyframes thanks-hop {
+  0% {
+    transform: translateY(22%);
+  }
+  40% {
+    transform: translateY(-6%) rotate(-4deg);
+  }
+  100% {
+    transform: translateY(22%);
+  }
+}
+.thanks-crew .bubble {
+  position: absolute;
+  left: 50%;
+  bottom: 86px;
+  z-index: 2;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 12px/1.2 var(--f-mono);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 8px) scale(0.6);
+  animation: thanks-pop 0.45s 2.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.thanks-crew .bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 8px;
+  height: 8px;
+  background: var(--paper);
+  transform: translateX(-50%) rotate(45deg);
+}
+@keyframes thanks-pop {
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+.thanks-crew .spark {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--c);
+  opacity: 0;
+  animation: thanks-fly 0.9s calc(1.5s + var(--i) * 110ms) var(--ease) forwards;
+}
+@keyframes thanks-fly {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), -70px) rotate(180deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .thanks,
+  .thanks::before,
+  .thanks *,
+  .thanks-crew .m {
+    animation-duration: 1ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
