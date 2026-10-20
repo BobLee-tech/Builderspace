@@ -238,11 +238,10 @@ function FeedbackBoard({ state }: { state: LiveState }) {
           n={pct(f.canEdit.yes)}
           label={{ zh: "回家能自己改", en: "can update at home" }}
         />
-        <Big n={f.join} label={{ zh: "想加入", en: "want to join" }} />
       </div>
       <div className="live-bars">
         <p className="mono mute">
-          <T zh="今天加了几个新朋友" en="New friends today" />
+          <T zh="今天认识了几个新朋友" en="New friends made today" />
         </p>
         {FRIENDS.map((k) => (
           <div key={k}>

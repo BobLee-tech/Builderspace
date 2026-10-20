@@ -19,29 +19,17 @@ import { getSupabase } from "./supabase/client";
 
 // Everything the live pages read and write, through the security-definer
 // functions in 20261020000000_event_live.sql. Without Supabase, development
-// keeps it in memory (any WeChat ID signs in) and production says it's closed.
+// keeps it in memory and production says it's closed.
 
-export type IdentifyResult =
-  "ok" | "unknown" | "closed" | "throttled" | "denied";
+export type JoinResult = "ok" | "closed" | "denied";
 export type WriteResult = "ok" | "denied" | "closed";
 export type HostResult = "ok" | "denied" | "throttled" | "missing";
-
-export type WalkIn = {
-  fullName: string;
-  wechat: string;
-  school: string | null;
-  githubUsername: string | null;
-};
 
 export type LiveStore = {
   /** Events whose live page is on right now. */
   liveSlugs(): Promise<string[]>;
-  identify(
-    slug: string,
-    wechat: string,
-    token: string,
-  ): Promise<IdentifyResult>;
-  walkIn(slug: string, input: WalkIn, token: string): Promise<IdentifyResult>;
+  /** Signs this device in by name: the matching sign-up, or a new walk-in. */
+  join(slug: string, fullName: string, token: string): Promise<JoinResult>;
   state(slug: string): Promise<LiveState | null>;
   me(slug: string, token: string): Promise<LiveMe | null>;
   submit(
@@ -50,7 +38,6 @@ export type LiveStore = {
     step: AnswerStep,
     payload: object,
     onWall: boolean,
-    photoConsent?: boolean,
   ): Promise<WriteResult>;
   heart(
     slug: string,
@@ -127,25 +114,10 @@ function supabaseStore(
       if (error) throw error;
       return data.map((e) => e.slug as string);
     },
-    async identify(slug, wechat, token) {
-      const r = await call("live_identify", {
+    async join(slug, fullName, token) {
+      const r = await call("live_join", {
         p_slug: slug,
-        p_wechat: wechat,
-        p_token: token,
-      });
-      return oneOf(
-        r,
-        ["ok", "unknown", "closed", "throttled", "denied"],
-        "denied",
-      );
-    },
-    async walkIn(slug, input, token) {
-      const r = await call("live_walk_in", {
-        p_slug: slug,
-        p_full_name: input.fullName,
-        p_wechat: input.wechat,
-        p_school: input.school,
-        p_github_username: input.githubUsername,
+        p_full_name: fullName,
         p_token: token,
       });
       return oneOf(r, ["ok", "closed", "denied"], "denied");
@@ -163,14 +135,13 @@ function supabaseStore(
         p_token: token,
       })) as LiveMe | null;
     },
-    async submit(slug, token, step, payload, onWall, photoConsent) {
+    async submit(slug, token, step, payload, onWall) {
       const r = await call("live_submit", {
         p_slug: slug,
         p_token: token,
         p_step: step,
         p_payload: payload,
         p_on_wall: onWall,
-        p_photo_consent: photoConsent ?? null,
       });
       return oneOf(r, ["ok", "denied", "closed"], "denied");
     },
@@ -228,9 +199,7 @@ type MemPerson = {
   id: string;
   slug: string;
   name: string;
-  wechat: string;
   github: string | null;
-  photo: boolean;
   checkedIn: boolean;
   walkIn: boolean;
 };
@@ -286,9 +255,7 @@ function mem(): Mem {
         id: id(),
         slug: "put-yourself-online",
         name,
-        wechat: `${gh}-wx`,
         github: gh,
-        photo: true,
         checkedIn: true,
         walkIn: false,
       };
@@ -355,44 +322,19 @@ function memoryStore(): LiveStore {
     async liveSlugs() {
       return [...m.events].filter(([, e]) => e.step).map(([slug]) => slug);
     },
-    async identify(slug, wechat, token) {
+    async join(slug, fullName, token) {
       if (!event(slug).step) return "closed";
-      const wx = wechat.trim().toLowerCase();
-      // Development signs anyone in: an unknown WeChat ID becomes a person.
+      const name = fullName.trim().replace(/\s+/g, " ");
+      if (!name || name.length > 40) return "denied";
       let p = m.people.find(
-        (x) => x.slug === slug && x.wechat.toLowerCase() === wx,
+        (x) => x.slug === slug && x.name.toLowerCase() === name.toLowerCase(),
       );
       if (!p) {
         p = {
           id: id(),
           slug,
-          name: wechat.trim(),
-          wechat: wechat.trim(),
+          name,
           github: null,
-          photo: false,
-          checkedIn: false,
-          walkIn: false,
-        };
-        m.people.push(p);
-      }
-      start(p, token);
-      return "ok";
-    },
-    async walkIn(slug, input, token) {
-      if (!event(slug).step) return "closed";
-      let p = m.people.find(
-        (x) =>
-          x.slug === slug &&
-          x.wechat.toLowerCase() === input.wechat.toLowerCase(),
-      );
-      if (!p) {
-        p = {
-          id: id(),
-          slug,
-          name: input.fullName,
-          wechat: input.wechat,
-          github: input.githubUsername,
-          photo: false,
           checkedIn: false,
           walkIn: true,
         };
@@ -469,7 +411,6 @@ function memoryStore(): LiveStore {
             "3-5": count(fb, (f) => f.friends === "3-5"),
             "6+": count(fb, (f) => f.friends === "6+"),
           },
-          join: count(fb, (f) => f.join === true),
         },
       };
     },
@@ -482,7 +423,6 @@ function memoryStore(): LiveStore {
       return {
         name: p.name,
         github: p.github,
-        photoConsent: p.photo,
         responses: Object.fromEntries(
           mine.map((r) => [
             r.step,
@@ -506,7 +446,7 @@ function memoryStore(): LiveStore {
         },
       };
     },
-    async submit(slug, token, step, payload, onWall, photoConsent) {
+    async submit(slug, token, step, payload, onWall) {
       const p = person(slug, token);
       if (!p) return "denied";
       if (!event(slug).step) return "closed";
@@ -524,7 +464,6 @@ function memoryStore(): LiveStore {
           hidden: false,
           at: Date.now(),
         });
-      if (photoConsent !== undefined) p.photo = photoConsent;
       return "ok";
     },
     async heart(slug, token, responseId, on, note) {
@@ -571,8 +510,6 @@ function memoryStore(): LiveStore {
               payload: r.payload,
               onWall: r.onWall,
               hidden: r.hidden,
-              photo: p.photo,
-              wechat: r.step === "feedback" && r.payload.join ? p.wechat : null,
               hearts: heartsOf(r.id).length,
               at: new Date(r.at).toISOString(),
             };

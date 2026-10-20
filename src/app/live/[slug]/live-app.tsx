@@ -7,6 +7,7 @@ import {
   CAN_EDIT,
   FRIENDS,
   liveConfig,
+  RATING_EMOJI,
   shortUrl,
   type FeedbackAnswer,
   type LinkCheck,
@@ -19,12 +20,11 @@ import {
 import {
   forgetMe,
   handInLink,
-  identify,
+  join,
   like,
   recheckLink,
   sendFeedback,
   vote,
-  walkIn,
   type LiveResult,
 } from "./actions";
 import { usePoll } from "../use-poll";
@@ -150,139 +150,56 @@ function Message({ result }: { result: LiveResult | null }) {
 // ---------- who are you ----------
 
 function WhoAreYou({ slug, onDone }: { slug: string; onDone: () => void }) {
-  const [walk, setWalk] = useState(false);
-  const [wechat, setWechat] = useState("");
-  const [form, setForm] = useState({
-    fullName: "",
-    wechat: "",
-    school: "",
-    githubUsername: "",
-  });
+  const [name, setName] = useState("");
   const [result, setResult] = useState<LiveResult | null>(null);
   const [pending, start] = useTransition();
-
-  const submit = () =>
-    start(async () => {
-      const r = walk ? await walkIn(slug, form) : await identify(slug, wechat);
-      setResult(r);
-      if (r.status === "ok") onDone();
-    });
 
   return (
     <section className="live-card">
       <StepHead
         eyebrow={{ zh: "第一次扫码", en: "First scan" }}
-        title={
-          walk
-            ? { zh: "现场补登", en: "Register here" }
-            : { zh: "嗨，先认一下你", en: "Hi! Who are you?" }
-        }
-        hint={
-          walk
-            ? {
-                zh: "没报名也没关系，填一下就能参加今天的所有环节。",
-                en: "Didn't sign up? Fill this in to join everything today.",
-              }
-            : {
-                zh: "输入报名时填的微信号。只问这一次，今天后面的环节都会记住你。",
-                en: "Enter the WeChat ID you signed up with. Just this once — the rest of today remembers you.",
-              }
-        }
+        title={{ zh: "嗨，你叫什么？", en: "Hi! What's your name?" }}
+        hint={{
+          zh: "填报名时的名字。只问这一次，今天后面的环节都会记住你。",
+          en: "The name you signed up with. Just this once — the rest of today remembers you.",
+        }}
       />
       <form
         className="live-form"
         onSubmit={(e) => {
           e.preventDefault();
-          submit();
+          start(async () => {
+            const r = await join(slug, name);
+            setResult(r);
+            if (r.status === "ok") onDone();
+          });
         }}
       >
-        {walk ? (
-          <>
-            <Field label={{ zh: "名字", en: "Name" }}>
-              <input
-                value={form.fullName}
-                maxLength={40}
-                required
-                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-              />
-            </Field>
-            <Field label={{ zh: "微信号", en: "WeChat ID" }}>
-              <input
-                value={form.wechat}
-                maxLength={60}
-                required
-                autoComplete="off"
-                onChange={(e) => setForm({ ...form, wechat: e.target.value })}
-              />
-            </Field>
-            <Field
-              label={{
-                zh: "学校或职业（选填）",
-                en: "University or job (optional)",
-              }}
-            >
-              <input
-                value={form.school}
-                maxLength={80}
-                placeholder="UNSW"
-                onChange={(e) => setForm({ ...form, school: e.target.value })}
-              />
-            </Field>
-            <Field
-              label={{
-                zh: "GitHub 用户名（选填）",
-                en: "GitHub username (optional)",
-              }}
-            >
-              <input
-                value={form.githubUsername}
-                maxLength={39}
-                autoCapitalize="none"
-                autoComplete="off"
-                onChange={(e) =>
-                  setForm({ ...form, githubUsername: e.target.value })
-                }
-              />
-            </Field>
-          </>
-        ) : (
-          <Field label={{ zh: "微信号", en: "WeChat ID" }}>
-            <input
-              value={wechat}
-              maxLength={60}
-              autoCapitalize="none"
-              autoComplete="off"
-              autoFocus
-              onChange={(e) => setWechat(e.target.value)}
-            />
-          </Field>
-        )}
+        <Field label={{ zh: "名字", en: "Name" }}>
+          <input
+            value={name}
+            maxLength={40}
+            autoComplete="name"
+            autoFocus
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Field>
         <Message result={result} />
-        <button type="submit" className="btn solid live-cta" disabled={pending}>
+        <button
+          type="submit"
+          className="btn solid live-cta"
+          disabled={pending || !name.trim()}
+        >
           <T
             zh={pending ? "稍等…" : "继续"}
             en={pending ? "One moment…" : "Continue"}
           />
         </button>
       </form>
-      <button
-        type="button"
-        className="live-link-btn"
-        onClick={() => {
-          setWalk(!walk);
-          setResult(null);
-        }}
-      >
-        {walk ? (
-          <T zh="报过名？用微信号认人" en="Signed up? Use your WeChat ID" />
-        ) : (
-          <T zh="没报名直接来的？现场补登" en="Didn't sign up? Register here" />
-        )}
-      </button>
       <p className="live-fine mute">
         <T
-          zh="只用于这场活动的签到和收作品。微信号不会出现在大屏上。"
-          en="Used only for today's check-in and hand-ins. Your WeChat ID never appears on the screen."
+          zh="没报名也可以直接填。名字只用于今天的签到和成果墙。"
+          en="Didn't sign up? Just type your name. It's only used for today's check-in and the wall."
         />
       </p>
     </section>
@@ -973,8 +890,6 @@ function FeedbackCard({
   );
   const [good, setGood] = useState(mine?.good ?? "");
   const [bad, setBad] = useState(mine?.bad ?? "");
-  const [photo, setPhoto] = useState(me.photoConsent);
-  const [join, setJoin] = useState(mine?.join ?? false);
   const [result, setResult] = useState<LiveResult | null>(null);
   const [pending, start] = useTransition();
   const copy = config.copy.feedback;
@@ -987,24 +902,12 @@ function FeedbackCard({
           onEdit={() => setEditing(true)}
         >
           <p className="mute">
-            {mine.join ? (
-              <T
-                zh="想加入的话，填一下加入申请，我们会在群里联系你。"
-                en="Fill in the join form and we'll get in touch."
-              />
-            ) : (
-              <T
-                zh="下一场活动会在群里和官网通知。"
-                en="The next event goes out in the group chat and on the site."
-              />
-            )}
+            <T
+              zh="下一场活动会在群里和官网通知。"
+              en="The next event goes out in the group chat and on the site."
+            />
           </p>
           <div className="live-actions">
-            {mine.join ? (
-              <Link href="/join" className="btn solid sm">
-                <T zh="填加入申请" en="Join the club" />
-              </Link>
-            ) : null}
             <Link href="/projects" className="btn ghost sm">
               <T zh="看看在找人的项目" en="Projects looking for people" />
             </Link>
@@ -1023,23 +926,24 @@ function FeedbackCard({
             <T zh="整体打几分" en="Overall score" />
           </legend>
           <div className="live-stars">
-            {[1, 2, 3, 4, 5].map((n) => (
+            {RATING_EMOJI.map((face, i) => (
               <button
-                key={n}
+                key={face}
                 type="button"
-                aria-pressed={n <= rating}
-                aria-label={`${n}`}
-                onClick={() => setRating(n)}
+                aria-pressed={i + 1 === rating}
+                aria-label={`${i + 1}`}
+                onClick={() => setRating(i + 1)}
               >
-                {n}
+                <b>{i + 1}</b>
+                <span aria-hidden>{face}</span>
               </button>
             ))}
           </div>
         </fieldset>
         <Choices
           label={{
-            zh: "今天加了几个新朋友（微信 / 领英）",
-            en: "New friends today (WeChat / LinkedIn)",
+            zh: "今天认识了几个新朋友",
+            en: "New friends you made today",
           }}
           value={friends}
           options={FRIENDS.map((f) => ({ value: f, label: FRIEND_LABELS[f] }))}
@@ -1059,8 +963,8 @@ function FeedbackCard({
         />
         <Field
           label={{
-            zh: "👍 最好的一点（选填）",
-            en: "👍 The best bit (optional)",
+            zh: "本次活动喜欢的地方（选填）",
+            en: "What you liked today (optional)",
           }}
         >
           <input
@@ -1071,8 +975,8 @@ function FeedbackCard({
         </Field>
         <Field
           label={{
-            zh: "🛠 最该改的一点（选填）",
-            en: "🛠 What to fix (optional)",
+            zh: "给我们的建议（选填）",
+            en: "Suggestions for us (optional)",
           }}
         >
           <input
@@ -1081,29 +985,6 @@ function FeedbackCard({
             onChange={(e) => setBad(e.target.value)}
           />
         </Field>
-        <label className="consent">
-          <input
-            type="checkbox"
-            checked={photo}
-            onChange={(e) => setPhoto(e.target.checked)}
-          />
-          <span>
-            <T
-              zh="今天拍到我的照片可以发官网和社媒"
-              en="Photos of me from today can go on the site and social media"
-            />
-          </span>
-        </label>
-        <label className="consent">
-          <input
-            type="checkbox"
-            checked={join}
-            onChange={(e) => setJoin(e.target.checked)}
-          />
-          <span>
-            <T zh="我想加入创客社" en="I'd like to join the club" />
-          </span>
-        </label>
         <Message result={result} />
         <button
           type="button"
@@ -1111,18 +992,13 @@ function FeedbackCard({
           disabled={pending || !rating || !friends || !canEdit}
           onClick={() =>
             start(async () => {
-              const r = await sendFeedback(
-                slug,
-                {
-                  rating,
-                  friends: friends!,
-                  canEdit: canEdit!,
-                  good,
-                  bad,
-                  join,
-                },
-                photo,
-              );
+              const r = await sendFeedback(slug, {
+                rating,
+                friends: friends!,
+                canEdit: canEdit!,
+                good,
+                bad,
+              });
               setResult(r);
               if (r.status === "ok") {
                 setEditing(false);

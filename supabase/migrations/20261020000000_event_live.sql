@@ -1,7 +1,7 @@
 -- 活动现场码：一个码用一整场 ---------------------------------------------------
 -- builderspace.dev/live 永远指向正在进行的活动。主持人在 /live/<slug>/host 切换
 -- 当前环节，大家手机上的页面跟着换：签到 → 最爱的 AI 投票 → 交网址并互相点赞 →
--- 秀（投屏轮播） → 反馈和加入意向。投影屏 /live/<slug>/screen 只读公开汇总。
+-- 秀（投屏轮播） → 反馈。投影屏 /live/<slug>/screen 只读公开汇总。
 --
 -- 1. events 加两列：
 --    live_step：当前环节，为空就是没在进行。环节名固定：wait（跟着主讲做）、
@@ -17,8 +17,10 @@
 --    能看到这句话。
 -- 5. 访客不能直接读写这几张表，只能调下面的函数。主持人的函数用 /admin 的
 --    管理员口令（comment_admin_verdict），和删评论是同一个口令。
--- 6. 现场补登：没报名直接来的人填名字和微信号，记为 other_school、
---    channel = 'walk-in'，学校没填就写「现场补登」。
+-- 6. 第一次扫码只填名字：和这场的报名名字对上（不分大小写、多余空格不算）就用
+--    那条报名；对不上就当现场补登，新建一条 other_school、school「现场补登」、
+--    channel = 'walk-in' 的报名。报名表的微信号必填且不能重复，补登的人没有
+--    微信号，存成 walk-in- 加随机串。
 
 alter table events
   add column live_step text check (
@@ -65,19 +67,11 @@ create table event_live_hearts (
 create index event_live_hearts_registration_idx
   on event_live_hearts (registration_id);
 
--- 认人输错的记录，用来限速：一场活动 10 分钟内错 40 次就先停一下。
-create table event_live_attempts (
-  event_id uuid not null references events (id) on delete cascade,
-  at timestamptz not null default now()
-);
-create index event_live_attempts_idx on event_live_attempts (event_id, at);
-
 alter table event_live_sessions enable row level security;
 alter table event_live_responses enable row level security;
 alter table event_live_hearts enable row level security;
-alter table event_live_attempts enable row level security;
-revoke all on event_live_sessions, event_live_responses, event_live_hearts,
-  event_live_attempts from anon, authenticated;
+revoke all on event_live_sessions, event_live_responses, event_live_hearts
+  from anon, authenticated;
 
 -- 内部：cookie 里的 token 对应这场活动的哪条报名（取消了的不算）。
 create or replace function live_registration(p_slug text, p_token text)
@@ -111,9 +105,9 @@ as $$
 $$;
 revoke all on function live_start_session(uuid, text) from public, anon, authenticated;
 
--- 认人：报名时填的微信号 -------------------------------------------------------
--- 'ok' | 'unknown'（没找到这个微信号）| 'closed'（没在进行）| 'throttled' | 'denied'
-create or replace function live_identify(p_slug text, p_wechat text, p_token text)
+-- 认人：填名字 -----------------------------------------------------------------
+-- 'ok' | 'closed'（没在进行）| 'denied'（名字不对）
+create or replace function live_join(p_slug text, p_full_name text, p_token text)
 returns text
 language plpgsql
 security definer
@@ -121,55 +115,7 @@ set search_path = public
 as $$
 declare
   ev events;
-  reg_id uuid;
-begin
-  select * into ev from events where slug = p_slug and published;
-  if not found or ev.live_step is null then
-    return 'closed';
-  end if;
-  if char_length(coalesce(p_token, '')) not between 32 and 128 then
-    return 'denied';
-  end if;
-  if (select count(*) from event_live_attempts a
-      where a.event_id = ev.id and a.at > now() - interval '10 minutes') >= 40 then
-    return 'throttled';
-  end if;
-
-  select r.id into reg_id from event_registrations r
-  where r.event_id = ev.id
-    and lower(r.wechat) = lower(trim(coalesce(p_wechat, '')))
-    and r.status <> 'cancelled';
-  if reg_id is null then
-    insert into event_live_attempts (event_id) values (ev.id);
-    return 'unknown';
-  end if;
-
-  perform live_start_session(reg_id, p_token);
-  return 'ok';
-end;
-$$;
-
--- 现场补登 ---------------------------------------------------------------------
--- 'ok' | 'closed' | 'denied'（填得不对）
-create or replace function live_walk_in(
-  p_slug text,
-  p_full_name text,
-  p_wechat text,
-  p_school text,
-  p_github_username text,
-  p_token text
-) returns text
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  ev events;
-  v_name text := trim(coalesce(p_full_name, ''));
-  wx text := trim(coalesce(p_wechat, ''));
-  sch text := coalesce(nullif(trim(coalesce(p_school, '')), ''), '现场补登');
-  gh text := nullif(trim(coalesce(p_github_username, '')), '');
-  prev event_registrations;
+  v_name text := regexp_replace(trim(coalesce(p_full_name, '')), '\s+', ' ', 'g');
   reg_id uuid;
 begin
   select * into ev from events where slug = p_slug and published;
@@ -177,30 +123,26 @@ begin
     return 'closed';
   end if;
   if char_length(coalesce(p_token, '')) not between 32 and 128
-     or char_length(v_name) not between 1 and 40
-     or char_length(wx) not between 1 and 60
-     or char_length(sch) > 80
-     or (gh is not null and gh !~* '^[a-z0-9-]{1,39}$') then
+     or char_length(v_name) not between 1 and 40 then
     return 'denied';
   end if;
 
-  select * into prev from event_registrations r
-  where r.event_id = ev.id and lower(r.wechat) = lower(wx);
-  if prev.id is not null and prev.status <> 'cancelled' then
-    -- 其实报过名，只是没认出来：直接用原来那条。
-    reg_id := prev.id;
-  elsif prev.id is not null then
-    update event_registrations set
-      full_name = v_name, seat_group = 'other_school', zid = null, school = sch,
-      occupation = null, github_username = gh, channel = 'walk-in',
-      status = 'confirmed'
-    where id = prev.id;
-    reg_id := prev.id;
-  else
+  -- 同名的有好几个：先给还没有设备认领的那个。
+  select r.id into reg_id from event_registrations r
+  where r.event_id = ev.id and r.status <> 'cancelled'
+    and lower(regexp_replace(trim(r.full_name), '\s+', ' ', 'g')) = lower(v_name)
+  order by exists (
+    select 1 from event_live_sessions s where s.registration_id = r.id
+  ), r.created_at
+  limit 1;
+
+  if reg_id is null then
     insert into event_registrations (
-      event_id, full_name, wechat, seat_group, school, github_username,
-      channel, status
-    ) values (ev.id, v_name, wx, 'other_school', sch, gh, 'walk-in', 'confirmed')
+      event_id, full_name, wechat, seat_group, school, channel, status
+    ) values (
+      ev.id, v_name, 'walk-in-' || substr(md5(gen_random_uuid()::text), 1, 12),
+      'other_school', '现场补登', 'walk-in', 'confirmed'
+    )
     returning id into reg_id;
   end if;
 
@@ -296,8 +238,7 @@ begin
           '1-2', count(*) filter (where payload ->> 'friends' = '1-2'),
           '3-5', count(*) filter (where payload ->> 'friends' = '3-5'),
           '6+', count(*) filter (where payload ->> 'friends' = '6+')
-        ),
-        'join', count(*) filter (where (payload ->> 'join')::boolean)
+        )
       )
       from event_live_responses
       where event_id = ev.id and step = 'feedback'
@@ -327,7 +268,6 @@ begin
   return jsonb_build_object(
     'name', reg.full_name,
     'github', reg.github_username,
-    'photoConsent', reg.photo_consent,
     'responses', coalesce((
       select jsonb_object_agg(x.step, jsonb_build_object(
         'id', x.id, 'payload', x.payload, 'onWall', x.on_wall,
@@ -360,8 +300,7 @@ create or replace function live_submit(
   p_token text,
   p_step text,
   p_payload jsonb,
-  p_on_wall boolean,
-  p_photo_consent boolean default null
+  p_on_wall boolean
 ) returns text
 language plpgsql
 security definer
@@ -388,11 +327,6 @@ begin
     payload = excluded.payload,
     on_wall = excluded.on_wall,
     updated_at = now();
-
-  if p_photo_consent is not null then
-    update event_registrations set photo_consent = p_photo_consent
-    where id = reg.id;
-  end if;
   return 'ok';
 end;
 $$;
@@ -440,7 +374,7 @@ end;
 $$;
 
 -- 主持人 -----------------------------------------------------------------------
--- 全部明细（含名字、反馈原文、想加入的人的微信号）。口令不对返回
+-- 全部明细（含名字和反馈原文）。口令不对返回
 -- {"denied": "denied" | "throttled"}。
 create or replace function live_host_state(p_slug text, p_admin_key text)
 returns jsonb
@@ -482,11 +416,6 @@ begin
         'id', x.id, 'step', x.step, 'name', r.full_name,
         'github', r.github_username, 'payload', x.payload,
         'onWall', x.on_wall, 'hidden', x.hidden,
-        'photo', r.photo_consent,
-        'wechat', case
-          when x.step = 'feedback' and (x.payload ->> 'join')::boolean
-          then r.wechat
-        end,
         'hearts', (select count(*) from event_live_hearts h where h.response_id = x.id),
         'at', x.updated_at
       ) order by x.updated_at desc)
@@ -577,21 +506,19 @@ begin
 end;
 $$;
 
-revoke all on function live_identify(text, text, text) from public;
-revoke all on function live_walk_in(text, text, text, text, text, text) from public;
+revoke all on function live_join(text, text, text) from public;
 revoke all on function live_state(text) from public;
 revoke all on function live_me(text, text) from public;
-revoke all on function live_submit(text, text, text, jsonb, boolean, boolean) from public;
+revoke all on function live_submit(text, text, text, jsonb, boolean) from public;
 revoke all on function live_heart(text, text, uuid, boolean, text) from public;
 revoke all on function live_host_state(text, text) from public;
 revoke all on function live_host_step(text, text, text) from public;
 revoke all on function live_host_spotlight(text, text, uuid) from public;
 revoke all on function live_host_hide(text, text, uuid, boolean) from public;
-grant execute on function live_identify(text, text, text) to anon, authenticated;
-grant execute on function live_walk_in(text, text, text, text, text, text) to anon, authenticated;
+grant execute on function live_join(text, text, text) to anon, authenticated;
 grant execute on function live_state(text) to anon, authenticated;
 grant execute on function live_me(text, text) to anon, authenticated;
-grant execute on function live_submit(text, text, text, jsonb, boolean, boolean) to anon, authenticated;
+grant execute on function live_submit(text, text, text, jsonb, boolean) to anon, authenticated;
 grant execute on function live_heart(text, text, uuid, boolean, text) to anon, authenticated;
 grant execute on function live_host_state(text, text) to anon, authenticated;
 grant execute on function live_host_step(text, text, text) to anon, authenticated;
@@ -616,8 +543,7 @@ select
   count(distinct x.id) filter (where x.step = 'poll') as poll_votes,
   count(distinct x.id) filter (where x.step = 'link') as links,
   count(distinct x.id) filter (where x.step = 'link' and x.payload ->> 'check' = 'live') as links_live,
-  count(distinct x.id) filter (where x.step = 'feedback') as feedback,
-  count(distinct x.id) filter (where x.step = 'feedback' and (x.payload ->> 'join')::boolean) as want_to_join
+  count(distinct x.id) filter (where x.step = 'feedback') as feedback
 from events e
 join event_registrations r on r.event_id = e.id and r.status <> 'cancelled'
 left join event_live_responses x on x.registration_id = r.id

@@ -76,7 +76,6 @@ export function HostApp({ slug, title }: { slug: string; title: Bi }) {
   const links = of("link");
   const polls = of("poll");
   const feedback = of("feedback");
-  const joins = feedback.filter((r) => (r.payload as FeedbackAnswer).join);
   const steps: LiveStep[] = ["wait", ...config.steps];
   const avg = feedback.length
     ? (
@@ -173,7 +172,6 @@ export function HostApp({ slug, title }: { slug: string; title: Bi }) {
           n={`${feedback.length} · ${avg}`}
           label={{ zh: "反馈 · 平均分", en: "Feedback · avg" }}
         />
-        <Stat n={joins.length} label={{ zh: "想加入", en: "Want to join" }} />
       </section>
 
       <HostSection title={{ zh: "网址", en: "Sites" }} count={links.length}>
@@ -278,29 +276,12 @@ export function HostApp({ slug, title }: { slug: string; title: Bi }) {
                   <td className="mono">
                     {p.rating}★ · {p.canEdit} · {p.friends}
                   </td>
-                  <td>{p.good ? `👍 ${p.good}` : ""}</td>
-                  <td>{p.bad ? `🛠 ${p.bad}` : ""}</td>
-                  <td className="mono">{r.photo ? "📷 ok" : ""}</td>
+                  <td>{p.good ? `喜欢：${p.good}` : ""}</td>
+                  <td>{p.bad ? `建议：${p.bad}` : ""}</td>
+                  <td className="mono mute">{formatTime(r.at)}</td>
                 </tr>
               );
             })}
-          </tbody>
-        </table>
-      </HostSection>
-
-      <HostSection
-        title={{ zh: "想加入（会后私信）", en: "Want to join (message after)" }}
-        count={joins.length}
-      >
-        <table className="live-table">
-          <tbody>
-            {joins.map((r) => (
-              <tr key={r.id}>
-                <td>{r.name}</td>
-                <td className="mono">{r.wechat}</td>
-                <td className="mono mute">{formatTime(r.at)}</td>
-              </tr>
-            ))}
           </tbody>
         </table>
       </HostSection>

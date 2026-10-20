@@ -69,92 +69,22 @@ async function remember(value: string) {
   });
 }
 
-function identifyMessage(r: string): LiveResult {
-  switch (r) {
-    case "ok":
-      return { status: "ok" };
-    case "unknown":
-      return {
-        status: "error",
-        message:
-          "没找到这个微信号。换报名时填的那个试试，或者点下面的现场补登|We couldn't find that WeChat ID. Try the one you signed up with, or register here below",
-      };
-    case "closed":
-      return CLOSED;
-    case "throttled":
-      return {
-        status: "error",
-        message: "试的人有点多，一分钟后再试|Too many tries, wait a minute",
-      };
-    default:
-      return FAILED;
-  }
-}
-
 // ---------- who you are ----------
 
-export async function identify(
-  slug: string,
-  wechat: string,
-): Promise<LiveResult> {
-  const wx = z.string().trim().min(1).max(60).safeParse(wechat);
+export async function join(slug: string, name: string): Promise<LiveResult> {
+  const fullName = z.string().trim().min(1).max(40).safeParse(name);
   if (!slugSchema.safeParse(slug).success) return FAILED;
-  if (!wx.success) {
-    return { status: "error", message: "填一下微信号|Enter your WeChat ID" };
+  if (!fullName.success) {
+    return { status: "error", message: "填一下名字|Enter your name" };
   }
   return withStore(async (store) => {
     const t = newLiveToken();
-    const r = await store.identify(slug, wx.data, t);
-    if (r === "ok") await remember(t);
-    return identifyMessage(r);
-  });
-}
-
-const walkInSchema = z.object({
-  fullName: z.string().trim().min(1, "必填|Required").max(40),
-  wechat: z.string().trim().min(1, "必填|Required").max(60),
-  school: z
-    .string()
-    .trim()
-    .max(80)
-    .transform((v) => v || null),
-  githubUsername: z
-    .string()
-    .trim()
-    .transform((v) => v.replace(/^@/, "") || null)
-    .pipe(
-      z
-        .string()
-        .regex(
-          /^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}$/i,
-          "GitHub 用户名只有字母、数字和连字符|A GitHub username is letters, digits and hyphens",
-        )
-        .nullable(),
-    ),
-});
-
-export async function walkIn(
-  slug: string,
-  input: {
-    fullName: string;
-    wechat: string;
-    school: string;
-    githubUsername: string;
-  },
-): Promise<LiveResult> {
-  const parsed = walkInSchema.safeParse(input);
-  if (!slugSchema.safeParse(slug).success) return FAILED;
-  if (!parsed.success) {
-    return {
-      status: "error",
-      message: parsed.error.issues[0]?.message ?? FAILED.message,
-    };
-  }
-  return withStore(async (store) => {
-    const t = newLiveToken();
-    const r = await store.walkIn(slug, parsed.data, t);
-    if (r === "ok") await remember(t);
-    return identifyMessage(r);
+    const r = await store.join(slug, fullName.data, t);
+    if (r === "ok") {
+      await remember(t);
+      return { status: "ok" };
+    }
+    return r === "closed" ? CLOSED : FAILED;
   });
 }
 
@@ -265,7 +195,6 @@ export async function recheckLink(slug: string): Promise<LiveResult> {
 export async function sendFeedback(
   slug: string,
   input: FeedbackAnswer,
-  photoConsent: boolean,
 ): Promise<LiveResult> {
   const parsed = feedbackSchema.safeParse(input);
   if (!slugSchema.safeParse(slug).success) return FAILED;
@@ -279,7 +208,6 @@ export async function sendFeedback(
       "feedback",
       parsed.data,
       false,
-      photoConsent === true,
     );
     return r === "ok" ? { status: "ok" } : r === "closed" ? CLOSED : WHO;
   });

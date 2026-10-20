@@ -6,6 +6,7 @@ import {
   LIVE_STEPS,
   parseSiteLink,
   pollSchema,
+  RATING_EMOJI,
   shortUrl,
   titleFromHtml,
 } from "./event-live";
@@ -78,7 +79,6 @@ describe("answers", () => {
       canEdit: "maybe",
       good: "",
       bad: " 网络慢 ",
-      join: true,
     };
     expect(feedbackSchema.parse(ok)).toEqual({
       rating: 4,
@@ -86,13 +86,17 @@ describe("answers", () => {
       canEdit: "maybe",
       good: undefined,
       bad: "网络慢",
-      join: true,
     });
     expect(feedbackSchema.safeParse({ ...ok, rating: 0 }).success).toBe(false);
     expect(feedbackSchema.safeParse({ ...ok, friends: "2" }).success).toBe(
       false,
     );
   });
+});
+
+it("has a face for every score", () => {
+  expect(RATING_EMOJI).toHaveLength(5);
+  expect(RATING_EMOJI[0]).toBe("😭");
 });
 
 describe("liveConfig", () => {

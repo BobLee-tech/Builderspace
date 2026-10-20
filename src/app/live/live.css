@@ -178,20 +178,48 @@
   grid-template-columns: repeat(5, 1fr);
 }
 .live-stars button {
-  aspect-ratio: 1;
-  max-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 0;
   border-radius: 12px;
   border: 1px solid var(--line-2);
   background: rgba(255, 255, 255, 0.02);
-  font-family: var(--f-display);
-  font-size: 18px;
   color: var(--mute);
   cursor: pointer;
+  transition:
+    background var(--dur-1),
+    color var(--dur-1);
+}
+.live-stars button b {
+  font-family: var(--f-display);
+  font-size: 18px;
+}
+.live-stars button span {
+  font-size: 22px;
+  line-height: 1;
+  filter: grayscale(1);
+  opacity: 0.55;
+  transition:
+    filter var(--dur-1),
+    opacity var(--dur-1);
 }
 .live-stars button[aria-pressed="true"] {
   background: var(--paper);
   color: var(--ink);
   border-color: var(--paper);
+}
+.live-stars button[aria-pressed="true"] span {
+  filter: none;
+  opacity: 1;
+  animation: live-bounce var(--dur-2) var(--ease-out);
+}
+@keyframes live-bounce {
+  40% {
+    transform: scale(1.45) rotate(-8deg);
+  }
 }
 .live-done {
   display: flex;

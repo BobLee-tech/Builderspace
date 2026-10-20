@@ -76,10 +76,9 @@ const DEFAULT_COPY: Record<LiveStep, LiveStepCopy> = {
   },
   feedback: {
     label: { zh: "反馈", en: "Feedback" },
-    title: { zh: "最后一分钟：反馈", en: "One last minute: feedback" },
-    hint: {
-      zh: "好的坏的都说，下一场照着改。",
-      en: "The good and the bad — the next one gets better.",
+    title: {
+      zh: "反馈：这场散幕，未来刚刚开始",
+      en: "Feedback: this one wraps up, the future is just starting",
     },
   },
 };
@@ -108,15 +107,7 @@ const CONFIGS: Record<string, LiveConfig> = {
       },
       link: { ...DEFAULT_COPY.link, at: "12:15" },
       show: { ...DEFAULT_COPY.show, at: "12:30" },
-      feedback: {
-        label: { zh: "反馈 + 加入", en: "Feedback + join" },
-        title: {
-          zh: "最后一分钟：反馈和加入",
-          en: "Last minute: feedback and joining",
-        },
-        hint: DEFAULT_COPY.feedback.hint,
-        at: "12:45",
-      },
+      feedback: { ...DEFAULT_COPY.feedback, at: "12:45" },
     },
     poll: {
       options: [
@@ -143,6 +134,8 @@ export const isLiveStep = (v: unknown): v is LiveStep =>
 // ---------- what people hand in ----------
 
 export const FRIENDS = ["0", "1-2", "3-5", "6+"] as const;
+/** The face under each score, 1 to 5. */
+export const RATING_EMOJI = ["😭", "😕", "😐", "😊", "🤩"] as const;
 export const CAN_EDIT = ["yes", "maybe", "no"] as const;
 
 const note = (max: number) =>
@@ -169,7 +162,6 @@ export const feedbackSchema = z.object({
   canEdit: z.enum(CAN_EDIT, { error: "选一项|Pick one" }),
   good: note(120),
   bad: note(120),
-  join: z.boolean(),
 });
 export type FeedbackAnswer = z.infer<typeof feedbackSchema>;
 
@@ -298,7 +290,6 @@ export type LiveState = {
     avg: number | null;
     canEdit: Record<(typeof CAN_EDIT)[number], number>;
     friends: Record<(typeof FRIENDS)[number], number>;
-    join: number;
   };
 };
 
@@ -312,7 +303,6 @@ export type LiveAnswer<T> = {
 export type LiveMe = {
   name: string;
   github: string | null;
-  photoConsent: boolean;
   responses: {
     poll?: LiveAnswer<PollAnswer>;
     link?: LiveAnswer<LinkAnswer>;
@@ -330,9 +320,6 @@ export type HostResponse = {
   payload: Record<string, unknown>;
   onWall: boolean;
   hidden: boolean;
-  photo: boolean;
-  /** Only on feedback from someone who wants to join. */
-  wechat: string | null;
   hearts: number;
   at: string;
 };
@@ -359,7 +346,6 @@ export const EMPTY_STATE: LiveState = {
     avg: null,
     canEdit: { yes: 0, maybe: 0, no: 0 },
     friends: { "0": 0, "1-2": 0, "3-5": 0, "6+": 0 },
-    join: 0,
   },
 };
 
