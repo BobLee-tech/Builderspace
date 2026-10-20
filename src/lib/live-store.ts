@@ -18,7 +18,7 @@ import {
 import { getSupabase } from "./supabase/client";
 
 // Everything the live pages read and write, through the security-definer
-// functions in 20261020000000_event_live.sql. Without Supabase, development
+// functions in 20261020030000_event_live.sql. Without Supabase, development
 // keeps it in memory and production says it's closed.
 
 export type JoinResult = "ok" | "closed" | "denied";
