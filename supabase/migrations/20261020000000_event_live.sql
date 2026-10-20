@@ -228,11 +228,6 @@ begin
       select jsonb_build_object(
         'n', count(*),
         'avg', round(avg((payload ->> 'rating')::numeric), 1),
-        'canEdit', jsonb_build_object(
-          'yes', count(*) filter (where payload ->> 'canEdit' = 'yes'),
-          'maybe', count(*) filter (where payload ->> 'canEdit' = 'maybe'),
-          'no', count(*) filter (where payload ->> 'canEdit' = 'no')
-        ),
         'friends', jsonb_build_object(
           '0', count(*) filter (where payload ->> 'friends' = '0'),
           '1-2', count(*) filter (where payload ->> 'friends' = '1-2'),

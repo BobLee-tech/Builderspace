@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState, useTransition, type ReactNode } from "react";
+import { useCelebration } from "@/components/fx/celebrate";
 import { Msg, T, type Bi } from "@/components/t";
 import {
-  CAN_EDIT,
   FRIENDS,
   liveConfig,
   RATING_EMOJI,
@@ -319,7 +318,7 @@ function Steps({
                 <T zh={config.copy[s].label.zh} en={config.copy[s].label.en} />
               </span>
               <span className="mono">
-                <T zh="✓ 可修改" en="✓ edit" />
+                <T zh="✓ 已交" en="✓ done" />
               </span>
             </button>
           ))}
@@ -862,11 +861,6 @@ const FRIEND_LABELS: Record<(typeof FRIENDS)[number], string> = {
   "3-5": "3–5",
   "6+": "6+",
 };
-const CAN_EDIT_LABELS: Record<(typeof CAN_EDIT)[number], Bi> = {
-  yes: { zh: "能", en: "Yes" },
-  maybe: { zh: "大概能", en: "Probably" },
-  no: { zh: "不太行", en: "Not really" },
-};
 
 function FeedbackCard({
   slug,
@@ -880,39 +874,36 @@ function FeedbackCard({
   refresh: () => void;
 }) {
   const mine = me.responses.feedback?.payload;
-  const [editing, setEditing] = useState(!mine);
-  const [rating, setRating] = useState(mine?.rating ?? 0);
+  const [rating, setRating] = useState(0);
   const [friends, setFriends] = useState<FeedbackAnswer["friends"] | null>(
-    mine?.friends ?? null,
+    null,
   );
-  const [canEdit, setCanEdit] = useState<FeedbackAnswer["canEdit"] | null>(
-    mine?.canEdit ?? null,
-  );
-  const [good, setGood] = useState(mine?.good ?? "");
-  const [bad, setBad] = useState(mine?.bad ?? "");
+  const [good, setGood] = useState("");
+  const [bad, setBad] = useState("");
   const [result, setResult] = useState<LiveResult | null>(null);
+  // Confetti only right after sending, not when the page is reopened.
+  const [justSent, setJustSent] = useState(false);
   const [pending, start] = useTransition();
+  const panel = useCelebration("join", justSent);
   const copy = config.copy.feedback;
 
-  if (mine && !editing) {
+  if (mine || justSent) {
     return (
       <section className="live-card">
-        <Done
-          title={{ zh: "谢谢！", en: "Thank you!" }}
-          onEdit={() => setEditing(true)}
-        >
+        <div className="live-done" ref={panel}>
+          <span className="live-bye" aria-hidden>
+            {RATING_EMOJI[(mine?.rating ?? rating) - 1] ?? "🥳"}
+          </span>
+          <h1>
+            <T zh="下次见" en="See you next time" />
+          </h1>
           <p className="mute">
             <T
-              zh="下一场活动会在群里和官网通知。"
-              en="The next event goes out in the group chat and on the site."
+              zh="回去记得打磨自己的个站哦～"
+              en="Keep polishing your site at home~"
             />
           </p>
-          <div className="live-actions">
-            <Link href="/projects" className="btn ghost sm">
-              <T zh="看看在找人的项目" en="Projects looking for people" />
-            </Link>
-          </div>
-        </Done>
+        </div>
       </section>
     );
   }
@@ -949,18 +940,6 @@ function FeedbackCard({
           options={FRIENDS.map((f) => ({ value: f, label: FRIEND_LABELS[f] }))}
           onChange={setFriends}
         />
-        <Choices
-          label={{
-            zh: "回家能自己改网站吗",
-            en: "Could you update your site at home?",
-          }}
-          value={canEdit}
-          options={CAN_EDIT.map((c) => ({
-            value: c,
-            label: <T zh={CAN_EDIT_LABELS[c].zh} en={CAN_EDIT_LABELS[c].en} />,
-          }))}
-          onChange={setCanEdit}
-        />
         <Field
           label={{
             zh: "本次活动喜欢的地方（选填）",
@@ -989,19 +968,18 @@ function FeedbackCard({
         <button
           type="button"
           className="btn solid live-cta"
-          disabled={pending || !rating || !friends || !canEdit}
+          disabled={pending || !rating || !friends}
           onClick={() =>
             start(async () => {
               const r = await sendFeedback(slug, {
                 rating,
                 friends: friends!,
-                canEdit: canEdit!,
                 good,
                 bad,
               });
               setResult(r);
               if (r.status === "ok") {
-                setEditing(false);
+                setJustSent(true);
                 refresh();
               }
             })

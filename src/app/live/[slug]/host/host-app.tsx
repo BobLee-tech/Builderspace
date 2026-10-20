@@ -274,7 +274,7 @@ export function HostApp({ slug, title }: { slug: string; title: Bi }) {
                 <tr key={r.id}>
                   <td>{r.name}</td>
                   <td className="mono">
-                    {p.rating}★ · {p.canEdit} · {p.friends}
+                    {p.rating}★ · {p.friends}
                   </td>
                   <td>{p.good ? `喜欢：${p.good}` : ""}</td>
                   <td>{p.bad ? `建议：${p.bad}` : ""}</td>

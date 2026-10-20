@@ -400,11 +400,6 @@ function memoryStore(): LiveStore {
                 (ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10,
               ) / 10
             : null,
-          canEdit: {
-            yes: count(fb, (f) => f.canEdit === "yes"),
-            maybe: count(fb, (f) => f.canEdit === "maybe"),
-            no: count(fb, (f) => f.canEdit === "no"),
-          },
           friends: {
             "0": count(fb, (f) => f.friends === "0"),
             "1-2": count(fb, (f) => f.friends === "1-2"),

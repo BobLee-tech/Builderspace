@@ -227,17 +227,12 @@ function Show({ state }: { state: LiveState }) {
 
 function FeedbackBoard({ state }: { state: LiveState }) {
   const f = state.feedback;
-  const pct = (n: number) => (f.n ? `${Math.round((n / f.n) * 100)}%` : "–");
   const max = Math.max(1, ...FRIENDS.map((k) => f.friends[k]));
   return (
     <>
       <div className="live-stats">
         <Big n={f.n} label={{ zh: "人填了反馈", en: "responses" }} />
         <Big n={f.avg ?? "–"} label={{ zh: "平均分", en: "average" }} />
-        <Big
-          n={pct(f.canEdit.yes)}
-          label={{ zh: "回家能自己改", en: "can update at home" }}
-        />
       </div>
       <div className="live-bars">
         <p className="mono mute">

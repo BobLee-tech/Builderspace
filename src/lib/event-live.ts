@@ -136,7 +136,6 @@ export const isLiveStep = (v: unknown): v is LiveStep =>
 export const FRIENDS = ["0", "1-2", "3-5", "6+"] as const;
 /** The face under each score, 1 to 5. */
 export const RATING_EMOJI = ["😇", "😭", "😌", "😎", "🥳"] as const;
-export const CAN_EDIT = ["yes", "maybe", "no"] as const;
 
 const note = (max: number) =>
   z
@@ -159,7 +158,6 @@ export const feedbackSchema = z.object({
     .min(1, "打个分|Give a score")
     .max(5),
   friends: z.enum(FRIENDS, { error: "选一项|Pick one" }),
-  canEdit: z.enum(CAN_EDIT, { error: "选一项|Pick one" }),
   good: note(120),
   bad: note(120),
 });
@@ -288,7 +286,6 @@ export type LiveState = {
   feedback: {
     n: number;
     avg: number | null;
-    canEdit: Record<(typeof CAN_EDIT)[number], number>;
     friends: Record<(typeof FRIENDS)[number], number>;
   };
 };
@@ -344,7 +341,6 @@ export const EMPTY_STATE: LiveState = {
   feedback: {
     n: 0,
     avg: null,
-    canEdit: { yes: 0, maybe: 0, no: 0 },
     friends: { "0": 0, "1-2": 0, "3-5": 0, "6+": 0 },
   },
 };

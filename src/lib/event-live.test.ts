@@ -76,14 +76,12 @@ describe("answers", () => {
     const ok = {
       rating: 4,
       friends: "1-2",
-      canEdit: "maybe",
       good: "",
       bad: " 网络慢 ",
     };
     expect(feedbackSchema.parse(ok)).toEqual({
       rating: 4,
       friends: "1-2",
-      canEdit: "maybe",
       good: undefined,
       bad: "网络慢",
     });

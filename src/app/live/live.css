@@ -233,6 +233,11 @@
   margin: 0;
   font-size: var(--fs-sm);
 }
+.live-bye {
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
 .live-tick {
   width: 52px;
   height: 52px;
