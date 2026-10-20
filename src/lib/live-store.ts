@@ -18,7 +18,7 @@ import {
 import { getSupabase } from "./supabase/client";
 
 // Everything the live pages read and write, through the security-definer
-// functions in 20261020030000_event_live.sql. Without Supabase, development
+// functions in 20261021000000_event_live.sql. Without Supabase, development
 // keeps it in memory and production says it's closed.
 
 /** busy: the sign-up table's insert throttle (20 a minute) turned away a

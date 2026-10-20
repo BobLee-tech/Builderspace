@@ -1,7 +1,7 @@
 // The live page of an event: one QR code (builderspace.dev/live) for the whole
 // session. The host switches the current step at /live/<slug>/host and every
 // phone follows: check in → poll → hand in your site and like others' → show
-// → feedback. The database side is 20261020030000_event_live.sql; the step
+// → feedback. The database side is 20261021000000_event_live.sql; the step
 // names here must match its checks.
 
 import { z } from "zod";
