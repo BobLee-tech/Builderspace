@@ -68,7 +68,7 @@ const DEFAULT_COPY: Record<LiveStep, LiveStepCopy> = {
   },
   link: {
     label: { zh: "交网址", en: "Hand in" },
-    title: { zh: "上线了？把网址交上来", en: "Live? Hand in your link" },
+    title: { zh: "上线了，让大家看看", en: "Live? Let everyone see it" },
     hint: {
       zh: "交上来的网站会在大屏轮播，大家可以点开给你点赞。",
       en: "Sites go up on the big screen; everyone can open and like them.",
