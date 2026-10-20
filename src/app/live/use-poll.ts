@@ -9,14 +9,17 @@ export type PollStatus =
  * Fetches `url` now and every `ms` while the tab is visible, so a phone follows
  * the host's step without a reload. Venue Wi-Fi drops: the last good answer
  * stays on screen and the status says "offline" until the next one arrives.
+ * A 403 stops the polling: asking again with the same wrong key would only
+ * count more failed attempts.
  */
 export function usePoll<T>(url: string, ms: number) {
   const [data, setData] = useState<T | null>(null);
   const [status, setStatus] = useState<PollStatus>("loading");
   const inFlight = useRef(false);
+  const stopped = useRef(false);
 
   const refresh = useCallback(async () => {
-    if (inFlight.current) return;
+    if (inFlight.current || stopped.current) return;
     inFlight.current = true;
     try {
       const res = await fetch(url, { cache: "no-store" });
@@ -24,6 +27,7 @@ export function usePoll<T>(url: string, ms: number) {
         setData((await res.json()) as T);
         setStatus("ok");
       } else {
+        if (res.status === 403) stopped.current = true;
         setStatus(
           res.status === 403
             ? "denied"

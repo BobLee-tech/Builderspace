@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { ADMIN_KEY_COOKIE } from "@/lib/admin";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 import {
   feedbackSchema,
   isLiveStep,
@@ -252,6 +253,14 @@ async function adminKey() {
   return (await cookies()).get(ADMIN_KEY_COOKIE)?.value ?? "";
 }
 
+/** Runs a host action with the /admin key. Without one the database isn't
+ * asked at all: every wrong key counts towards locking it for everyone. */
+async function asHost(run: (store: LiveStore, key: string) => Promise<string>) {
+  const key = await adminKey();
+  if (!key && isSupabaseConfigured()) return hostMessage("denied");
+  return withStore(async (store) => hostMessage(await run(store, key)));
+}
+
 function hostMessage(r: string): LiveResult {
   if (r === "ok") return { status: "ok" };
   if (r === "throttled") {
@@ -279,9 +288,7 @@ export async function setLiveStep(
   ) {
     return FAILED;
   }
-  return withStore(async (store) =>
-    hostMessage(await store.hostStep(slug, await adminKey(), step)),
-  );
+  return asHost((store, key) => store.hostStep(slug, key, step));
 }
 
 export async function setSpotlight(
@@ -294,9 +301,7 @@ export async function setSpotlight(
   ) {
     return FAILED;
   }
-  return withStore(async (store) =>
-    hostMessage(await store.hostSpotlight(slug, await adminKey(), responseId)),
-  );
+  return asHost((store, key) => store.hostSpotlight(slug, key, responseId));
 }
 
 export async function setHidden(
@@ -310,9 +315,7 @@ export async function setHidden(
   ) {
     return FAILED;
   }
-  return withStore(async (store) =>
-    hostMessage(
-      await store.hostHide(slug, await adminKey(), responseId, hidden === true),
-    ),
+  return asHost((store, key) =>
+    store.hostHide(slug, key, responseId, hidden === true),
   );
 }
