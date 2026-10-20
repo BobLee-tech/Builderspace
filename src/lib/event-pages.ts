@@ -88,7 +88,7 @@ const putYourselfOnline: EventPage = {
   ],
   asksGithub: true,
   // USYD students sign up through the partner society; non-students still
-  // can here, but the page only shows the 30 UNSW seats.
+  // can here, but the page only shows the 42 UNSW seats.
   unlistedSeats: ["external"],
 };
 

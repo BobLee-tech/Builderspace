@@ -106,7 +106,12 @@ export async function registerForEvent(
   if (error) return submitFailed("signup", error);
 
   // The new count shows on this response; other visitors within a minute.
-  if (!data.already_registered) updateTag("event-signups");
+  // The last seat can close sign-up (events.close_when_full), so the event
+  // row is refreshed too.
+  if (!data.already_registered) {
+    updateTag("event-signups");
+    updateTag("events");
+  }
   return {
     status: "ok",
     name: r.fullName,
