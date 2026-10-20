@@ -135,7 +135,7 @@ export const isLiveStep = (v: unknown): v is LiveStep =>
 
 export const FRIENDS = ["0", "1-2", "3-5", "6+"] as const;
 /** The face under each score, 1 to 5. */
-export const RATING_EMOJI = ["😭", "😕", "😐", "😊", "🤩"] as const;
+export const RATING_EMOJI = ["😇", "😭", "😌", "😎", "🥳"] as const;
 export const CAN_EDIT = ["yes", "maybe", "no"] as const;
 
 const note = (max: number) =>

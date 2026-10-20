@@ -96,7 +96,7 @@ describe("answers", () => {
 
 it("has a face for every score", () => {
   expect(RATING_EMOJI).toHaveLength(5);
-  expect(RATING_EMOJI[0]).toBe("😭");
+  expect(RATING_EMOJI).toEqual(["😇", "😭", "😌", "😎", "🥳"]);
 });
 
 describe("liveConfig", () => {
