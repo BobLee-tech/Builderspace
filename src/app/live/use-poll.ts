@@ -45,10 +45,13 @@ export function usePoll<T>(url: string, ms: number) {
     const tick = () => {
       if (!document.hidden) void refresh();
     };
-    tick();
+    // The first load happens even in a background tab; after that, only
+    // while the page is visible.
+    const first = setTimeout(() => void refresh(), 0);
     const timer = setInterval(tick, ms);
     document.addEventListener("visibilitychange", tick);
     return () => {
+      clearTimeout(first);
       clearInterval(timer);
       document.removeEventListener("visibilitychange", tick);
     };

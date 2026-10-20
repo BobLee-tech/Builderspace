@@ -26,6 +26,13 @@ import {
   vote,
   type LiveResult,
 } from "./actions";
+import {
+  AiAvatar,
+  PollResults,
+  PollVoices,
+  Showcase,
+  WallGrid,
+} from "../parts";
 import { usePoll } from "../use-poll";
 
 type Payload = { state: LiveState; me: LiveMe | null };
@@ -158,10 +165,6 @@ function WhoAreYou({ slug, onDone }: { slug: string; onDone: () => void }) {
       <StepHead
         eyebrow={{ zh: "第一次扫码", en: "First scan" }}
         title={{ zh: "嗨，你叫什么？", en: "Hi! What's your name?" }}
-        hint={{
-          zh: "填报名时的名字。只问这一次，今天后面的环节都会记住你。",
-          en: "The name you signed up with. Just this once — the rest of today remembers you.",
-        }}
       />
       <form
         className="live-form"
@@ -262,11 +265,8 @@ function Steps({
       );
       break;
     case "poll":
-      card = <PollCard slug={slug} config={config} me={me} refresh={refresh} />;
-      break;
-    case "link":
       card = (
-        <LinkCard
+        <PollCard
           slug={slug}
           config={config}
           state={state}
@@ -275,12 +275,33 @@ function Steps({
         />
       );
       break;
+    case "link":
+      card = (
+        <>
+          <LinkCard
+            slug={slug}
+            config={config}
+            state={state}
+            me={me}
+            refresh={refresh}
+          />
+          {me.responses.link ? null : (
+            <section className="live-card live-wide">
+              <WallGrid state={state} />
+            </section>
+          )}
+        </>
+      );
+      break;
     case "show":
       card = (
-        <section className="live-card">
-          <StepHead title={copy.title} hint={copy.hint} />
-          <Peers slug={slug} wall={state.wall} me={me} refresh={refresh} />
-        </section>
+        <div className="live-wide live-show-step">
+          <Showcase state={state} />
+          <section className="live-card">
+            <StepHead title={copy.title} hint={copy.hint} />
+            <Peers slug={slug} wall={state.wall} me={me} refresh={refresh} />
+          </section>
+        </div>
       );
       break;
     case "feedback":
@@ -400,41 +421,16 @@ function Choices<V extends string>({
   );
 }
 
-function Done({
-  title,
-  children,
-  onEdit,
-}: {
-  title: Bi;
-  children?: ReactNode;
-  onEdit?: () => void;
-}) {
-  return (
-    <div className="live-done">
-      <span className="live-tick" aria-hidden>
-        ✓
-      </span>
-      <h1>
-        <T zh={title.zh} en={title.en} />
-      </h1>
-      {children}
-      {onEdit ? (
-        <button type="button" className="btn ghost sm" onClick={onEdit}>
-          <T zh="修改" en="Edit" />
-        </button>
-      ) : null}
-    </div>
-  );
-}
-
 function PollCard({
   slug,
   config,
+  state,
   me,
   refresh,
 }: {
   slug: string;
   config: LiveConfig;
+  state: LiveState;
   me: LiveMe;
   refresh: () => void;
 }) {
@@ -442,81 +438,123 @@ function PollCard({
   const options = config.poll?.options ?? [];
   const [editing, setEditing] = useState(!mine);
   const [choice, setChoice] = useState(mine?.choice ?? null);
-  const [note, setNote] = useState(mine?.note ?? "");
+  const [like, setLike] = useState(mine?.like ?? "");
+  const [pain, setPain] = useState(mine?.pain ?? "");
   const [result, setResult] = useState<LiveResult | null>(null);
   const [pending, start] = useTransition();
   const copy = config.copy.poll;
 
+  let form: ReactNode;
   if (mine && !editing) {
-    const picked =
-      options.find((o) => o.key === mine.choice)?.label ?? mine.choice;
-    return (
+    const picked = options.find((o) => o.key === mine.choice);
+    form = (
       <section className="live-card">
-        <Done
-          title={{ zh: `投了 ${picked}`, en: `You voted ${picked}` }}
-          onEdit={() => setEditing(true)}
-        >
+        <div className="live-done">
+          <AiAvatar option={picked} />
+          <h1>
+            <T
+              zh={`投了 ${picked?.label ?? mine.choice}`}
+              en={`You voted ${picked?.label ?? mine.choice}`}
+            />
+          </h1>
           <p className="mute">
             <T
-              zh="看大屏，跟同桌说说你为什么选它。"
-              en="Watch the screen and tell your table why."
+              zh="看看大家都选了谁，跟同桌说说你为什么选它。"
+              en="See what everyone picked, and tell your table why."
             />
           </p>
-        </Done>
+          <button
+            type="button"
+            className="btn ghost sm"
+            onClick={() => setEditing(true)}
+          >
+            <T zh="改票" en="Change vote" />
+          </button>
+        </div>
+      </section>
+    );
+  } else {
+    form = (
+      <section className="live-card">
+        <StepHead title={copy.title} hint={copy.hint} />
+        <div className="live-options" role="radiogroup">
+          {options.map((o) => (
+            <button
+              key={o.key}
+              type="button"
+              role="radio"
+              aria-checked={choice === o.key}
+              onClick={() => setChoice(o.key)}
+            >
+              <AiAvatar option={o} />
+              <span className="live-option-name">
+                <strong>{o.label}</strong>
+                {o.maker ? <small>{o.maker}</small> : null}
+              </span>
+            </button>
+          ))}
+        </div>
+        <Field
+          label={{
+            zh: "最喜欢它的一点（选填）",
+            en: "What you love about it (optional)",
+          }}
+        >
+          <input
+            value={like}
+            maxLength={30}
+            onChange={(e) => setLike(e.target.value)}
+          />
+        </Field>
+        <Field
+          label={{
+            zh: "最难受的一点（选填）",
+            en: "What drives you mad (optional)",
+          }}
+        >
+          <input
+            value={pain}
+            maxLength={30}
+            onChange={(e) => setPain(e.target.value)}
+          />
+        </Field>
+        <Message result={result} />
+        <button
+          type="button"
+          className="btn solid live-cta"
+          disabled={!choice || pending}
+          onClick={() =>
+            start(async () => {
+              const r = await vote(slug, choice ?? "", like, pain);
+              setResult(r);
+              if (r.status === "ok") {
+                setEditing(false);
+                refresh();
+              }
+            })
+          }
+        >
+          <T
+            zh={pending ? "稍等…" : "投票"}
+            en={pending ? "One moment…" : "Vote"}
+          />
+        </button>
       </section>
     );
   }
+
   return (
-    <section className="live-card">
-      <StepHead title={copy.title} hint={copy.hint} />
-      <div className="live-options" role="radiogroup">
-        {options.map((o) => (
-          <button
-            key={o.key}
-            type="button"
-            role="radio"
-            aria-checked={choice === o.key}
-            onClick={() => setChoice(o.key)}
-          >
-            <span>{o.label}</span>
-            <span aria-hidden>{choice === o.key ? "✓" : ""}</span>
-          </button>
-        ))}
-      </div>
-      <Field
-        label={{
-          zh: "一句话：优点或槽点（选填，会上大屏）",
-          en: "One line: the best or worst bit (optional, goes on screen)",
-        }}
-      >
-        <input
-          value={note}
-          maxLength={40}
-          onChange={(e) => setNote(e.target.value)}
-        />
-      </Field>
-      <Message result={result} />
-      <button
-        type="button"
-        className="btn solid live-cta"
-        disabled={!choice || pending}
-        onClick={() =>
-          start(async () => {
-            const r = await vote(slug, choice ?? "", note);
-            setResult(r);
-            if (r.status === "ok") {
-              setEditing(false);
-              refresh();
-            }
-          })
-        }
-      >
-        <T
-          zh={pending ? "稍等…" : "投票"}
-          en={pending ? "One moment…" : "Vote"}
-        />
-      </button>
-    </section>
+    <div className="live-wide live-split">
+      <div className="live-area-form">{form}</div>
+      <section className="live-card live-area-results">
+        <PollResults config={config} state={state} mine={mine?.choice} />
+      </section>
+      {state.pollNotes.length ? (
+        <section className="live-card live-area-voices">
+          <PollVoices config={config} state={state} />
+        </section>
+      ) : null}
+    </div>
   );
 }
 

@@ -98,9 +98,10 @@ export async function forgetMe(): Promise<void> {
 export async function vote(
   slug: string,
   choice: string,
-  note: string,
+  like: string,
+  pain: string,
 ): Promise<LiveResult> {
-  const parsed = pollSchema.safeParse({ choice, note });
+  const parsed = pollSchema.safeParse({ choice, like, pain });
   const options = liveConfig(slug).poll?.options ?? [];
   if (!slugSchema.safeParse(slug).success) return FAILED;
   if (!parsed.success || !options.some((o) => o.key === parsed.data.choice)) {

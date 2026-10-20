@@ -64,12 +64,28 @@ describe("isCheckedHost", () => {
 });
 
 describe("answers", () => {
-  it("drops an empty poll note", () => {
-    expect(pollSchema.parse({ choice: "claude", note: "  " })).toEqual({
-      choice: "claude",
-      note: undefined,
-    });
+  it("keeps the love and hate lines, dropping empty ones", () => {
+    expect(
+      pollSchema.parse({ choice: "claude", like: " 写代码稳 ", pain: "  " }),
+    ).toEqual({ choice: "claude", like: "写代码稳", pain: undefined });
     expect(pollSchema.safeParse({ choice: "Claude!" }).success).toBe(false);
+    expect(
+      pollSchema.safeParse({ choice: "grok", like: "很".repeat(31) }).success,
+    ).toBe(false);
+  });
+
+  it("matches the slide's six AIs, each with a picture", () => {
+    const options = liveConfig("put-yourself-online").poll!.options;
+    expect(options.map((o) => o.key)).toEqual([
+      "deepseek",
+      "claude",
+      "chatgpt",
+      "gemini",
+      "kimi",
+      "grok",
+      "other",
+    ]);
+    expect(options.filter((o) => o.image)).toHaveLength(6);
   });
 
   it("needs a score and both choices in feedback", () => {

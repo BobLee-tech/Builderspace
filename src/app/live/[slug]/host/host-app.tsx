@@ -100,19 +100,11 @@ export function HostApp({ slug, title }: { slug: string; title: Bi }) {
         <div className="live-actions">
           <a
             className="btn ghost sm"
-            href={`/live/${slug}/screen`}
-            target="_blank"
-            rel="noopener"
-          >
-            <T zh="打开投影屏 ↗" en="Open the screen ↗" />
-          </a>
-          <a
-            className="btn ghost sm"
             href={`/live/${slug}`}
             target="_blank"
             rel="noopener"
           >
-            <T zh="参与者页面 ↗" en="Participant page ↗" />
+            <T zh="现场页 ↗" en="Live page ↗" />
           </a>
         </div>
       </header>
@@ -259,19 +251,23 @@ export function HostApp({ slug, title }: { slug: string; title: Bi }) {
 
       <HostSection
         title={{ zh: "投票留言", en: "Poll notes" }}
-        count={polls.filter((r) => (r.payload as PollAnswer).note).length}
+        count={polls.filter((r) => hasPollNote(r.payload as PollAnswer)).length}
       >
         <table className="live-table">
           <tbody>
             {polls
-              .filter((r) => (r.payload as PollAnswer).note)
+              .filter((r) => hasPollNote(r.payload as PollAnswer))
               .map((r) => {
                 const p = r.payload as PollAnswer;
                 return (
                   <tr key={r.id} className={r.hidden ? "off" : undefined}>
                     <td>{r.name}</td>
                     <td className="mono">{p.choice}</td>
-                    <td>{p.note}</td>
+                    <td>
+                      {p.like ? `喜欢：${p.like}` : ""}
+                      {p.like && p.pain ? " · " : ""}
+                      {p.pain ? `难受：${p.pain}` : ""}
+                    </td>
                     <td className="live-row-actions">
                       <HideButton
                         slug={slug}
@@ -313,6 +309,8 @@ export function HostApp({ slug, title }: { slug: string; title: Bi }) {
     </div>
   );
 }
+
+const hasPollNote = (p: PollAnswer) => Boolean(p.like || p.pain);
 
 function Stat({ n, label }: { n: number | string; label: Bi }) {
   return (

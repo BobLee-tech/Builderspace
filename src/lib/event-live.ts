@@ -33,7 +33,14 @@ export type LiveStepCopy = {
   at?: string;
 };
 
-export type PollOption = { key: string; label: string };
+export type PollOption = {
+  key: string;
+  label: string;
+  /** Who makes it, in small type under the name. */
+  maker?: string;
+  /** A square picture in /public (the characters from the slides). */
+  image?: string;
+};
 
 export type LiveConfig = {
   /** The order the host walks through; "wait" is always there too. */
@@ -100,8 +107,8 @@ const CONFIGS: Record<string, LiveConfig> = {
         label: { zh: "最爱的 AI", en: "Favourite AI" },
         title: { zh: "你最爱用哪个 AI？", en: "Which AI do you use most?" },
         hint: {
-          zh: "选一个，再用一句话说说它的优点或者槽点，会上大屏。",
-          en: "Pick one and say what's great or annoying about it — it goes on the screen.",
+          zh: "选一个，再说说最喜欢它的一点和最难受的一点（选填，会上大屏）。",
+          en: "Pick one, then what you love and what drives you mad about it (optional, goes on the big screen).",
         },
         at: "10:15",
       },
@@ -110,15 +117,45 @@ const CONFIGS: Record<string, LiveConfig> = {
       feedback: { ...DEFAULT_COPY.feedback, at: "12:45" },
     },
     poll: {
+      // Same six as the slide, with its characters.
       options: [
-        { key: "claude", label: "Claude" },
-        { key: "chatgpt", label: "ChatGPT" },
-        { key: "deepseek", label: "DeepSeek" },
-        { key: "gemini", label: "Gemini" },
-        { key: "kimi", label: "Kimi" },
-        { key: "glm", label: "智谱 GLM" },
-        { key: "doubao", label: "豆包" },
-        { key: "other", label: "其他 / Other" },
+        {
+          key: "deepseek",
+          label: "DeepSeek",
+          maker: "深度求索",
+          image: "/live/ai/deepseek.jpg",
+        },
+        {
+          key: "claude",
+          label: "Claude",
+          maker: "Anthropic",
+          image: "/live/ai/claude.jpg",
+        },
+        {
+          key: "chatgpt",
+          label: "ChatGPT",
+          maker: "OpenAI",
+          image: "/live/ai/chatgpt.jpg",
+        },
+        {
+          key: "gemini",
+          label: "Gemini",
+          maker: "Google",
+          image: "/live/ai/gemini.jpg",
+        },
+        {
+          key: "kimi",
+          label: "Kimi",
+          maker: "月之暗面",
+          image: "/live/ai/kimi.jpg",
+        },
+        {
+          key: "grok",
+          label: "Grok",
+          maker: "xAI",
+          image: "/live/ai/grok.jpg",
+        },
+        { key: "other", label: "其他", maker: "Other" },
       ],
     },
   },
@@ -147,7 +184,8 @@ const note = (max: number) =>
 
 export const pollSchema = z.object({
   choice: z.string().regex(/^[a-z0-9-]{1,20}$/, "选一个|Pick one"),
-  note: note(40),
+  like: note(30),
+  pain: note(30),
 });
 export type PollAnswer = z.infer<typeof pollSchema>;
 
@@ -280,7 +318,7 @@ export type LiveState = {
   spotlight: string | null;
   checkedIn: number;
   poll: Record<string, number>;
-  pollNotes: { choice: string; note: string }[];
+  pollNotes: { choice: string; like: string | null; pain: string | null }[];
   links: { total: number; live: number; pending: number; pages: number };
   wall: WallItem[];
   feedback: {

@@ -184,16 +184,19 @@ begin
       ) x
     ), '{}'::jsonb),
     'pollNotes', coalesce((
-      select jsonb_agg(jsonb_build_object('choice', x.choice, 'note', x.note)
-                       order by x.at desc)
+      select jsonb_agg(jsonb_build_object(
+        'choice', x.choice, 'like', x.liked, 'pain', x.pain
+      ) order by x.at desc)
       from (
-        select payload ->> 'choice' as choice, payload ->> 'note' as note,
+        select payload ->> 'choice' as choice,
+               nullif(payload ->> 'like', '') as liked,
+               nullif(payload ->> 'pain', '') as pain,
                updated_at as at
         from event_live_responses
         where event_id = ev.id and step = 'poll' and not hidden
-          and coalesce(payload ->> 'note', '') <> ''
+          and coalesce(payload ->> 'like', payload ->> 'pain', '') <> ''
         order by updated_at desc
-        limit 8
+        limit 12
       ) x
     ), '[]'::jsonb),
     'links', (

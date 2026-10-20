@@ -245,12 +245,12 @@ function mem(): Mem {
     // A few people who already handed things in, so the screen has something
     // to show while you try it.
     const seed = [
-      ["Ada", "claude", "ada-lin", "第一次把网站放上网"],
-      ["林林", "deepseek", "linlin-design", ""],
-      ["Kai", "chatgpt", "kaiwong", "写代码最稳"],
-      ["Mia", "claude", "mia-studio", ""],
+      ["Ada", "claude", "ada-lin", "写代码最稳", "额度不够用"],
+      ["林林", "deepseek", "linlin-design", "免费又快", ""],
+      ["Kai", "chatgpt", "kaiwong", "", "话太多"],
+      ["Mia", "gemini", "mia-studio", "", ""],
     ] as const;
-    for (const [name, choice, gh, n] of seed) {
+    for (const [name, choice, gh, like, pain] of seed) {
       const p: MemPerson = {
         id: id(),
         slug: "put-yourself-online",
@@ -265,7 +265,7 @@ function mem(): Mem {
           id: id(),
           personId: p.id,
           step: "poll",
-          payload: { choice, note: n || undefined },
+          payload: { choice, like: like || undefined, pain: pain || undefined },
           onWall: false,
           hidden: false,
           at: Date.now(),
@@ -362,12 +362,18 @@ function memoryStore(): LiveStore {
         checkedIn: count(m.people, (p) => p.slug === slug && p.checkedIn),
         poll,
         pollNotes: rs
-          .filter((r) => r.step === "poll" && !r.hidden && r.payload.note)
+          .filter(
+            (r) =>
+              r.step === "poll" &&
+              !r.hidden &&
+              (r.payload.like || r.payload.pain),
+          )
           .sort((a, b) => b.at - a.at)
-          .slice(0, 8)
+          .slice(0, 12)
           .map((r) => ({
             choice: String(r.payload.choice),
-            note: String(r.payload.note),
+            like: (r.payload.like as string | undefined) ?? null,
+            pain: (r.payload.pain as string | undefined) ?? null,
           })),
         links: {
           total: links.length,
