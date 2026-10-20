@@ -21,9 +21,9 @@ export const sampleEvents: SiteEvent[] = [
     location: "UNSW MCIC",
     summary: "带上电脑，用 AI 做一个个人网站，发布到 GitHub Pages。",
     signupUrl: null,
-    capacity: 40,
+    capacity: 52,
     registrationClosesAt: "2026-10-21T23:59:59+11:00",
-    seatQuotas: { unsw: 30, external: 10 },
+    seatQuotas: { unsw: 42, external: 10 },
   },
 ];
 
