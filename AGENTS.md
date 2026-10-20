@@ -18,4 +18,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Member numbers are the real join order (`join_submissions.member_no`, backfilled by `created_at`); never renumber them.
 - Forms submit through `submitWithoutReset` so server-side validation errors do not wipe the fields.
 - Times are shown in `Australia/Sydney` via `src/lib/format.ts`.
+- Event live pages: `builderspace.dev/live` (QR in `public/live-qr.svg`) opens the live event's `/live/<slug>`; the host switches steps from `/live/<slug>/host` on a phone with the `/admin` key, and the presenter's laptop projects the same `/live` page, which shows the results, the wall and the showcase on a wide screen. Steps and copy per event live in `src/lib/event-live.ts`, reads and writes in `src/lib/live-store.ts` (in memory in development without Supabase), the database side in `20261021000000_event_live.sql`. Pages poll every few seconds rather than using Realtime.
 - Run `pnpm check` before committing.

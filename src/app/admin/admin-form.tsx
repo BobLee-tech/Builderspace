@@ -40,6 +40,9 @@ export function AdminForm() {
           <Link href="/projects" className="btn solid">
             <T zh="去项目广场" en="Go to projects" /> <Arr />
           </Link>
+          <Link href="/live?host" prefetch={false} className="btn ghost">
+            <T zh="活动现场主持" en="Run an event live" />
+          </Link>
           <button
             type="button"
             className="btn ghost"
