@@ -77,7 +77,7 @@ const DEFAULT_COPY: Record<LiveStep, LiveStepCopy> = {
   feedback: {
     label: { zh: "反馈", en: "Feedback" },
     title: {
-      zh: "反馈：这场散幕，未来刚刚开始",
+      zh: "反馈：这场散幕，而未来刚刚开始",
       en: "Feedback: this one wraps up, the future is just starting",
     },
   },
