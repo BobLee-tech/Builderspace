@@ -678,6 +678,14 @@ body:has(.live-phone) main ~ :not(.dock) {
   .live-show iframe {
     height: min(72vh, 900px);
   }
+  .live-wide .live-peers {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+  .live-wide .live-peers > span,
+  .live-wide .live-peers > p {
+    grid-column: 1 / -1;
+  }
 }
 @media (max-width: 999px) {
   .live-split {
@@ -827,6 +835,12 @@ body:has(.live-phone) main ~ :not(.dock) {
   .live-table td {
     border: 0;
     padding: 2px 0;
+  }
+  /* Status, wall and likes share one line under the name and link. */
+  .live-table td.mono {
+    display: inline-block;
+    margin-right: 12px;
+    color: var(--mute);
   }
   .live-row-actions {
     text-align: left;
