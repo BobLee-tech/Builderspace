@@ -21,7 +21,9 @@ import { getSupabase } from "./supabase/client";
 // functions in 20261020030000_event_live.sql. Without Supabase, development
 // keeps it in memory and production says it's closed.
 
-export type JoinResult = "ok" | "closed" | "denied";
+/** busy: the sign-up table's insert throttle (20 a minute) turned away a
+ * walk-in; trying again shortly works. */
+export type JoinResult = "ok" | "closed" | "denied" | "busy";
 export type WriteResult = "ok" | "denied" | "closed";
 export type HostResult = "ok" | "denied" | "throttled" | "missing";
 
@@ -97,7 +99,7 @@ function supabaseStore(
         code: error.code,
         message: error.message,
       });
-      throw new Error(`live ${fn} failed`);
+      throw Object.assign(new Error(`live ${fn} failed`), { code: error.code });
     }
     return data as unknown;
   }
@@ -115,12 +117,17 @@ function supabaseStore(
       return data.map((e) => e.slug as string);
     },
     async join(slug, fullName, token) {
-      const r = await call("live_join", {
-        p_slug: slug,
-        p_full_name: fullName,
-        p_token: token,
-      });
-      return oneOf(r, ["ok", "closed", "denied"], "denied");
+      try {
+        const r = await call("live_join", {
+          p_slug: slug,
+          p_full_name: fullName,
+          p_token: token,
+        });
+        return oneOf(r, ["ok", "closed", "denied"], "denied");
+      } catch (e) {
+        if ((e as { code?: string }).code === "PT429") return "busy";
+        throw e;
+      }
     },
     async state(slug) {
       const r = (await call("live_state", {

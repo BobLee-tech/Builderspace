@@ -85,6 +85,13 @@ export async function join(slug: string, name: string): Promise<LiveResult> {
       await remember(t);
       return { status: "ok" };
     }
+    if (r === "busy") {
+      return {
+        status: "error",
+        message:
+          "同时进来的人有点多，等半分钟再点一次「继续」|Lots of people joining at once — tap Continue again in half a minute",
+      };
+    }
     return r === "closed" ? CLOSED : FAILED;
   });
 }
