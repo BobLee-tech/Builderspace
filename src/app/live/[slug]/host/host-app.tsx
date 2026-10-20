@@ -174,6 +174,31 @@ export function HostApp({ slug, title }: { slug: string; title: Bi }) {
         />
       </section>
 
+      {config.poll && polls.length ? (
+        <section className="live-host-sec">
+          <h2>
+            <T zh="投票结果" en="Poll results" />
+          </h2>
+          <ol className="live-tally">
+            {config.poll.options
+              .map((o) => ({
+                ...o,
+                n: polls.filter(
+                  (r) => (r.payload as PollAnswer).choice === o.key,
+                ).length,
+              }))
+              .filter((o) => o.n)
+              .sort((a, b) => b.n - a.n)
+              .map((o) => (
+                <li key={o.key}>
+                  <span>{o.label}</span>
+                  <b className="mono">{o.n}</b>
+                </li>
+              ))}
+          </ol>
+        </section>
+      ) : null}
+
       <HostSection title={{ zh: "网址", en: "Sites" }} count={links.length}>
         <table className="live-table">
           <tbody>

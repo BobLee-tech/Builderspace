@@ -707,6 +707,32 @@ body:has(.live-screen) > :not(main) {
   font-size: 24px;
   letter-spacing: -0.03em;
 }
+.live-tally {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.live-tally li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: var(--fs-md);
+}
+.live-tally li:first-child {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--paper);
+}
+.live-tally b {
+  font-size: var(--fs-md);
+  letter-spacing: 0;
+}
 .live-host-sec h2 {
   font-family: var(--f-display);
   font-size: var(--fs-lg);
@@ -741,6 +767,19 @@ body:has(.live-screen) > :not(main) {
   margin-left: 6px;
 }
 @media (max-width: 760px) {
+  .live-host {
+    gap: 18px;
+  }
+  .live-host-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .live-host-stats > div {
+    padding: 8px 10px;
+  }
+  .live-host-stats b {
+    font-size: 17px;
+  }
   .live-table,
   .live-table tbody,
   .live-table tr,
