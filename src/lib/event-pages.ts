@@ -20,6 +20,7 @@ export type EventIcon =
   | "snack"
   | "prompt"
   | "live"
+  | "intent"
   | "download";
 
 /** A page people open on the day, linked from the event page. */
@@ -127,6 +128,16 @@ const putYourselfOnline: EventPage = {
       sub: {
         zh: "签到、最爱的 AI、意向、交网址、秀、反馈：主持人切到哪一步，这一页就换到哪一步。",
         en: "Check-in, favourite AI, next steps, hand-in, show and feedback: it follows the host step by step.",
+      },
+    },
+    {
+      href: "/intent",
+      short: "builderspace.dev/intent",
+      icon: "intent",
+      title: { zh: "意向收集", en: "What's next" },
+      sub: {
+        zh: "嘉宾分享后扫这个码，说说接下来想和我们做什么。现场开着的时候随时能填。",
+        en: "After the guest's talk: tell us what you'd like to do next. Open any time during the event.",
       },
     },
     {

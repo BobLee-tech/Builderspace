@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { useCelebration } from "@/components/fx/celebrate";
 import { Msg, T, type Bi } from "@/components/t";
@@ -41,8 +42,20 @@ import { usePoll } from "../use-poll";
 
 type Payload = { state: LiveState; me: LiveMe | null };
 
-/** The page a phone (or laptop) sees after scanning the event's QR code. */
-export function LiveApp({ slug, title }: { slug: string; title: Bi }) {
+/**
+ * The page a phone (or laptop) sees after scanning the event's QR code. With
+ * `only="intent"` (builderspace.dev/intent) it skips the host's steps and
+ * shows the "what next" form straight away.
+ */
+export function LiveApp({
+  slug,
+  title,
+  only,
+}: {
+  slug: string;
+  title: Bi;
+  only?: "intent";
+}) {
   const config = liveConfig(slug);
   const { data, status, refresh } = usePoll<Payload>(
     `/live/${slug}/api/state`,
@@ -76,6 +89,20 @@ export function LiveApp({ slug, title }: { slug: string; title: Bi }) {
     );
   } else if (!me) {
     body = <WhoAreYou slug={slug} onDone={refresh} />;
+  } else if (only === "intent") {
+    body = (
+      <>
+        <IntentCard slug={slug} config={config} me={me} refresh={refresh} />
+        <p className="live-fine mute">
+          <Link href={`/live/${slug}`}>
+            <T
+              zh="今天的其他环节在现场页 →"
+              en="Everything else today is on the live page →"
+            />
+          </Link>
+        </p>
+      </>
+    );
   } else {
     body = (
       <Steps

@@ -3,6 +3,7 @@ import {
   ChatText,
   Code,
   DownloadSimple,
+  HandWaving,
   ForkKnife,
   GithubLogo,
   Laptop,
@@ -23,6 +24,7 @@ export const EVENT_ICONS: Record<EventIcon, Icon> = {
   snack: ForkKnife,
   prompt: ChatText,
   live: QrCode,
+  intent: HandWaving,
   download: DownloadSimple,
 };
 
