@@ -226,6 +226,7 @@ dialog::backdrop { background: rgba(10, 11, 13, 0.6); }
       <li><span class="n">1</span>选风格</li>
       <li><span class="n">2</span>填信息</li>
       <li><span class="n">3</span>复制提示词</li>
+      <li><span class="n">4</span>部署上线</li>
     </ol>
   </div>
 </header>
@@ -339,6 +340,27 @@ dialog::backdrop { background: rgba(10, 11, 13, 0.6); }
       <p class="tip">一次只改一件事，改完看一眼再发下一句。方括号里的换成你想要的。</p>
       <ul class="tweaks" id="tweaks"></ul>
     </section>
+
+    <!-- deploy -->
+    <section class="step" id="step4" aria-labelledby="h-deploy">
+      <div class="step-head">
+        <div><span class="label">最后一步</span><h2 id="h-deploy">部署上线，发给大家看</h2></div>
+      </div>
+      <p class="tip">改满意了，在同一个对话里发这段，让 AI 把网站放到 GitHub Pages。仓库用 GitHub 默认的个人主页仓库「用户名.github.io」，网址就是 https://用户名.github.io，免费、不用买域名。</p>
+      <div class="out">
+        <div class="field" id="f-ghUser">
+          <label for="ghUser">GitHub 用户名</label>
+          <span class="hint" id="ghUser-hint">还没有账号就先去 <a href="https://github.com/signup" target="_blank" rel="noopener noreferrer">github.com</a> 注册一个，用户名会出现在你的网址里。</span>
+          <input type="text" id="ghUser" aria-describedby="ghUser-hint" placeholder="例：annie-xu" maxlength="60" autocapitalize="off" spellcheck="false">
+        </div>
+        <button type="button" class="copy" id="copyDeploy">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+          <span>复制部署提示词</span>
+        </button>
+        <p class="status" id="statusDeploy" role="status" aria-live="polite"></p>
+        <textarea class="prompt" id="deployPrompt" readonly aria-label="部署提示词全文" style="height:240px"></textarea>
+      </div>
+    </section>
   </div>
 </div>
 
@@ -414,7 +436,7 @@ const SAMPLE = {
   lang: "中英双语"
 };
 const KEY = "bs-site-prompt-draft-v1";
-const TEXT_IDS = ["name", "tagline", "about", "skills", "email", "linkedin", "xhs", "github", "other"];
+const TEXT_IDS = ["name", "tagline", "about", "skills", "email", "linkedin", "xhs", "github", "other", "ghUser"];
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -473,6 +495,26 @@ function buildPrompt(st) {
   }
   lines.push("", PART3);
   return lines.join("\n");
+}
+
+/* Deploy prompt: the default user-site repo <username>.github.io, served at the root. */
+const ghName = (s) => {
+  const m = clean(s).replace(/^(https?:\/\/)?(www\.)?github\.com\//i, "").replace(/^@/, "").split(/[\/?#\s]/)[0];
+  return /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(m) ? m.toLowerCase() : "";
+};
+const deployUser = (st) => ghName(st.ghUser) || ghName(st.github);
+function buildDeploy(st) {
+  const u = deployUser(st) || "[你的 GitHub 用户名]";
+  const site = "https://" + u + ".github.io";
+  return [
+    "网站做好了，请帮我把它部署到 GitHub Pages，让别人打开 " + site + " 就能看到。",
+    "",
+    "- 我的 GitHub 用户名是 " + u + "。仓库就用 GitHub 默认的个人主页仓库 " + u + ".github.io（仓库名必须和用户名完全一样），设成 Public；网站放在根路径，网址后面不带别的路径。",
+    "- 你能在我电脑上运行命令的话，就直接帮我建仓库、提交、推送，需要我登录 GitHub 或点确认的时候停下来告诉我；不能运行的话，就一步一步教我：在哪里点、填什么、复制哪条命令。我可能没用过 git。",
+    "- 纯 HTML / CSS / JS 的话，文件放在仓库根目录，在 Settings → Pages 里选从 main 分支的根目录发布。需要构建的（React、Vite、Next.js 这类），加一个 GitHub Actions 工作流自动构建并发布，Pages 的 Source 选「GitHub Actions」，导出成静态文件，基础路径是 /。",
+    "- 推上去以后告诉我去哪里看部署进度。部署好后打开 " + site + " 检查：页面能打开，样式、图片和链接都正常，没有 404，手机上也正常；有问题就修好再推一次。",
+    "- 最后告诉我以后改了内容，怎么重新发布。"
+  ].join("\n");
 }
 
 function missing(st) {
@@ -593,6 +635,8 @@ function update() {
   const st = readState();
   const text = buildPrompt(st);
   $("#prompt").value = text;
+  $("#deployPrompt").value = buildDeploy(st);
+  $("#ghUser").placeholder = ghName(st.github) || "例：annie-xu";
   $("#charCount").textContent = text.length + " 字";
   const n = splitSkills(st.skills).length;
   $("#skillCount").textContent = n ? "（已写 " + n + " 个）" : "";
@@ -645,6 +689,36 @@ async function copyPrompt(btn) {
     $("#step3").scrollIntoView({ behavior: smooth(), block: "start" });
     const ta = $("#prompt"); ta.focus(); ta.select();
     setStatus("没能自动复制。下面的全文已经选中，长按或右键选「拷贝」。", "warn");
+  }
+}
+async function copyDeploy() {
+  const st = readState();
+  const status = $("#statusDeploy");
+  const b = $("#copyDeploy");
+  if (!deployUser(st)) {
+    status.textContent = clean(st.ghUser) ? "这个用户名不对，只能有字母、数字和连字符。" : "先填 GitHub 用户名。";
+    status.className = "status warn";
+    $("#f-ghUser").classList.add("missing");
+    $("#ghUser").focus();
+    return;
+  }
+  $("#f-ghUser").classList.remove("missing");
+  const text = buildDeploy(st);
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {}
+  if (!ok) {
+    const ta = $("#deployPrompt");
+    ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
+    try { ok = document.execCommand("copy"); } catch (e) {}
+  }
+  if (ok) {
+    status.textContent = "已复制。发到做网站的同一个对话里。";
+    status.className = "status ok";
+    b.classList.add("done"); $("span", b).textContent = "已复制";
+    setTimeout(() => { b.classList.remove("done"); $("span", b).textContent = "复制部署提示词"; }, 2500);
+  } else {
+    status.textContent = "没能自动复制。下面的全文已经选中，长按或右键选「拷贝」。";
+    status.className = "status warn";
   }
 }
 const smooth = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
@@ -726,6 +800,8 @@ $("#clearAll").addEventListener("click", (e) => {
 });
 $("#copyMain").addEventListener("click", (e) => copyPrompt(e.currentTarget));
 $("#copyBar").addEventListener("click", (e) => copyPrompt(e.currentTarget));
+$("#copyDeploy").addEventListener("click", copyDeploy);
+$("#ghUser").addEventListener("input", () => { $("#f-ghUser").classList.remove("missing"); $("#statusDeploy").textContent = ""; });
 $("#vClose").addEventListener("click", closeViewer);
 $("#vPick").addEventListener("click", () => { styleId = viewing; syncStyles(); update(); closeViewer(); });
 $$(".vtabs button").forEach((b) => b.addEventListener("click", () => setShow(b.dataset.show)));
@@ -754,11 +830,15 @@ TWEAKS.forEach((t) => {
   $("#tweaks").appendChild(li);
 });
 
-// hide the bottom bar while the step 3 copy button is on screen
+// hide the bottom bar while the step 3 copy button or the deploy step is on screen
 if ("IntersectionObserver" in window) {
-  new IntersectionObserver((entries) => {
-    entries.forEach((en) => $("#bar").classList.toggle("away", en.isIntersecting));
-  }).observe($("#copyMain"));
+  const seen = new Set();
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((en) => (en.isIntersecting ? seen.add(en.target) : seen.delete(en.target)));
+    $("#bar").classList.toggle("away", seen.size > 0);
+  });
+  io.observe($("#copyMain"));
+  io.observe($("#step4"));
 }
 
 const saved = load();
