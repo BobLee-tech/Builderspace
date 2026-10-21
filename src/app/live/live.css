@@ -697,6 +697,13 @@ body:has(.live-phone) main ~ :not(.dock) {
     grid-column: 1 / -1;
   }
 }
+/* A short projected screen (720p) still fits all nine poll rows. */
+@media (min-width: 1000px) and (max-height: 760px) {
+  .live-rank,
+  .live-rank-body {
+    gap: 4px;
+  }
+}
 @media (max-width: 999px) {
   .live-split {
     display: flex;

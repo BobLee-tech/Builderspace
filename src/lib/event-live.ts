@@ -131,7 +131,7 @@ const CONFIGS: Record<string, LiveConfig> = {
       feedback: { ...DEFAULT_COPY.feedback, at: "12:45" },
     },
     poll: {
-      // Same six as the slide, with its characters.
+      // Same eight as the slide, with its characters.
       options: [
         {
           key: "deepseek",
@@ -168,6 +168,18 @@ const CONFIGS: Record<string, LiveConfig> = {
           label: "Grok",
           maker: "xAI",
           image: "/live/ai/grok.jpg",
+        },
+        {
+          key: "doubao",
+          label: "Doubao",
+          maker: "字节跳动",
+          image: "/live/ai/doubao.jpg",
+        },
+        {
+          key: "echoagent",
+          label: "Echoagent",
+          maker: "BuilderSpace",
+          image: "/live/ai/echoagent.jpg",
         },
         { key: "other", label: "其他", maker: "Other" },
       ],
