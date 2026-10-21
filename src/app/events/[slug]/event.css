@@ -168,6 +168,10 @@
   padding: 0;
   list-style: none;
 }
+/* An odd one out takes the whole row. */
+.evp-tools li:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
 .evp-tool {
   display: flex;
   flex-direction: column;

@@ -19,7 +19,8 @@ export type EventIcon =
   | "github"
   | "snack"
   | "prompt"
-  | "live";
+  | "live"
+  | "download";
 
 /** A page people open on the day, linked from the event page. */
 export type EventTool = {
@@ -29,6 +30,8 @@ export type EventTool = {
   icon: EventIcon;
   title: Bi;
   sub: Bi;
+  /** Another site: opens in a new tab. */
+  external?: boolean;
 };
 
 export type EventPage = {
@@ -125,6 +128,17 @@ const putYourselfOnline: EventPage = {
         zh: "签到、最爱的 AI、意向、交网址、秀、反馈：主持人切到哪一步，这一页就换到哪一步。",
         en: "Check-in, favourite AI, next steps, hand-in, show and feedback: it follows the host step by step.",
       },
+    },
+    {
+      href: "https://echoagent.dev/#download",
+      short: "echoagent.dev",
+      icon: "download",
+      title: { zh: "下载 Echo Agent", en: "Download Echo Agent" },
+      sub: {
+        zh: "没有付费 AI 也能用它做网站。目前只有 Mac 版（macOS 15 以上，Apple 芯片）。",
+        en: "Build your site without a paid AI. Mac only for now (macOS 15+, Apple silicon).",
+      },
+      external: true,
     },
   ],
   asksGithub: true,

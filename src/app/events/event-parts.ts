@@ -2,6 +2,7 @@
 import {
   ChatText,
   Code,
+  DownloadSimple,
   ForkKnife,
   GithubLogo,
   Laptop,
@@ -22,6 +23,7 @@ export const EVENT_ICONS: Record<EventIcon, Icon> = {
   snack: ForkKnife,
   prompt: ChatText,
   live: QrCode,
+  download: DownloadSimple,
 };
 
 /** The seat groups an event takes, with their quotas, in display order. */

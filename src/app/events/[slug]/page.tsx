@@ -213,7 +213,13 @@ async function EventDetail({ slug }: { slug: string }) {
                     return (
                       <li key={tool.href}>
                         {/* A plain link: /prompt is a static file, not a route. */}
-                        <a href={tool.href} className="evp-tool">
+                        <a
+                          href={tool.href}
+                          className="evp-tool"
+                          {...(tool.external
+                            ? { target: "_blank", rel: "noreferrer" }
+                            : {})}
+                        >
                           <Glyph weight="light" size={22} aria-hidden />
                           <b>
                             <T {...tool.title} />
