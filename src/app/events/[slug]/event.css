@@ -159,6 +159,58 @@
   border-radius: 16px;
   font-size: 17px;
 }
+/* The pages used on the day: the first thing under the intro. */
+.evp-tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.evp-tool {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color var(--dur-1),
+    background var(--dur-1);
+}
+.evp-tool:hover {
+  border-color: rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.025);
+}
+.evp-tool b {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.evp-tool > span:not(.evp-tool-url) {
+  font-size: var(--fs-sm);
+}
+.evp-tool-url {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: var(--fs-xs);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.evp-tool-url svg {
+  flex: none;
+  transition: transform var(--dur-1);
+}
+.evp-tool:hover .evp-tool-url svg {
+  transform: translateX(3px);
+}
 .evp-points {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -419,7 +471,8 @@
   .evp-bar > .mute {
     display: none;
   }
-  .evp-points {
+  .evp-points,
+  .evp-tools {
     grid-template-columns: 1fr;
   }
   .evp-points li {

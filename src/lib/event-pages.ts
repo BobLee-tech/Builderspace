@@ -12,7 +12,24 @@ type Bi = { zh: string; en: string };
 
 /** Icons the page can draw next to a short line (Phosphor, see page.tsx). */
 export type EventIcon =
-  "code" | "sparkle" | "people" | "laptop" | "github" | "snack";
+  | "code"
+  | "sparkle"
+  | "people"
+  | "laptop"
+  | "github"
+  | "snack"
+  | "prompt"
+  | "live";
+
+/** A page people open on the day, linked from the event page. */
+export type EventTool = {
+  href: string;
+  /** The address as it's said out loud and printed on the slides. */
+  short: string;
+  icon: EventIcon;
+  title: Bi;
+  sub: Bi;
+};
 
 export type EventPage = {
   /**
@@ -34,6 +51,8 @@ export type EventPage = {
   points: { icon: EventIcon; title: Bi; sub: Bi }[];
   /** What to bring, a few words each. */
   bring: { icon: EventIcon; label: Bi }[];
+  /** Pages used on the day, at the top of the event page. */
+  tools?: EventTool[];
   /** Ask for a GitHub username on sign-up (a build-along workshop). */
   asksGithub: boolean;
   /**
@@ -84,6 +103,28 @@ const putYourselfOnline: EventPage = {
     {
       icon: "snack",
       label: { zh: "不含午饭，有零食和水", en: "No lunch; snacks and water" },
+    },
+  ],
+  tools: [
+    {
+      href: "/prompt",
+      short: "builderspace.dev/prompt",
+      icon: "prompt",
+      title: { zh: "提示词网站", en: "Prompt builder" },
+      sub: {
+        zh: "选风格、填信息，复制整段提示词发给 AI，拿到第一版网站。",
+        en: "Pick a style, fill in your details and copy the whole prompt for the AI.",
+      },
+    },
+    {
+      href: "/live/put-yourself-online",
+      short: "builderspace.dev/live",
+      icon: "live",
+      title: { zh: "现场页", en: "Live page" },
+      sub: {
+        zh: "签到、最爱的 AI、意向、交网址、秀、反馈：主持人切到哪一步，这一页就换到哪一步。",
+        en: "Check-in, favourite AI, next steps, hand-in, show and feedback: it follows the host step by step.",
+      },
     },
   ],
   asksGithub: true,

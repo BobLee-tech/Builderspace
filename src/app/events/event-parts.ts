@@ -1,9 +1,11 @@
 // Bits shared by the events page and the event detail page.
 import {
+  ChatText,
   Code,
   ForkKnife,
   GithubLogo,
   Laptop,
+  QrCode,
   Sparkle,
   UsersThree,
 } from "@phosphor-icons/react/dist/ssr";
@@ -18,6 +20,8 @@ export const EVENT_ICONS: Record<EventIcon, Icon> = {
   laptop: Laptop,
   github: GithubLogo,
   snack: ForkKnife,
+  prompt: ChatText,
+  live: QrCode,
 };
 
 /** The seat groups an event takes, with their quotas, in display order. */

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  ArrowRight,
   CalendarBlank,
   MapPin,
   Ticket,
@@ -201,6 +202,36 @@ async function EventDetail({ slug }: { slug: string }) {
                 </dd>
               </div>
             </dl>
+            {page?.tools?.length ? (
+              <div className="evp-sec evp-sec-tools">
+                <h2 className="evp-sec-h mono mute">
+                  <T zh="当天用到" en="On the day" />
+                </h2>
+                <ul className="evp-tools">
+                  {page.tools.map((tool) => {
+                    const Glyph = ICONS[tool.icon];
+                    return (
+                      <li key={tool.href}>
+                        {/* A plain link: /prompt is a static file, not a route. */}
+                        <a href={tool.href} className="evp-tool">
+                          <Glyph weight="light" size={22} aria-hidden />
+                          <b>
+                            <T {...tool.title} />
+                          </b>
+                          <span className="mute">
+                            <T {...tool.sub} />
+                          </span>
+                          <span className="mono evp-tool-url">
+                            {tool.short}
+                            <ArrowRight weight="light" size={16} aria-hidden />
+                          </span>
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ) : null}
           </header>
 
           <aside className="evp-side" id="signup">
