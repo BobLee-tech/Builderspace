@@ -5,10 +5,13 @@ import { useCelebration } from "@/components/fx/celebrate";
 import { Msg, T, type Bi } from "@/components/t";
 import {
   FRIENDS,
+  INTENT_LABELS,
+  INTENTS,
   liveConfig,
   RATING_EMOJI,
   shortUrl,
   type FeedbackAnswer,
+  type Intent,
   type LinkCheck,
   type LiveConfig,
   type LiveMe,
@@ -23,6 +26,7 @@ import {
   like,
   recheckLink,
   sendFeedback,
+  sendIntent,
   vote,
   type LiveResult,
 } from "./actions";
@@ -237,7 +241,7 @@ function Steps({
   }, [current]);
   const view = picked ?? current;
   const copy = config.copy[view];
-  const answered = (["poll", "link", "feedback"] as const).filter(
+  const answered = (["poll", "intent", "link", "feedback"] as const).filter(
     (s) => me.responses[s],
   );
 
@@ -302,6 +306,11 @@ function Steps({
             <Peers slug={slug} wall={state.wall} me={me} refresh={refresh} />
           </section>
         </div>
+      );
+      break;
+    case "intent":
+      card = (
+        <IntentCard slug={slug} config={config} me={me} refresh={refresh} />
       );
       break;
     case "feedback":
@@ -891,6 +900,138 @@ function shuffleKey(s: string) {
   for (let i = 0; i < s.length; i++)
     h = Math.imul(h ^ s.charCodeAt(i), 16777619);
   return h >>> 0;
+}
+
+function IntentCard({
+  slug,
+  config,
+  me,
+  refresh,
+}: {
+  slug: string;
+  config: LiveConfig;
+  me: LiveMe;
+  refresh: () => void;
+}) {
+  const mine = me.responses.intent?.payload;
+  const [editing, setEditing] = useState(!mine);
+  const [wants, setWants] = useState<Intent[]>(mine?.wants ?? []);
+  const [idea, setIdea] = useState(mine?.idea ?? "");
+  const [contact, setContact] = useState(mine?.contact ?? "");
+  const [result, setResult] = useState<LiveResult | null>(null);
+  const [pending, start] = useTransition();
+  const copy = config.copy.intent;
+
+  if (mine && !editing) {
+    return (
+      <section className="live-card">
+        <div className="live-done">
+          <span className="live-tick" aria-hidden>
+            ✓
+          </span>
+          <h1>
+            <T zh="收到了" en="Got it" />
+          </h1>
+          <p className="mute">
+            <T
+              zh={`我们会通过 ${mine.contact} 联系你。`}
+              en={`We'll reach you at ${mine.contact}.`}
+            />
+          </p>
+          <div className="live-actions">
+            {mine.wants.includes("join") ? (
+              <a className="btn solid sm" href="/join">
+                <T zh="现在就加入社团 →" en="Join the society now →" />
+              </a>
+            ) : null}
+            {mine.wants.includes("core") ? (
+              <a className="btn solid sm" href="/core-team">
+                <T zh="申请核心成员 →" en="Apply for the core team →" />
+              </a>
+            ) : null}
+            <button
+              type="button"
+              className="btn ghost sm"
+              onClick={() => setEditing(true)}
+            >
+              <T zh="改一下" en="Edit" />
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="live-card">
+      <StepHead title={copy.title} hint={copy.hint} />
+      <div className="live-form">
+        <fieldset className="live-choices">
+          <legend className="mono mute">
+            <T zh="我想（可多选）" en="I'd like to (pick any)" />
+          </legend>
+          <div className="live-intents">
+            {INTENTS.map((i) => (
+              <button
+                key={i}
+                type="button"
+                className="chip"
+                aria-pressed={wants.includes(i)}
+                onClick={() =>
+                  setWants((w) =>
+                    w.includes(i) ? w.filter((x) => x !== i) : [...w, i],
+                  )
+                }
+              >
+                <T zh={INTENT_LABELS[i].zh} en={INTENT_LABELS[i].en} />
+              </button>
+            ))}
+          </div>
+        </fieldset>
+        <Field
+          label={{
+            zh: "想做的项目或想法（选填）",
+            en: "A project or idea you have in mind (optional)",
+          }}
+        >
+          <input
+            value={idea}
+            maxLength={120}
+            onChange={(e) => setIdea(e.target.value)}
+          />
+        </Field>
+        <Field label={{ zh: "微信号或邮箱", en: "WeChat ID or email" }}>
+          <input
+            value={contact}
+            maxLength={80}
+            autoComplete="email"
+            onChange={(e) => setContact(e.target.value)}
+          />
+        </Field>
+        <Message result={result} />
+        <button
+          type="button"
+          className="btn solid live-cta"
+          disabled={pending || !wants.length || !contact.trim()}
+          onClick={() =>
+            start(async () => {
+              const r = await sendIntent(slug, { wants, idea, contact });
+              setResult(r);
+              if (r.status === "ok") {
+                setEditing(false);
+                refresh();
+              }
+            })
+          }
+        >
+          <T
+            zh={pending ? "稍等…" : "提交"}
+            en={pending ? "One moment…" : "Send"}
+          />
+        </button>
+      </div>
+    </section>
+  );
 }
 
 const FRIEND_LABELS: Record<(typeof FRIENDS)[number], string> = {

@@ -9,6 +9,8 @@ import {
   type FeedbackAnswer,
   type HostResponse,
   type HostState,
+  type Intent,
+  type IntentAnswer,
   type LinkAnswer,
   type LiveStep,
   type PollAnswer,
@@ -76,6 +78,7 @@ export function HostApp({ slug, title }: { slug: string; title: Bi }) {
   const links = of("link");
   const polls = of("poll");
   const feedback = of("feedback");
+  const intents = of("intent");
   const steps: LiveStep[] = ["wait", ...config.steps];
   const avg = feedback.length
     ? (
@@ -160,6 +163,9 @@ export function HostApp({ slug, title }: { slug: string; title: Bi }) {
           n={`${links.filter((r) => (r.payload as LinkAnswer).check === "live").length} / ${links.length}`}
           label={{ zh: "上线 / 交网址", en: "Live / sites" }}
         />
+        {config.steps.includes("intent") ? (
+          <Stat n={intents.length} label={{ zh: "意向", en: "Next steps" }} />
+        ) : null}
         <Stat
           n={`${feedback.length} · ${avg}`}
           label={{ zh: "反馈 · 平均分", en: "Feedback · avg" }}
@@ -283,6 +289,37 @@ export function HostApp({ slug, title }: { slug: string; title: Bi }) {
         </table>
       </HostSection>
 
+      {config.steps.includes("intent") ? (
+        <HostSection
+          title={{ zh: "意向", en: "Next steps" }}
+          count={intents.length}
+        >
+          <table className="live-table">
+            <tbody>
+              {intents.map((r) => {
+                const p = r.payload as IntentAnswer;
+                return (
+                  <tr key={r.id}>
+                    <td>{r.name}</td>
+                    <td>
+                      {p.wants.map((w, i) => (
+                        <span key={w}>
+                          {i ? " · " : ""}
+                          <T {...INTENT_SHORT[w]} />
+                        </span>
+                      ))}
+                    </td>
+                    <td>{p.idea ?? ""}</td>
+                    <td className="mono">{p.contact}</td>
+                    <td className="mono mute">{formatTime(r.at)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </HostSection>
+      ) : null}
+
       <HostSection
         title={{ zh: "反馈", en: "Feedback" }}
         count={feedback.length}
@@ -311,6 +348,14 @@ export function HostApp({ slug, title }: { slug: string; title: Bi }) {
 }
 
 const hasPollNote = (p: PollAnswer) => Boolean(p.like || p.pain);
+
+/** The intents as tags in the host's table. */
+const INTENT_SHORT: Record<Intent, Bi> = {
+  join: { zh: "加入", en: "Join" },
+  build: { zh: "有想法", en: "Has an idea" },
+  core: { zh: "核心团队", en: "Core team" },
+  guest: { zh: "找嘉宾", en: "Meet the guest" },
+};
 
 function Stat({ n, label }: { n: number | string; label: Bi }) {
   return (

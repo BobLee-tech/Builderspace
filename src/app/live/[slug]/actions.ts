@@ -6,12 +6,14 @@ import { ADMIN_KEY_COOKIE } from "@/lib/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import {
   feedbackSchema,
+  intentSchema,
   isLiveStep,
   LIVE_COOKIE,
   liveConfig,
   parseSiteLink,
   pollSchema,
   type FeedbackAnswer,
+  type IntentAnswer,
   type LinkAnswer,
   type LinkCheck,
   type LiveStep,
@@ -215,6 +217,28 @@ export async function sendFeedback(
       slug,
       await token(),
       "feedback",
+      parsed.data,
+      false,
+    );
+    return r === "ok" ? { status: "ok" } : r === "closed" ? CLOSED : WHO;
+  });
+}
+
+/** After the guest's talk: what they'd like to do next, and how to reach them. */
+export async function sendIntent(
+  slug: string,
+  input: IntentAnswer,
+): Promise<LiveResult> {
+  const parsed = intentSchema.safeParse(input);
+  if (!slugSchema.safeParse(slug).success) return FAILED;
+  if (!parsed.success) {
+    return { status: "error", message: parsed.error.issues[0].message };
+  }
+  return withStore(async (store) => {
+    const r = await store.submit(
+      slug,
+      await token(),
+      "intent",
       parsed.data,
       false,
     );
