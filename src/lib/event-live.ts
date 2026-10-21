@@ -124,7 +124,7 @@ const CONFIGS: Record<string, LiveConfig> = {
           zh: "选一个，再说说最喜欢它的一点和最难受的一点（选填，会上大屏）。",
           en: "Pick one, then what you love and what drives you mad about it (optional, goes on the big screen).",
         },
-        at: "10:15",
+        at: "10:55",
       },
       link: { ...DEFAULT_COPY.link, at: "12:15" },
       show: { ...DEFAULT_COPY.show, at: "12:30" },
