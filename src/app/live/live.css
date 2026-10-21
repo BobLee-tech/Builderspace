@@ -173,6 +173,16 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+/* The intents are sentences, so one per row rather than pills in a line. */
+.live-intents .chip {
+  width: 100%;
+  height: auto;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  justify-content: flex-start;
+  text-align: left;
+}
 .live-stars {
   display: grid !important;
   grid-template-columns: repeat(5, 1fr);

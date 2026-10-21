@@ -1,8 +1,10 @@
 // The live page of an event: one QR code (builderspace.dev/live) for the whole
 // session. The host switches the current step at /live/<slug>/host and every
-// phone follows: check in → poll → hand in your site and like others' → show
-// → feedback. The database side is 20261021000000_event_live.sql; the step
-// names here must match its checks.
+// phone follows: check in → poll → what you'd like to do next (after the
+// guest's talk) → hand in your site and like others' → show → feedback. The
+// database side is 20261021000000_event_live.sql and
+// 20261021010000_event_live_intent.sql; the step names here must match their
+// checks.
 
 import { z } from "zod";
 import { withScheme } from "./forms";
@@ -15,12 +17,13 @@ export const LIVE_STEPS = [
   "poll",
   "link",
   "show",
+  "intent",
   "feedback",
 ] as const;
 export type LiveStep = (typeof LIVE_STEPS)[number];
 
 /** Steps that store an answer (one per person, a new one replaces the old). */
-export const ANSWER_STEPS = ["poll", "link", "feedback"] as const;
+export const ANSWER_STEPS = ["poll", "link", "intent", "feedback"] as const;
 export type AnswerStep = (typeof ANSWER_STEPS)[number];
 
 export type LiveStepCopy = {
@@ -81,6 +84,17 @@ const DEFAULT_COPY: Record<LiveStep, LiveStepCopy> = {
       en: "Watch, and like your favourites",
     },
   },
+  intent: {
+    label: { zh: "意向", en: "Next steps" },
+    title: {
+      zh: "接下来，想和我们一起做点什么？",
+      en: "What would you like to do next with us?",
+    },
+    hint: {
+      zh: "可以多选。联系方式只有工作人员看得到，只用来联系你。",
+      en: "Pick any. Only the organisers see your contact, and only to reach you.",
+    },
+  },
   feedback: {
     label: { zh: "反馈", en: "Feedback" },
     title: {
@@ -97,9 +111,9 @@ const DEFAULT_CONFIG: LiveConfig = {
 };
 
 const CONFIGS: Record<string, LiveConfig> = {
-  // 10/22 首场 Workshop：聊 → 边讲边做 → 秀。
+  // 10/22 首场 Workshop：聊 → 嘉宾分享后收意向 → 边讲边做 → 秀。
   "put-yourself-online": {
-    steps: ["checkin", "poll", "link", "show", "feedback"],
+    steps: ["checkin", "poll", "intent", "link", "show", "feedback"],
     copy: {
       ...DEFAULT_COPY,
       checkin: { ...DEFAULT_COPY.checkin, at: "10:00" },
@@ -183,6 +197,29 @@ export const isLiveStep = (v: unknown): v is LiveStep =>
 // ---------- what people hand in ----------
 
 export const FRIENDS = ["0", "1-2", "3-5", "6+"] as const;
+
+/** What someone would like to do next, asked after the guest's talk. */
+export const INTENTS = ["join", "build", "core", "guest"] as const;
+export type Intent = (typeof INTENTS)[number];
+export const INTENT_LABELS: Record<Intent, Bi> = {
+  join: {
+    zh: "加入 BuilderSpace，来以后的活动",
+    en: "Join BuilderSpace and come to future events",
+  },
+  build: {
+    zh: "有项目或创业想法，想找人一起做",
+    en: "I have a project or startup idea and want people to build it with",
+  },
+  core: {
+    zh: "加入核心团队，一起办活动",
+    en: "Join the core team and help run events",
+  },
+  guest: {
+    zh: "想和今天的嘉宾再聊聊",
+    en: "Talk more with today's guest",
+  },
+};
+
 /** The face under each score, 1 to 5. */
 export const RATING_EMOJI = ["😇", "😭", "😌", "😎", "🥳"] as const;
 
@@ -212,6 +249,21 @@ export const feedbackSchema = z.object({
   bad: note(120),
 });
 export type FeedbackAnswer = z.infer<typeof feedbackSchema>;
+
+export const intentSchema = z.object({
+  wants: z
+    .array(z.enum(INTENTS, { error: "选一项|Pick one" }))
+    .min(1, "至少选一项|Pick at least one")
+    .max(INTENTS.length)
+    .transform((v) => INTENTS.filter((i) => v.includes(i))),
+  idea: note(120),
+  contact: z
+    .string()
+    .trim()
+    .min(1, "留个微信号或邮箱|Leave a WeChat ID or email")
+    .max(80, "最多 80 个字|At most 80 characters"),
+});
+export type IntentAnswer = z.infer<typeof intentSchema>;
 
 /** live: opens. pending: GitHub Pages hasn't built yet (404 on *.github.io).
  * down: a 404 anywhere else. unchecked: a host we don't fetch, or no answer. */
@@ -353,6 +405,7 @@ export type LiveMe = {
   responses: {
     poll?: LiveAnswer<PollAnswer>;
     link?: LiveAnswer<LinkAnswer>;
+    intent?: LiveAnswer<IntentAnswer>;
     feedback?: LiveAnswer<FeedbackAnswer>;
   };
   hearted: string[];

@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<!-- 10·22 个人网站 Workshop 的提示词页，从 claude.ai 上的提示词页原样搬来（纯静态，不收集任何数据）。
+     /prompt 由 next.config.ts 的 rewrite 指到这里；图片在 public/prompt/img/。 -->
+<title>个人网站提示词 · BuilderSpace</title>
+<meta name="description" content="挑一个风格，填好你的信息，复制整段提示词发给 AI，拿到你的第一版个人网站。">
+<link rel="icon" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Unbounded:wght@600&display=swap">
+<style>
+/* Layout: one reading column of three numbered steps (the real order of the workshop), a copy bar pinned to the bottom until step 3 is on screen. */
+:root {
+  --paper: #F5F5F2;
+  --surface: #FFFFFF;
+  --ink: #141517;
+  --muted: #5C6067;
+  --line: #D8D9DC;
+  --line-strong: #141517;
+  --signal: #2450E6;
+  --ok: #157347;
+  --warn: #A34A00;
+  --band: #141517;
+  --band-ink: #F5F5F2;
+  --band-muted: #A9ADB4;
+  --font-ui: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-mark: "Unbounded", "Geist Mono", system-ui, sans-serif;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F1012; --surface: #17191C; --ink: #ECEDEF; --muted: #A2A6AD; --line: #2E3136; --line-strong: #ECEDEF;
+    --signal: #7EA2FF; --ok: #4CC487; --warn: #F0A057; --band: #1B1D21; --band-ink: #ECEDEF; --band-muted: #9AA0A8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F1012; --surface: #17191C; --ink: #ECEDEF; --muted: #A2A6AD; --line: #2E3136; --line-strong: #ECEDEF;
+  --signal: #7EA2FF; --ok: #4CC487; --warn: #F0A057; --band: #1B1D21; --band-ink: #ECEDEF; --band-muted: #9AA0A8;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-ui); font-size: 16px; line-height: 1.65; -webkit-text-size-adjust: 100%; }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.col { max-width: 760px; margin: 0 auto; }
+h1, h2, h3, p { margin: 0; }
+h1, h2 { text-wrap: balance; }
+a { color: var(--signal); }
+button, input, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.mono { font-family: var(--font-mono); }
+.label { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; color: var(--muted); }
+
+/* header band */
+.band { background: var(--band); color: var(--band-ink); padding-block: 28px 32px; }
+.mark { display: flex; align-items: baseline; gap: 10px; color: var(--band-muted); font-size: 13px; }
+.mark .home { text-decoration: none; }
+.mark b { font-family: var(--font-mark); font-weight: 600; font-size: 14px; letter-spacing: 0.02em; color: var(--band-ink); }
+.band h1 { font-size: clamp(28px, 6vw, 40px); line-height: 1.2; font-weight: 700; margin-top: 20px; letter-spacing: 0.01em; }
+.band .lead { color: var(--band-muted); margin-top: 10px; max-width: 34em; }
+.flow { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 20px; padding: 0; list-style: none; font-size: 14px; }
+.flow li { display: flex; align-items: center; gap: 8px; }
+.flow .n { font-family: var(--font-mono); font-size: 12px; width: 22px; height: 22px; border: 1px solid var(--band-muted); border-radius: 50%; display: inline-grid; place-items: center; }
+
+.note { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--muted); padding-block: 16px; border-bottom: 1px solid var(--line); }
+.note svg { flex: none; margin-top: 3px; }
+
+/* steps */
+.step { padding-block: 36px; border-bottom: 1px solid var(--line); }
+.step-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; margin-bottom: 20px; }
+.step-head h2 { font-size: 22px; line-height: 1.3; font-weight: 700; }
+.step-head .label { display: block; margin-bottom: 4px; }
+.textbtn { background: none; border: 0; padding: 4px 0; color: var(--signal); cursor: pointer; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+
+.fields { display: grid; gap: 20px; }
+.field { display: grid; gap: 6px; min-width: 0; }
+.field > label, .field > .flabel { font-weight: 600; font-size: 15px; }
+.field .hint { font-size: 13px; color: var(--muted); }
+.req { color: var(--warn); font-weight: 500; font-size: 13px; margin-left: 6px; }
+input[type="text"], input[type="email"], input[type="url"], textarea {
+  width: 100%; min-width: 0; font-size: 16px; line-height: 1.5; padding: 10px 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r);
+}
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 0.75; }
+input:focus, textarea:focus { border-color: var(--signal); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 22%, transparent); }
+textarea { resize: vertical; min-height: 96px; }
+.field.missing input { border-color: var(--warn); }
+
+.works { display: grid; gap: 12px; }
+.work { border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); padding: 12px; display: grid; gap: 8px; }
+.work-top { display: flex; justify-content: space-between; align-items: center; }
+.work input { background: var(--paper); }
+.work-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.addbtn { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px dashed var(--muted); border-radius: var(--r); background: transparent; cursor: pointer; font-size: 14px; }
+.addbtn:hover { border-style: solid; }
+.contacts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.contacts .field > label { font-weight: 500; font-size: 14px; }
+
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg label { position: relative; cursor: pointer; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; }
+.seg span { display: inline-block; padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: 15px; }
+.seg input:checked + span { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.seg input:focus-visible + span { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+.example-flag { display: none; font-size: 13px; color: var(--warn); }
+.is-example .example-flag { display: block; }
+
+/* style picker */
+.styles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 12px; }
+.style { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.style:hover { border-color: var(--muted); }
+.style.is-selected { border-color: var(--line-strong); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.style.has-focus { outline: 2px solid var(--signal); outline-offset: 2px; }
+.style > input[name="style"] { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.style .cover { position: absolute; inset: 0; border-radius: 14px; cursor: pointer; }
+.shot, .style-body { pointer-events: none; }
+.viewbtn, .reflink { pointer-events: auto; }
+.shot { position: relative; align-self: start; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 16 / 10; background: var(--paper); }
+.shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.shot .phone { position: absolute; right: 8px; bottom: 8px; width: 17%; height: auto; aspect-ratio: 240 / 520; object-fit: cover; border-radius: 5px; border: 2px solid #141517; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25); }
+.style-body { display: grid; align-content: start; gap: 6px; min-width: 0; }
+.style-body h3 { font-size: 18px; line-height: 1.35; font-weight: 700; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.picked { display: none; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 999px; background: var(--ink); color: var(--paper); }
+.is-selected .picked { display: inline-block; }
+.fit { font-size: 14px; color: var(--muted); }
+.swatches { display: flex; gap: 6px; margin-top: 2px; }
+.swatches i { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--line); }
+.font { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.viewbtn { justify-self: start; margin-top: 4px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; font-size: 14px; position: relative; z-index: 1; }
+.viewbtn:hover { border-color: var(--ink); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.actions .viewbtn { margin-top: 0; }
+.reflink { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 999px; font-size: 14px; color: var(--signal); text-decoration: none; position: relative; z-index: 1; }
+.reflink:hover { text-decoration: underline; text-underline-offset: 3px; }
+.swatches:empty { display: none; }
+.callout { display: grid; gap: 6px; padding: 14px 16px; margin-bottom: 16px; border: 1px solid var(--line-strong); border-radius: var(--r); background: var(--surface); font-size: 15px; }
+.callout b { font-weight: 700; }
+.style.own { align-content: start; }
+.own-body { position: relative; z-index: 1; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.own-body .fields { gap: 12px; }
+.own-body h3 { font-size: 18px; line-height: 1.35; font-weight: 700; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.own-body textarea { min-height: 72px; }
+@media (min-width: 640px) {
+  .style { padding: 14px; }
+}
+
+/* output */
+.out { display: grid; gap: 12px; }
+.prompt { width: 100%; height: 300px; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); resize: vertical; white-space: pre-wrap; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; cursor: pointer; }
+.check input { width: 18px; height: 18px; margin: 2px 0 0; flex: none; accent-color: var(--ink); }
+.check small { display: block; color: var(--muted); font-size: 13px; }
+.copy { display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 14px 20px; border-radius: 12px; border: 0; background: var(--ink); color: var(--paper); font-size: 17px; font-weight: 700; cursor: pointer; transition: transform 150ms ease, opacity 150ms ease; }
+.copy:hover { opacity: 0.9; }
+.copy:active { transform: translateY(1px); }
+.copy.done { background: var(--ok); color: #FFFFFF; }
+.status { font-size: 14px; min-height: 1.6em; color: var(--muted); }
+.status.warn { color: var(--warn); }
+.status.ok { color: var(--ok); }
+.meta { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+
+/* tweaks */
+.tweaks { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.tweaks li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+.tweaks li span { min-width: 0; }
+.mini { flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; font-size: 13px; }
+.mini.done { color: var(--ok); border-color: var(--ok); }
+.tip { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+
+footer { padding-block: 32px calc(120px + env(safe-area-inset-bottom, 0px)); font-size: 13px; color: var(--muted); }
+footer .row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; }
+
+/* bottom bar */
+.bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: color-mix(in srgb, var(--paper) 88%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-top: 1px solid var(--line); padding-top: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); transition: transform 200ms ease; }
+.bar.away { transform: translateY(110%); }
+.bar .col { display: flex; align-items: center; gap: 12px; }
+.bar .status { flex: 1; min-width: 0; margin: 0; line-height: 1.4; }
+.bar .copy { width: auto; flex: none; padding: 12px 18px; font-size: 16px; }
+
+/* viewer */
+dialog { width: min(1100px, calc(100vw - 24px)); max-width: none; max-height: calc(100dvh - 24px); overflow: auto; overscroll-behavior: contain; padding: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); }
+dialog::backdrop { background: rgba(10, 11, 13, 0.6); }
+.vhead { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.vhead h3 { font-size: 17px; line-height: 1.35; flex: 1 1 auto; min-width: 0; }
+.vhead button { white-space: nowrap; flex: none; }
+@media (max-width: 899px) { .vhead { flex-wrap: wrap; } .vtabs { order: 3; width: 100%; } .vtabs button { flex: 1; } }
+.vtabs { display: flex; gap: 6px; }
+.vtabs button, .vclose, .vpick { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; font-size: 14px; }
+.vtabs button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.vbody { display: grid; gap: 16px; padding: 16px; }
+.vbody figure { margin: 0; display: grid; gap: 6px; align-content: start; }
+.vbody figcaption { font-size: 13px; color: var(--muted); }
+.vbody img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; }
+.vfoot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.vpick { background: var(--ink); color: var(--paper); border-color: var(--ink); font-weight: 600; }
+.vbody[data-show="desktop"] :is(.vmobile, .valt, .vai), .vbody[data-show="mobile"] :is(.vdesktop, .valt, .vai), .vbody[data-show="alt"] :is(.vdesktop, .vmobile, .vai), .vbody[data-show="ai"] :is(.vdesktop, .vmobile, .valt) { display: none; }
+.vai figcaption { color: var(--signal); }
+.vbody .vmobile img { max-width: 375px; margin: 0 auto; }
+@media (min-width: 900px) {
+  .vtabs { display: none; }
+  .vbody { grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); grid-template-areas: "d m" "a m" "i i"; }
+  .vbody .vdesktop { grid-area: d; } .vbody .vmobile { grid-area: m; } .vbody .valt { grid-area: a; } .vbody .vai { grid-area: i; }
+  .vbody[data-show] :is(.vmobile, .vdesktop, .valt, .vai) { display: grid; }
+  .vbody .vai img { max-width: 69%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar, .copy { transition: none; }
+}
+</style>
+</head>
+<body>
+<header class="band gutter">
+  <div class="col">
+    <div class="mark"><a class="home" href="/"><b>BuilderSpace</b></a><span>创客社 · 个人网站 Workshop</span></div>
+    <h1>个人网站提示词</h1>
+    <p class="lead">挑一个风格，填好你的信息，页面会把整段提示词拼好。复制，粘贴给 AI，就能拿到你的第一版网站。</p>
+    <ol class="flow">
+      <li><span class="n">1</span>选风格</li>
+      <li><span class="n">2</span>填信息</li>
+      <li><span class="n">3</span>复制提示词</li>
+    </ol>
+  </div>
+</header>
+
+<div class="gutter">
+  <div class="col">
+    <!-- step 1: pick a style -->
+    <section class="step" id="step1" aria-labelledby="h-step1">
+      <div class="step-head">
+        <div><span class="label">第 1 步</span><h2 id="h-step1">选一个风格</h2></div>
+      </div>
+      <div class="callout">
+        <p><b>这些只是参考。</b>先和同桌聊聊你想要什么感觉，也可以去小红书、Google、X 上搜「个人网站」「作品集网站」「portfolio website」，看看别人做成什么样，挑一个最适合、最喜欢的。</p>
+        <p>找到了就用最后一张「用我自己找到的网站」。</p>
+      </div>
+      <p class="tip">下面 18 个都是网上真实的开源个人网站，截图是它们原本的样子。挑一个你喜欢的，提示词会让 AI 复刻它，把内容换成你的信息。点「看大图」里的「AI 做的」，能看到 AI 照着它一次做出来的效果；不满意就用最下面的话术一句句改。</p>
+      <div class="styles" id="styles" role="radiogroup" aria-labelledby="h-step1"></div>
+    </section>
+
+    <p class="note">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <span>你填的内容只留在这个页面里，不会上传给任何人。刷新还在，关掉页面就没了，记得存一份到备忘录。网站做好后谁都能打开，所以只写你愿意公开的内容。</span>
+    </p>
+
+    <!-- step 2: your details -->
+    <section class="step" id="step2" aria-labelledby="h-step2">
+      <div class="step-head">
+        <div><span class="label">第 2 步</span><h2 id="h-step2">填你的信息</h2></div>
+        <div>
+          <button type="button" class="textbtn" id="fillSample">先用示例看看效果</button>
+        </div>
+      </div>
+      <p class="example-flag" id="exampleFlag">现在填的是示例（虚构的同学「许安然」），复制前换成你自己的。</p>
+      <form class="fields" id="form" autocomplete="off" novalidate>
+        <div class="field" id="f-name">
+          <label for="name">名字<span class="req">必填</span></label>
+          <span class="hint" id="name-hint">中文名、英文名都行，也可以两个都写。</span>
+          <input type="text" id="name" aria-describedby="name-hint" placeholder="例：许安然（Annie Xu）" maxlength="60">
+        </div>
+        <div class="field">
+          <label for="tagline">一句话介绍</label>
+          <span class="hint" id="tagline-hint">会放在名字下面。例：UNSW 商科二年级，喜欢拍照和做小工具</span>
+          <input type="text" id="tagline" aria-describedby="tagline-hint" placeholder="学校、专业、爱好，一句话" maxlength="120">
+        </div>
+        <div class="field">
+          <label for="about">关于我</label>
+          <span class="hint" id="about-hint">写 2–3 句：你是谁、在学什么、接下来想做什么。</span>
+          <textarea id="about" rows="4" aria-describedby="about-hint" placeholder="例：我在 UNSW 读商科，课余在社团拍活动照片。" maxlength="600"></textarea>
+        </div>
+        <div class="field">
+          <label for="skills">技能 / 兴趣</label>
+          <span class="hint" id="skills-hint">写 3–6 个，用逗号或顿号隔开。<span id="skillCount"></span></span>
+          <input type="text" id="skills" aria-describedby="skills-hint" placeholder="例：Python、Figma、摄影、咖啡" maxlength="200">
+        </div>
+        <div class="field">
+          <span class="flabel">作品或经历</span>
+          <span class="hint">1–3 个，每个一句话。有链接就贴上，没有就空着，网站上就不放「查看」按钮。</span>
+          <div class="works" id="works"></div>
+          <button type="button" class="addbtn" id="addWork">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            再加一个
+          </button>
+        </div>
+        <div class="field">
+          <span class="flabel">联系方式</span>
+          <span class="hint">只写愿意公开的，不想写的空着。</span>
+          <div class="contacts">
+            <div class="field"><label for="email">邮箱</label><input type="email" id="email" inputmode="email" placeholder="name@example.com" maxlength="120"></div>
+            <div class="field"><label for="linkedin">LinkedIn</label><input type="text" id="linkedin" placeholder="linkedin.com/in/你的主页" maxlength="160"></div>
+            <div class="field"><label for="xhs">小红书</label><input type="text" id="xhs" placeholder="@你的小红书名" maxlength="80"></div>
+            <div class="field"><label for="github">GitHub</label><input type="text" id="github" placeholder="github.com/你的用户名" maxlength="120"></div>
+            <div class="field"><label for="other">其他</label><input type="text" id="other" placeholder="例：Instagram @xxx" maxlength="120"></div>
+          </div>
+        </div>
+        <div class="field">
+          <span class="flabel" id="lang-label">网站语言</span>
+          <div class="seg" role="radiogroup" aria-labelledby="lang-label">
+            <label><input type="radio" name="lang" value="中文" checked><span>中文</span></label>
+            <label><input type="radio" name="lang" value="English"><span>English</span></label>
+            <label><input type="radio" name="lang" value="中英双语"><span>中英双语</span></label>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- step 3 -->
+    <section class="step" id="step3" aria-labelledby="h-step3">
+      <div class="step-head">
+        <div><span class="label">第 3 步</span><h2 id="h-step3">复制提示词</h2></div>
+      </div>
+      <div class="out">
+        <button type="button" class="copy" id="copyMain">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+          <span>复制整段提示词</span>
+        </button>
+        <p class="status" id="statusMain" role="status" aria-live="polite"></p>
+        <div class="meta"><span>下面就是会被复制的全文，可以检查一下</span><span class="mono" id="charCount"></span></div>
+        <textarea class="prompt" id="prompt" readonly aria-label="拼好的提示词全文"></textarea>
+        <button type="button" class="textbtn" id="clearAll" style="justify-self:start">清空我填的内容</button>
+      </div>
+    </section>
+
+    <!-- tweaks -->
+    <section class="step" aria-labelledby="h-tweak">
+      <div class="step-head">
+        <div><span class="label">拿到第一版以后</span><h2 id="h-tweak">想改哪里，一次发一句</h2></div>
+      </div>
+      <div class="callout">
+        <p><b>第一版不会和原站一样好。</b>AI 一次生成的效果，很难直接达到原网站的质感，这很正常。接着在同一个对话里多聊几轮：说清楚哪里不像、想要什么效果，也可以把原网站的截图发给它对比，一点点打磨，越改越好。</p>
+      </div>
+      <p class="tip">一次只改一件事，改完看一眼再发下一句。方括号里的换成你想要的。</p>
+      <ul class="tweaks" id="tweaks"></ul>
+    </section>
+  </div>
+</div>
+
+<footer class="gutter">
+  <div class="col row">
+    <span>BuilderSpace 创客社 · 个人网站 Workshop</span>
+    <span>不收集、不上传任何数据</span>
+  </div>
+</footer>
+
+<div class="bar gutter" id="bar">
+  <div class="col">
+    <p class="status" id="statusBar" aria-live="polite"></p>
+    <button type="button" class="copy" id="copyBar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+      <span>复制提示词</span>
+    </button>
+  </div>
+</div>
+
+<dialog id="viewer" aria-labelledby="vTitle">
+  <div class="vhead">
+    <h3 id="vTitle"></h3>
+    <div class="vtabs" role="group" aria-label="切换电脑版和手机版">
+      <button type="button" data-show="desktop" aria-pressed="true">电脑</button>
+      <button type="button" data-show="mobile" aria-pressed="false">手机</button>
+      <button type="button" data-show="alt" aria-pressed="false">往下滚</button>
+      <button type="button" data-show="ai" aria-pressed="false">AI 做的</button>
+    </div>
+    <button type="button" class="vclose" id="vClose">关闭</button>
+  </div>
+  <div class="vbody" id="vBody" data-show="desktop">
+    <figure class="vdesktop"><figcaption>原网站在电脑上的首屏</figcaption><img id="vDesk" alt="" width="1080" height="1700"></figure>
+    <figure class="vmobile"><figcaption>原网站在手机上</figcaption><img id="vMob" alt="" width="600" height="1300"></figure>
+    <figure class="valt"><figcaption id="vAltCap">往下滚一屏</figcaption><img id="vAlt" alt="" width="1080" height="675"></figure>
+    <figure class="vai"><figcaption>AI 复刻它、用示例信息一次做出来的，没有手改</figcaption><img id="vAi" alt="" width="1080" height="675"></figure>
+  </div>
+  <div class="vfoot">
+    <span>截图来自原网站，版权归原作者，仅作风格参考</span>
+    <button type="button" class="vpick" id="vPick">用这个风格</button>
+  </div>
+</dialog>
+
+<template id="workTpl">
+  <div class="work">
+    <div class="work-top"><span class="label"></span><button type="button" class="textbtn rm">删掉</button></div>
+    <div class="work-grid">
+      <input type="text" class="w-title" maxlength="60" aria-label="名称" placeholder="名称">
+      <input type="text" class="w-desc" maxlength="160" aria-label="做了什么" placeholder="做了什么，一句话">
+      <input type="url" class="w-link" maxlength="200" aria-label="链接（可选）" inputmode="url" placeholder="链接（可选）">
+    </div>
+  </div>
+</template>
+
+<script>
+// Template text comes straight from the 10·22 proposal doc (「提示词模板」 section); the build step fills these in.
+const HEAD = "请根据下面三段信息，为我做一个完整、能直接上线的个人主页。要高端大气、质感好，一眼看上去就很上档次：对齐整齐、留白舒服、字号层次清楚、动效流畅。风格以第 2 段的参考网站为准。";
+const PART3 = "【第 3 段 · 做网站的要求】\n\n请尽量复刻第 2 段那个网站：版式、配色、字体的感觉、动效和交互都尽量接近，能做得更好的地方就优化，只把里面的内容换成第 1 段我的信息。你能打开网页的话，先打开看一眼；打不开就照「它长这样」来做。\n\n- 尽量一次就做到最好：生成出来就能直接打开、拿去展示，不要留 TODO、占位内容或要我自己补的代码。\n- 只用第 1 段里的信息，不要编造经历、数字、链接和评价；没有链接的作品不放「查看」按钮。\n- 原网站有的板块用我的信息填，我没有的内容就不做；网站语言选了中英双语，就加一个「中 / EN」切换。\n- 页面不要只是几块文字，加一些让人眼前一亮的特效和设计小元素，在不显得乱的前提下增加质感。\n- 多用成熟的开源组件库和动效库，让质感更好（比如 React 生态里的 shadcn/ui、Magic UI、Aceternity UI，或 GSAP、Motion 这类动效库）。不一定只做一个 HTML 文件，用什么技术你来定，但做完要告诉我怎么在电脑上打开看效果，而且要能部署到 GitHub Pages。\n- 手机上也要好看，屏幕宽 375px 时不能出现横向滚动。";
+const LABELS = {"name": "- 名字：", "tagline": "- 一句话介绍：", "about": "- 关于我（2–3 句）：", "skills": "- 技能 / 兴趣（3–6 个）：", "works": "- 作品或经历（1–3 个，每个一句话，有链接就贴上）：", "contact": "- 联系方式（只写愿意公开的）：", "lang": "- 网站语言："};
+const STYLES = [{"id": 1, "name": "一张桌子十个宇宙", "fit": "想做出不一样的、喜欢能玩的", "text": "风格 1 · 一张桌子十个宇宙（适合：想做出不一样的、喜欢能玩的）\n复刻这个网站：https://evanlin.site （开源项目 EdwinjJ1/personal-website，MIT）\n它长这样：整屏是一张漫画风格画出来的书桌，桌上每样东西都能点，点开是对应的内容；按空格在好几种画风之间切换，切换时画面像故障一样一块块翻过去。", "swatches": [], "font": "", "url": "https://evanlin.site", "repo": "EdwinjJ1/personal-website", "stars": ""}, {"id": 2, "name": "玻璃拟态主页", "fit": "想要一个好看的个人导航页", "text": "风格 2 · 玻璃拟态主页（适合：想要一个好看的个人导航页）\n复刻这个网站：https://www.imsyy.top （开源项目 imsyy/home，GitHub 4.5k 星，MIT）\n它长这样：整屏一张风景插画当背景，上面浮着几块毛玻璃卡片：名字和一句话介绍、实时走动的时钟、一排链接按钮。", "swatches": [], "font": "", "url": "https://www.imsyy.top", "repo": "imsyy/home", "stars": "4.5k"}, {"id": 3, "name": "二次元博客风", "fit": "喜欢动漫、想写点东西", "text": "风格 3 · 二次元博客风（适合：喜欢动漫、想写点东西）\n复刻这个网站：https://fuwari.vercel.app （开源项目 saicaca/fuwari，GitHub 5k 星，MIT）\n它长这样：浅色底，顶部一条悬浮的圆角导航栏，下面一张很宽的动漫风横幅；左边一张资料卡，右边一列白色圆角卡片，主题色可以随手换。", "swatches": [], "font": "", "url": "https://fuwari.vercel.app", "repo": "saicaca/fuwari", "stars": "5k"}, {"id": 4, "name": "经典中文博客", "fit": "想写文章、喜欢热闹一点", "text": "风格 4 · 经典中文博客（适合：想写文章、喜欢热闹一点）\n复刻这个网站：https://butterfly.js.org （开源项目 jerryc127/hexo-theme-butterfly，GitHub 8.4k 星，Apache-2.0）\n它长这样：首屏是整屏大图，正中站名和一句话；往下左边是带图的文章卡片，右边是资料卡和小工具栏，卡片悬停有动画。", "swatches": [], "font": "", "url": "https://butterfly.js.org", "repo": "jerryc127/hexo-theme-butterfly", "stars": "8.4k"}, {"id": 5, "name": "温柔中文站", "fit": "文科、想要干净又有点文艺", "text": "风格 5 · 温柔中文站（适合：文科、想要干净又有点文艺）\n复刻这个网站：https://innei.in （开源项目 Innei/Shiro，GitHub 4.3k 星）\n它长这样：米白底、大量留白，正中一个圆形头像和一句打招呼的大字，个别词是斜体红字；往下是时间线式的近期内容。", "swatches": [], "font": "", "url": "https://innei.in", "repo": "Innei/Shiro", "stars": "4.3k"}, {"id": 6, "name": "黄条卡通名片", "fit": "想要活泼、有亲和力", "text": "风格 6 · 黄条卡通名片（适合：想要活泼、有亲和力）\n复刻这个网站：https://marjoballabani.me （开源项目 marjoballabani/marjoballabani.me，GitHub 0.1k 星）\n它长这样：浅色网格底，外面套一个白色大框；顶部一条黄色导航条，所有按钮、卡片都是粗黑边加右下实心阴影；左边粗体大字打招呼和一段介绍，下面几个方形图标按钮和一句手写体小字加箭头；右边一个蓝底头像框贴着黄色胶带，周围歪歪地贴着代码符号小贴纸；底部一排带阴影的技能小标签。", "swatches": [], "font": "", "url": "https://marjoballabani.me", "repo": "marjoballabani/marjoballabani.me", "stars": "0.1k"}, {"id": 7, "name": "银河粒子", "fit": "想要一打开就很震撼", "text": "风格 7 · 银河粒子（适合：想要一打开就很震撼）\n复刻这个网站：https://techinz.dev （开源项目 techinz/galaxy-portfolio）\n它长这样：纯黑底，正中一团橙色核心、蓝紫外缘的发光粒子银河在慢慢旋转，顶部一行白色粗体标题，左侧一列竖排的小星球图标当导航，往下滚动像镜头飞进银河。", "swatches": [], "font": "", "url": "https://techinz.dev", "repo": "techinz/galaxy-portfolio", "stars": ""}, {"id": 8, "name": "清爽开发者", "fit": "想要简单清爽、像一份好看的简历", "text": "风格 8 · 清爽开发者（适合：想要简单清爽、像一份好看的简历）\n复刻这个网站：https://ryanfitzgerald.github.io/devportfolio （开源项目 RyanFitzgerald/devportfolio，GitHub 5k 星，MIT）\n它长这样：白底配蓝紫渐变，首屏「Hello! I'm 名字」大字，名字是渐变色；往下依次是关于、项目、经历，排版干净。", "swatches": [], "font": "", "url": "https://ryanfitzgerald.github.io/devportfolio", "repo": "RyanFitzgerald/devportfolio", "stars": "5k"}, {"id": 9, "name": "瑞士海报", "fit": "想要简洁有力、靠大字说话", "text": "风格 9 · 瑞士海报（适合：想要简洁有力、靠大字说话）\n复刻这个网站：https://www.seyi.dev （开源项目 oluwadareseyi/folio-v2，GitHub 0.1k 星）\n它长这样：近黑底，两行灰色超大压缩粗体大写字几乎铺满整屏，中间一条长横线；四角是很小的名字、年份、联系按钮和一小段简介。", "swatches": [], "font": "", "url": "https://www.seyi.dev", "repo": "oluwadareseyi/folio-v2", "stars": "0.1k"}, {"id": 10, "name": "便当格", "fit": "东西多、想一屏全展示", "text": "风格 10 · 便当格（适合：东西多、想一屏全展示）\n复刻这个网站：https://gianmarcocavallo.com （开源项目 Ladvace/astro-bento-portfolio，GitHub 0.4k 星，MIT）\n它长这样：深色方格底，整页是大小不一的圆角格子拼起来的，分别放介绍、技能、时钟、作品和联系方式。", "swatches": [], "font": "", "url": "https://gianmarcocavallo.com", "repo": "Ladvace/astro-bento-portfolio", "stars": "0.4k"}, {"id": 11, "name": "玩具钢琴", "fit": "想让人一进来就想玩一下", "text": "风格 11 · 玩具钢琴（适合：想让人一进来就想玩一下）\n复刻这个网站：https://ky.fyi （开源项目 kydecker/ky.fyi，GitHub 0.3k 星）\n它长这样：浅米白底，顶部两行带下划线的大标题介绍自己；下面一台圆角黑色小电子琴，琴顶一块绿色像素屏写着「PLAY」，点琴键会发出声音；再往下是作品卡片。", "swatches": [], "font": "", "url": "https://ky.fyi", "repo": "kydecker/ky.fyi", "stars": "0.3k"}, {"id": 12, "name": "3D 液态球", "fit": "设计、想要一点科幻感", "text": "风格 12 · 3D 液态球（适合：设计、想要一点科幻感）\n复刻这个网站：https://hamishw.com （开源项目 HamishMW/portfolio，GitHub 3.5k 星，MIT）\n它长这样：深色底，首屏右边一个表面像液体一样起伏的 3D 球，左边大标题末尾的词会像解码一样乱码后定格。", "swatches": [], "font": "", "url": "https://hamishw.com", "repo": "HamishMW/portfolio", "stars": "3.5k"}, {"id": 13, "name": "星光科技感", "fit": "CS、想要很酷的科技风", "text": "风格 13 · 星光科技感（适合：CS、想要很酷的科技风）\n复刻这个网站：https://minimal-portfolio-swart.vercel.app （开源项目 adrianhajdin/portfolio，GitHub 3.7k 星）\n它长这样：极深的蓝黑底加细网格，四角有蓝紫色光束照进来，首屏居中的大标题一个词一个词浮现；往下是一块块发光的卡片，其中一块里有会转的 3D 地球。", "swatches": [], "font": "", "url": "https://minimal-portfolio-swart.vercel.app", "repo": "adrianhajdin/portfolio", "stars": "3.7k"}, {"id": 14, "name": "超大名字", "fit": "CS、想要大标题加一点炫技", "text": "风格 14 · 超大名字（适合：CS、想要大标题加一点炫技）\n复刻这个网站：https://nareshkhatri.dev （开源项目 Naresh-Khatri/3d-portfolio，GitHub 1.3k 星）\n它长这样：深色底，首屏是占满半屏的超大名字；往下技能做成一个 3D 键盘，每个键帽是一个技能，鼠标放上去会按下去。", "swatches": [], "font": "", "url": "https://nareshkhatri.dev", "repo": "Naresh-Khatri/3d-portfolio", "stars": "1.3k"}, {"id": 15, "name": "终端命令行", "fit": "CS、喜欢极客感", "text": "风格 15 · 终端命令行（适合：CS、喜欢极客感）\n复刻这个网站：https://terminal.satnaing.dev （开源项目 satnaing/terminal-portfolio，GitHub 0.8k 星，MIT）\n它长这样：整个网站就是一个命令行窗口，打开先打出 ASCII 大字的名字，输入 help、about 这些命令看内容。", "swatches": [], "font": "", "url": "https://terminal.satnaing.dev", "repo": "satnaing/terminal-portfolio", "stars": "0.8k"}, {"id": 16, "name": "复古苹果桌面", "fit": "想做出好玩、让人点来点去的", "text": "风格 16 · 复古苹果桌面（适合：想做出好玩、让人点来点去的）\n复刻这个网站：https://os.ryo.lu （开源项目 ryokun6/ryos，GitHub 1.3k 星，AGPL-3.0）\n它长这样：一台 2000 年代的苹果电脑桌面：地球壁纸、顶部菜单栏、底部 Dock，内容放在可以拖动的窗口里。", "swatches": [], "font": "", "url": "https://os.ryo.lu", "repo": "ryokun6/ryos", "stars": "1.3k"}, {"id": 17, "name": "复古书扉", "fit": "文科、喜欢书卷气", "text": "风格 17 · 复古书扉（适合：文科、喜欢书卷气）\n复刻这个网站：https://lynnandtonic.com （开源项目 lynnandtonic/lynnandtonic.com，GitHub 0.1k 星）\n它长这样：米色纸张质感的底，正中是装饰性复古衬线大字写的名字，下面一行小字头衔；再往下像一页旧书目录，栏目名和罗马数字页码之间用点线连起来。", "swatches": [], "font": "", "url": "https://lynnandtonic.com", "repo": "lynnandtonic/lynnandtonic.com", "stars": "0.1k"}, {"id": 18, "name": "斜贴撞色名牌", "fit": "想要大胆、一眼记住名字", "text": "风格 18 · 斜贴撞色名牌（适合：想要大胆、一眼记住名字）\n复刻这个网站：https://wreckerknight.netlify.app （开源项目 WRECKERKNIGHT/harshitmishra）\n它长这样：米白底上一张圆角粗黑边的白色大卡；名字拆成两条斜贴的色带，玫红底白字和黄底黑字；下面是对话气泡样式的身份标签、一个引言框、黄色和玫红色的胶囊按钮；右边几张带黄色标题栏的小窗卡片；最底下一条斜着的黄色跑马灯胶带。", "swatches": [], "font": "", "url": "https://wreckerknight.netlify.app", "repo": "WRECKERKNIGHT/harshitmishra", "stars": ""}];
+const TWEAKS = ["把强调色换成 [颜色]，其他都不变。", "首屏标题再大一点，按钮和标题之间多留一些空。", "作品卡片顶部加一块图片位置，先用渐变色块占位。", "加一个『经历』板块，用时间线展示：[时间] [事情]。", "手机上 [哪个地方] 挤在一起了，修一下，电脑版不要动。", "动画太多了，只保留板块淡入。", "把整页做成中英切换。", "回到上一版。"];
+const SAMPLE = {
+  name: "许安然（Annie Xu）",
+  tagline: "UNSW 信息系统二年级，喜欢拍照，也爱做帮朋友省时间的小工具",
+  about: "我在 UNSW 读信息系统，课余给学校社团拍活动照片。去年做了一个帮室友分摊房租水电的小网页，第一次体会到\"做出来的东西真的有人在用\"。接下来想多做几个真实的小项目，争取一份产品方向的实习。",
+  skills: "Python、Figma、Excel 数据分析、摄影、Notion、手冲咖啡",
+  works: [
+    { title: "合租记账小工具", desc: "用一个网页帮 4 位室友自动算每月房租水电，已经用了一个学期。", link: "https://example.com/rent-splitter" },
+    { title: "社团活动摄影", desc: "给学校社团拍了 6 场活动，照片用在社团公众号和海报上", link: "" },
+    { title: "选课对比表", desc: "把 3 个学期的选课经验整理成一张表，在同学群里被转发了 200 多次", link: "" }
+  ],
+  email: "annie.xu@example.com", linkedin: "linkedin.com/in/annie-xu-example", xhs: "@安然拍拍", github: "", other: "",
+  lang: "中英双语"
+};
+const KEY = "bs-site-prompt-draft-v1";
+const TEXT_IDS = ["name", "tagline", "about", "skills", "email", "linkedin", "xhs", "github", "other"];
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+let works = [{ title: "", desc: "", link: "" }];
+let styleId = null;
+const OWN = "own";
+
+/* ---------- prompt ---------- */
+const clean = (s) => String(s || "").replace(/\s*\n\s*/g, " ").trim();
+const splitSkills = (s) => clean(s).split(/[,，、;；|]+/).map((x) => x.trim()).filter(Boolean);
+
+function readState() {
+  const st = {};
+  TEXT_IDS.forEach((id) => { st[id] = $("#" + id).value; });
+  st.lang = ($('input[name="lang"]:checked') || {}).value || "中文";
+  st.works = works.map((w) => ({ ...w }));
+  st.styleId = styleId;
+  st.ownUrl = $("#ownUrl").value;
+  st.ownDesc = $("#ownDesc").value;
+  st.ownShot = $("#ownShot").checked;
+  return st;
+}
+
+function buildPrompt(st) {
+  const lines = [HEAD, "", "【第 1 段 · 我的信息】"];
+  lines.push(LABELS.name + (clean(st.name) || "[你的名字]"));
+  if (clean(st.tagline)) lines.push(LABELS.tagline + clean(st.tagline));
+  if (clean(st.about)) lines.push(LABELS.about + clean(st.about));
+  const skills = splitSkills(st.skills);
+  if (skills.length) lines.push(LABELS.skills + skills.join("、"));
+  const items = st.works.map((w) => {
+    const t = clean(w.title), d = clean(w.desc), u = clean(w.link);
+    let s = t && d ? t + "：" + d : (t || d);
+    if (u) s += (s ? (/[。.!！?？]$/.test(s) ? "" : "。") : "") + "链接：" + u;
+    return s;
+  }).filter(Boolean);
+  if (items.length) {
+    lines.push(LABELS.works);
+    items.forEach((s, i) => lines.push("  " + (i + 1) + ". " + s));
+  }
+  const contacts = [
+    ["邮箱", st.email], ["LinkedIn", st.linkedin], ["小红书", st.xhs], ["GitHub", st.github], ["", st.other]
+  ].filter(([, v]) => clean(v)).map(([k, v]) => (k ? k + " " : "") + clean(v));
+  if (contacts.length) lines.push(LABELS.contact + contacts.join("；"));
+  lines.push(LABELS.lang + st.lang);
+  lines.push("", "【第 2 段 · 我选的风格】");
+  if (st.styleId === OWN) {
+    lines.push("我自己找的参考网站");
+    if (clean(st.ownUrl)) lines.push("复刻这个网站：" + clean(st.ownUrl));
+    lines.push("它长这样：" + (clean(st.ownDesc) || "[写一句它长什么样]"));
+    if (st.ownShot) lines.push("我会把它的截图一起发给你，以截图为准。");
+  } else {
+    const style = STYLES.find((s) => s.id === st.styleId);
+    lines.push(style ? style.text : "[还没选风格：在第 1 步点一个]");
+  }
+  lines.push("", PART3);
+  return lines.join("\n");
+}
+
+function missing(st) {
+  const m = [];
+  if (!st.styleId) m.push("风格");
+  else if (st.styleId === OWN && !clean(st.ownDesc)) m.push("参考网站长什么样");
+  if (!clean(st.name)) m.push("名字");
+  return m;
+}
+
+/* ---------- render ---------- */
+function renderWorks() {
+  const box = $("#works");
+  box.textContent = "";
+  works.forEach((w, i) => {
+    const node = $("#workTpl").content.firstElementChild.cloneNode(true);
+    $(".label", node).textContent = "作品 " + (i + 1);
+    const map = { title: ".w-title", desc: ".w-desc", link: ".w-link" };
+    Object.entries(map).forEach(([k, sel]) => {
+      const el = $(sel, node);
+      el.id = "work-" + i + "-" + k;
+      el.value = w[k];
+      el.addEventListener("input", () => { works[i][k] = el.value; update(); });
+    });
+    const rm = $(".rm", node);
+    rm.setAttribute("aria-label", "删掉作品 " + (i + 1));
+    rm.addEventListener("click", () => {
+      works.splice(i, 1);
+      if (!works.length) works.push({ title: "", desc: "", link: "" });
+      renderWorks(); update();
+    });
+    box.appendChild(node);
+  });
+  $("#addWork").hidden = works.length >= 3;
+}
+
+function renderStyles() {
+  const box = $("#styles");
+  STYLES.forEach((s) => {
+    const label = document.createElement("div");
+    label.className = "style";
+    label.dataset.id = s.id;
+    label.innerHTML =
+      '<input type="radio" name="style"><label class="cover"></label>' +
+      '<div class="shot"><img alt="" loading="lazy" width="640" height="400"><img class="phone" alt="" loading="lazy" width="240" height="520"></div>' +
+      '<div class="style-body"><span class="label"></span><h3><span class="nm"></span><span class="picked">已选</span></h3>' +
+      '<p class="fit"></p><div class="swatches" aria-hidden="true"></div><span class="font"></span>' +
+      '<div class="actions"><button type="button" class="viewbtn">看大图</button><a class="reflink" target="_blank" rel="noopener noreferrer">打开原网站 ↗</a></div></div>';
+    const input = $("input", label);
+    input.value = String(s.id);
+    input.id = "style-" + s.id;
+    $(".cover", label).htmlFor = input.id;
+    input.setAttribute("aria-label", "风格 " + s.id + " " + s.name);
+    const [big, phone] = $$("img", label);
+    big.src = "/prompt/img/style-" + s.id + "-card.webp";
+    big.alt = s.name + "风格的示例网站，电脑上的样子";
+    phone.src = "/prompt/img/style-" + s.id + "-phone.webp";
+    phone.alt = "";
+    $(".label", label).textContent = "风格 " + s.id;
+    $(".nm", label).textContent = s.name;
+    $(".fit", label).textContent = "适合：" + s.fit;
+    s.swatches.forEach((c) => { const i = document.createElement("i"); i.style.background = c; $(".swatches", label).appendChild(i); });
+    $(".font", label).textContent = s.repo ? "参考 " + s.repo + (s.stars ? " · ★" + s.stars : "") : (s.font ? "字体 " + s.font : "");
+    const ref = $(".reflink", label);
+    if (s.url) { ref.href = s.url; ref.setAttribute("aria-label", "打开原网站 " + s.url + "（新标签页）"); } else ref.remove();
+    input.addEventListener("change", () => { styleId = s.id; syncStyles(); update(); });
+    input.addEventListener("focus", () => label.classList.toggle("has-focus", input.matches(":focus-visible")));
+    input.addEventListener("blur", () => label.classList.remove("has-focus"));
+    $(".viewbtn", label).addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); openViewer(s.id); });
+    box.appendChild(label);
+  });
+}
+
+/* The last card: a site the student found on Xiaohongshu, Google or X. */
+function renderOwn() {
+  const card = document.createElement("div");
+  card.className = "style own";
+  card.dataset.id = OWN;
+  card.innerHTML =
+    '<input type="radio" name="style" id="style-own" value="own" aria-label="用我自己找到的网站"><label class="cover" for="style-own"></label>' +
+    '<div class="own-body"><span class="label">自己找</span><h3><span>用我自己找到的网站</span><span class="picked">已选</span></h3>' +
+    '<p class="fit">在小红书、Google、X 上看到喜欢的网站，就填在这里。</p>' +
+    '<div class="fields">' +
+    '<div class="field"><label for="ownUrl">网址</label><input type="url" id="ownUrl" inputmode="url" maxlength="300" placeholder="https://…（只有截图就空着）"></div>' +
+    '<div class="field"><label for="ownDesc">它长什么样<span class="req">必填</span></label><span class="hint" id="ownDesc-hint">一两句话：底色、版式、字、最特别的动效。AI 多半打不开链接，全靠这句。</span>' +
+    '<textarea id="ownDesc" rows="3" maxlength="300" aria-describedby="ownDesc-hint" placeholder="例：黑底，正中一行很大的白色名字，鼠标移上去字会散开；往下是一排作品卡片。"></textarea></div>' +
+    '<label class="check" for="ownShot"><input type="checkbox" id="ownShot"><span>我会把它的截图一起发给 AI<small>小红书上只有截图时勾上，发提示词时把截图一起拖进对话框。</small></span></label>' +
+    '</div></div>';
+  const radio = $("#style-own", card);
+  const pick = () => { if (styleId !== OWN) { styleId = OWN; syncStyles(); } update(); };
+  radio.addEventListener("change", pick);
+  radio.addEventListener("focus", () => card.classList.toggle("has-focus", radio.matches(":focus-visible")));
+  radio.addEventListener("blur", () => card.classList.remove("has-focus"));
+  $(".own-body", card).addEventListener("click", () => { if (styleId !== OWN) pick(); });
+  ["#ownUrl", "#ownDesc"].forEach((sel) => $(sel, card).addEventListener("input", pick));
+  $("#ownShot", card).addEventListener("change", pick);
+  $("#styles").appendChild(card);
+}
+
+function syncStyles() {
+  $$(".style").forEach((el) => {
+    const on = el.dataset.id === String(styleId);
+    el.classList.toggle("is-selected", on);
+    $("input", el).checked = on;
+  });
+}
+
+function setStatus(text, tone) {
+  ["#statusMain", "#statusBar"].forEach((sel) => {
+    const el = $(sel);
+    el.textContent = text;
+    el.className = "status" + (tone ? " " + tone : "");
+  });
+}
+
+let copiedAt = 0;
+function update() {
+  const st = readState();
+  const text = buildPrompt(st);
+  $("#prompt").value = text;
+  $("#charCount").textContent = text.length + " 字";
+  const n = splitSkills(st.skills).length;
+  $("#skillCount").textContent = n ? "（已写 " + n + " 个）" : "";
+  $("#f-name").classList.remove("missing");
+  document.body.classList.toggle("is-example", clean(st.name) === SAMPLE.name);
+  if (Date.now() - copiedAt > 4000) {
+    const m = missing(st);
+    if (m.length) setStatus("还差：" + m.join("、"), "");
+    else setStatus("都齐了，可以复制", "ok");
+  }
+  save(st);
+}
+
+/* ---------- copy ---------- */
+async function copyPrompt(btn) {
+  const st = readState();
+  const m = missing(st);
+  if (m.length) {
+    setStatus("还差：" + m.join("、") + "。补上再复制。", "warn");
+    if (m[0] === "参考网站长什么样") {
+      $("#ownDesc").focus({ preventScroll: true });
+      $("#ownDesc").scrollIntoView({ behavior: smooth(), block: "center" });
+    } else if (m[0] === "名字") {
+      $("#f-name").classList.add("missing");
+      $("#name").focus({ preventScroll: true });
+      $("#f-name").scrollIntoView({ behavior: smooth(), block: "center" });
+    } else {
+      $("#step1").scrollIntoView({ behavior: smooth(), block: "start" });
+    }
+    return;
+  }
+  const text = buildPrompt(st);
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch (e) { ok = false; }
+  if (!ok) {
+    const ta = $("#prompt");
+    ta.focus(); ta.select(); ta.setSelectionRange(0, ta.value.length);
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+  }
+  copiedAt = Date.now();
+  if (ok) {
+    setStatus("已复制。打开 AI 工具，粘贴进去，点发送。", "ok");
+    [$("#copyMain"), $("#copyBar")].forEach((b) => { b.classList.add("done"); $("span", b).textContent = "已复制"; });
+    setTimeout(() => {
+      $("#copyMain span").textContent = "复制整段提示词";
+      $("#copyBar span").textContent = "复制提示词";
+      [$("#copyMain"), $("#copyBar")].forEach((b) => b.classList.remove("done"));
+    }, 2500);
+  } else {
+    $("#step3").scrollIntoView({ behavior: smooth(), block: "start" });
+    const ta = $("#prompt"); ta.focus(); ta.select();
+    setStatus("没能自动复制。下面的全文已经选中，长按或右键选「拷贝」。", "warn");
+  }
+}
+const smooth = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
+
+/* ---------- viewer ---------- */
+let viewing = null;
+function openViewer(id) {
+  const s = STYLES.find((x) => x.id === id);
+  viewing = id;
+  $("#vTitle").textContent = "风格 " + id + " · " + s.name;
+  $("#vDesk").src = "/prompt/img/style-" + id + "-desktop.webp";
+  $("#vDesk").alt = s.name + "：原网站在电脑上的首屏截图";
+  $("#vMob").src = "/prompt/img/style-" + id + "-mobile.webp";
+  $("#vMob").alt = s.name + "：原网站在手机上的截图";
+  $("#vAlt").src = "/prompt/img/style-" + id + "-alt.webp";
+  $("#vAlt").alt = s.name + "：原网站往下滚一屏的截图";
+  $("#vAi").src = "/prompt/img/style-" + id + "-ai.webp";
+  $("#vAi").alt = s.name + "：AI 照着这个风格用示例信息做出来的首屏";
+
+  setShow("desktop");
+  const d = $("#viewer");
+  if (typeof d.showModal === "function") d.showModal(); else d.setAttribute("open", "");
+  d.scrollTop = 0;
+}
+function setShow(which) {
+  $("#vBody").dataset.show = which;
+  $$(".vtabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.show === which)));
+}
+function closeViewer() { const d = $("#viewer"); if (d.close) d.close(); else d.removeAttribute("open"); }
+
+/* ---------- storage (this tab only) ---------- */
+function save(st) {
+  try { sessionStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {}
+}
+function load() {
+  try { return JSON.parse(sessionStorage.getItem(KEY) || "null"); } catch (e) { return null; }
+}
+function apply(st) {
+  TEXT_IDS.forEach((id) => { $("#" + id).value = st[id] || ""; });
+  const lang = $$('input[name="lang"]').find((r) => r.value === st.lang);
+  if (lang) lang.checked = true;
+  works = (st.works && st.works.length ? st.works : [{ title: "", desc: "", link: "" }]).slice(0, 3).map((w) => ({ title: w.title || "", desc: w.desc || "", link: w.link || "" }));
+  styleId = st.styleId === OWN || STYLES.some((s) => s.id === st.styleId) ? st.styleId : null;
+  $("#ownUrl").value = st.ownUrl || "";
+  $("#ownDesc").value = st.ownDesc || "";
+  $("#ownShot").checked = !!st.ownShot;
+  renderWorks(); syncStyles(); update();
+}
+
+/* ---------- wire up ---------- */
+renderStyles();
+renderOwn();
+renderWorks();
+TEXT_IDS.forEach((id) => $("#" + id).addEventListener("input", update));
+$$('input[name="lang"]').forEach((r) => r.addEventListener("change", update));
+$("#form").addEventListener("submit", (e) => e.preventDefault());
+$("#addWork").addEventListener("click", () => {
+  if (works.length >= 3) return;
+  works.push({ title: "", desc: "", link: "" });
+  renderWorks(); update();
+  $("#work-" + (works.length - 1) + "-title").focus();
+});
+$("#fillSample").addEventListener("click", () => {
+  apply({ ...SAMPLE, works: SAMPLE.works.map((w) => ({ ...w })), styleId,
+    ownUrl: $("#ownUrl").value, ownDesc: $("#ownDesc").value, ownShot: $("#ownShot").checked });
+});
+let clearArmed = false;
+$("#clearAll").addEventListener("click", (e) => {
+  const b = e.currentTarget;
+  if (!clearArmed) {
+    clearArmed = true; b.textContent = "再点一次，确认清空";
+    setTimeout(() => { clearArmed = false; b.textContent = "清空我填的内容"; }, 4000);
+    return;
+  }
+  clearArmed = false; b.textContent = "清空我填的内容";
+  apply({ lang: "中文", works: [], styleId: null });
+  try { sessionStorage.removeItem(KEY); } catch (err) {}
+  setStatus("已清空", "");
+});
+$("#copyMain").addEventListener("click", (e) => copyPrompt(e.currentTarget));
+$("#copyBar").addEventListener("click", (e) => copyPrompt(e.currentTarget));
+$("#vClose").addEventListener("click", closeViewer);
+$("#vPick").addEventListener("click", () => { styleId = viewing; syncStyles(); update(); closeViewer(); });
+$$(".vtabs button").forEach((b) => b.addEventListener("click", () => setShow(b.dataset.show)));
+$("#viewer").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeViewer(); });
+
+TWEAKS.forEach((t) => {
+  const li = document.createElement("li");
+  const span = document.createElement("span");
+  span.textContent = t;
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "mini"; b.textContent = "复制";
+  b.setAttribute("aria-label", "复制：" + t);
+  b.addEventListener("click", async () => {
+    let ok = false;
+    try { await navigator.clipboard.writeText(t); ok = true; } catch (e) {}
+    if (!ok) {
+      const r = document.createRange(); r.selectNodeContents(span);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      try { ok = document.execCommand("copy"); } catch (e) {}
+    }
+    b.textContent = ok ? "已复制" : "已选中，手动拷贝";
+    b.classList.toggle("done", ok);
+    setTimeout(() => { b.textContent = "复制"; b.classList.remove("done"); }, 2000);
+  });
+  li.append(span, b);
+  $("#tweaks").appendChild(li);
+});
+
+// hide the bottom bar while the step 3 copy button is on screen
+if ("IntersectionObserver" in window) {
+  new IntersectionObserver((entries) => {
+    entries.forEach((en) => $("#bar").classList.toggle("away", en.isIntersecting));
+  }).observe($("#copyMain"));
+}
+
+const saved = load();
+if (saved) apply(saved); else update();
+</script>
+</body>
+</html>

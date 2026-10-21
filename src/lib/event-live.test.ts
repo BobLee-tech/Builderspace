@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   feedbackSchema,
+  INTENTS,
+  intentSchema,
   isCheckedHost,
   liveConfig,
   LIVE_STEPS,
@@ -107,6 +109,25 @@ describe("answers", () => {
     expect(feedbackSchema.safeParse({ ...ok, friends: "2" }).success).toBe(
       false,
     );
+  });
+
+  it("needs at least one intent and a way to reach you", () => {
+    const ok = {
+      wants: ["core", "join", "core"],
+      idea: "  ",
+      contact: " annie_xu ",
+    };
+    expect(intentSchema.parse(ok)).toEqual({
+      wants: ["join", "core"],
+      idea: undefined,
+      contact: "annie_xu",
+    });
+    expect(intentSchema.safeParse({ ...ok, wants: [] }).success).toBe(false);
+    expect(intentSchema.safeParse({ ...ok, wants: ["vip"] }).success).toBe(
+      false,
+    );
+    expect(intentSchema.safeParse({ ...ok, contact: " " }).success).toBe(false);
+    expect(INTENTS).toEqual(["join", "build", "core", "guest"]);
   });
 });
 
