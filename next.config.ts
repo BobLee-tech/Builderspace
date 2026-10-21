@@ -22,6 +22,10 @@ const nextConfig: NextConfig = {
       { source: "/volunteer", destination: "/core-team", permanent: true },
     ];
   },
+  // The workshop prompt page is a static file in public/prompt/.
+  async rewrites() {
+    return [{ source: "/prompt", destination: "/prompt/index.html" }];
+  },
 };
 
 export default nextConfig;
