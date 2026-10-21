@@ -76,7 +76,7 @@ describe("answers", () => {
     ).toBe(false);
   });
 
-  it("matches the slide's eight AIs, each with a picture", () => {
+  it("matches the slide's AIs, each with a picture", () => {
     const options = liveConfig("put-yourself-online").poll!.options;
     expect(options.map((o) => o.key)).toEqual([
       "deepseek",
@@ -86,10 +86,9 @@ describe("answers", () => {
       "kimi",
       "grok",
       "doubao",
-      "echoagent",
       "other",
     ]);
-    expect(options.filter((o) => o.image)).toHaveLength(8);
+    expect(options.filter((o) => o.image)).toHaveLength(7);
   });
 
   it("needs a score and both choices in feedback", () => {

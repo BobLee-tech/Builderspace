@@ -245,6 +245,23 @@ function Steps({
     (s) => me.responses[s],
   );
 
+  // ‹ › between the steps the host has opened so far, in the run-sheet
+  // order, so someone who missed a form can go back to it. Never ahead of
+  // the host.
+  const order = config.steps;
+  const [furthest, setFurthest] = useState(order.indexOf(current));
+  if (order.indexOf(current) > furthest) setFurthest(order.indexOf(current));
+  const reached = Math.max(
+    furthest,
+    order.indexOf(current),
+    ...answered.map((s) => order.indexOf(s)),
+  );
+  const at = order.indexOf(view);
+  const prev =
+    at > 0 ? order[at - 1] : at === -1 && reached >= 0 ? order[reached] : null;
+  const next = at >= 0 && at < reached ? order[at + 1] : null;
+  const go = (s: LiveStep) => setPicked(s === current ? null : s);
+
   let card: ReactNode;
   switch (view) {
     case "wait":
@@ -322,14 +339,44 @@ function Steps({
 
   return (
     <>
-      {picked && picked !== current ? (
-        <button
-          type="button"
-          className="live-back"
-          onClick={() => setPicked(null)}
-        >
-          ← <T zh="回到当前环节" en="Back to the current step" />
-        </button>
+      {prev || next ? (
+        <nav className="live-stepnav" aria-label="环节 / Steps">
+          <button
+            type="button"
+            disabled={!prev}
+            onClick={() => prev && go(prev)}
+          >
+            ‹{" "}
+            {prev ? (
+              <T
+                zh={config.copy[prev].label.zh}
+                en={config.copy[prev].label.en}
+              />
+            ) : null}
+          </button>
+          {picked && picked !== current ? (
+            <button
+              type="button"
+              className="live-stepnav-now"
+              onClick={() => setPicked(null)}
+            >
+              <T zh="回到当前环节" en="Back to now" />
+            </button>
+          ) : null}
+          <button
+            type="button"
+            disabled={!next}
+            onClick={() => next && go(next)}
+          >
+            {next ? (
+              <T
+                zh={config.copy[next].label.zh}
+                en={config.copy[next].label.en}
+              />
+            ) : null}{" "}
+            ›
+          </button>
+        </nav>
       ) : null}
       {card}
       {answered.length ? (

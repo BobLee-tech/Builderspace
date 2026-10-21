@@ -410,14 +410,31 @@
 .live-history button[aria-current="true"] {
   color: var(--mute);
 }
-.live-back {
-  align-self: flex-start;
-  background: none;
-  border: 0;
-  color: var(--mute);
+/* ‹ previous step · back to now · next step › */
+.live-stepnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.live-stepnav button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--paper);
   font-size: var(--fs-sm);
   cursor: pointer;
-  padding: 0;
+  white-space: nowrap;
+}
+.live-stepnav button:disabled {
+  visibility: hidden;
+}
+.live-stepnav .live-stepnav-now {
+  border-color: transparent;
+  background: none;
+  color: var(--mute);
 }
 
 /* ---------- AI characters, results, wall, showcase ---------- */
@@ -697,7 +714,7 @@ body:has(.live-phone) main ~ :not(.dock) {
     grid-column: 1 / -1;
   }
 }
-/* A short projected screen (720p) still fits all nine poll rows. */
+/* A short projected screen (720p) still fits all eight poll rows. */
 @media (min-width: 1000px) and (max-height: 760px) {
   .live-rank,
   .live-rank-body {
