@@ -801,8 +801,8 @@ function LinkCard({
           />
           <span>
             <T
-              zh="可以把我的名字和网站放上大屏轮播，也可以被社团发帖展示"
-              en="Show my name and site on the big screen, and let the club post it"
+              zh="可以把我的网站放上大屏，也愿意被视频记录高光时刻"
+              en="Show my site on the big screen, and happy to be filmed for highlights"
             />
           </span>
         </label>
