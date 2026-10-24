@@ -31,8 +31,8 @@ export function SiteFooter() {
               <br />
               <span>
                 <T
-                  zh="每周一起，把想法做成能用的东西。"
-                  en="Together, every week, we turn ideas into things that work."
+                  zh="和队友一起，把想法做成能用的东西。"
+                  en="With teammates, we turn ideas into things that work."
                 />
               </span>
             </p>

@@ -46,8 +46,8 @@ export default function Home() {
             <div>
               <p className="hero-note mute">
                 <T
-                  zh="从 UNSW 起步的中英双语创客社：找队友，每周一起把项目做上线。"
-                  en="A bilingual builders club that started at UNSW. Find teammates and ship together, every week."
+                  zh="从 UNSW 起步的中英双语创客社：找队友，一起把项目做上线。"
+                  en="A bilingual builders club that started at UNSW. Find teammates and ship your project together."
                 />
               </p>
             </div>
@@ -126,7 +126,7 @@ const TICKER_BIG = [
 ];
 const TICKER_SMALL = [
   "Vibe Coding 入门",
-  "每周 Build Night",
+  "线下 Build Night",
   "用中文提问，用英文展示",
   "需求拆解 → 代码审阅 → 测试 → 部署",
   "跨专业组队",

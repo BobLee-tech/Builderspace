@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     default: "BuilderSpace · Bring an idea. Make it work.",
     template: "%s · BuilderSpace",
   },
-  description: "从 UNSW 起步的中英双语创客社：找队友，每周一起把项目做上线。",
+  description: "从 UNSW 起步的中英双语创客社：找队友，一起把项目做上线。",
   icons: { icon: "/favicon.png", apple: "/apple-touch-icon.png" },
   openGraph: {
     type: "website",

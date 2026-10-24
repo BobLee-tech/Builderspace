@@ -14,8 +14,8 @@ const NEXT: Record<string, [string, string, string, string]> = {
   "/": [
     "/events",
     "Events",
-    "活动 · 每周同一时间见",
-    "Events · same time every week",
+    "活动 · 线下见，一起动手",
+    "Events · meet up and build",
   ],
   "/events": [
     "/projects",
