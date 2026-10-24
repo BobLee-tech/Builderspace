@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { SpecRow } from "@/components/spec-row";
-import { ProjectForm } from "./project-form";
 import { T } from "@/components/t";
+import { getCardDesign, getSession } from "@/lib/auth";
+import { cardViewOf } from "@/lib/members";
+import { ProjectForm } from "./project-form";
+import "../../members.css";
 
 export const metadata: Metadata = { title: "提交项目卡" };
 
@@ -23,8 +27,8 @@ export default function NewProjectPage() {
             {
               k: { zh: "写清", en: "Describe" },
               v: {
-                zh: "问题 · 目标用户 · 缺的角色",
-                en: "Problem · users · roles needed",
+                zh: "一句话介绍 · 目标用户 · 缺的角色",
+                en: "One-line pitch · users · roles needed",
               },
             },
             {
@@ -41,8 +45,26 @@ export default function NewProjectPage() {
             },
           ]}
         />
-        <ProjectForm />
+        <Suspense fallback={<div className="join-wait" aria-busy />}>
+          <SignedInForm />
+        </Suspense>
       </div>
     </section>
+  );
+}
+
+/** A signed-in member submits as the owner, with their card on the preview. */
+async function SignedInForm() {
+  const session = await getSession();
+  const m = session?.member;
+  if (!m) return <ProjectForm submitter={null} />;
+  const design = await getCardDesign();
+  return (
+    <ProjectForm
+      submitter={{
+        owner: { card: cardViewOf(m), design },
+        showsCard: m.cardOnProjects,
+      }}
+    />
   );
 }

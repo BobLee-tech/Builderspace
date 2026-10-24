@@ -1,12 +1,12 @@
 # 项目双语：手动翻译流程
 
-项目卡（项目名、要解决的问题、目标用户、下一步）、进展时间线和评论都要有中英两种语言。访客用哪种语言写都行，另一种语言由运营补：用 AI 翻译，人工检查后写回数据库。暂时不做自动翻译。
+项目卡（项目名、一句话介绍、详细介绍、目标用户、下一步）、进展时间线和评论都要有中英两种语言。访客用哪种语言写都行，另一种语言由运营补：用 AI 翻译，人工检查后写回数据库。暂时不做自动翻译。
 
-数据库结构见迁移 `20261024000000_bilingual_content.sql`。
+数据库结构见迁移 `20261024000000_bilingual_content.sql`；一句话介绍（`pitch`）在 `20261026000000_project_owners_and_pitch.sql` 里加上。
 
 ## 约定
 
-- 主列（`name`、`problem`、`target_user`、`next_step`、`body`）放中文，`*_en` 列放英文。英文列为空时，英文页面显示主列。
+- 主列（`name`、`pitch`、`problem`、`target_user`、`next_step`、`body`）放中文，`*_en` 列放英文。英文列为空时，英文页面显示主列。
 - `original_lang` 记作者原来写的语言，填 `zh` 或 `en`。网站在另一种语言的页面上，给这条内容的右下角标一个灰色小字（英文页面标「Translated」，中文页面标「译文」）。
 - 按作者写的语言分三种情况：
   - **只写了中文**：主列不动，英文写进 `*_en`，`original_lang = 'zh'`。
@@ -19,7 +19,8 @@
 
 - 收到「新项目卡」或「待审核的进展」邮件时，审核的同时把翻译做了，翻完再改成 `approved`。这样项目一上线就是双语的。
 - 评论不逐条发邮件。每天的汇总邮件里有新评论时，跑一遍下面的查询，评论会一起列出来。
-- 改了已上线项目的中文以后，英文也要跟着改。最省事的办法是把 `problem_en` 清空，这个项目就会重新出现在待翻译列表里。
+- 改了已上线项目的中文以后，英文也要跟着改。最省事的办法是把 `pitch_en` 或 `problem_en` 清空，这个项目就会重新出现在待翻译列表里。
+- 以前的项目没有一句话介绍（`pitch` 为空），卡片上先显示 `problem` 的前两行。给它补一句（最多 36 个字，英文字母算半个），写进 `pitch`，再按上面的流程补 `pitch_en`。
 
 ## 步骤
 
@@ -56,9 +57,9 @@
 5. 同一个字段里中英文都有：中文部分留在主列，英文部分放进 _en 列，original_lang = null。
 6. 项目名两种语言一样时，name_en = null。
 7. 评论开头的「@昵称」在两种语言里都原样保留。
-8. 长度上限：主列 name 60、problem 280、target_user 80、next_step 280、body 500 个字；英文列 name_en 180、problem_en 840、target_user_en 240、next_step_en 840、body_en 1500 个字符。
+8. 长度上限：主列 name 60、pitch 36（英文字母算半个）、problem 600、target_user 80、next_step 280、body 500 个字；英文列 name_en 180、pitch_en 108、problem_en 1800、target_user_en 240、next_step_en 840、body_en 1500 个字符。pitch 是项目卡上的一句话介绍，译文也要短，一行说清楚。
 9. 只输出 SQL，一行一条 update，按 id 定位，文字一律用 $$…$$ 包起来。fields 里没有的字段不要写进 set。格式例如：
-update projects set name_en = $$…$$, problem_en = $$…$$, target_user_en = $$…$$, next_step_en = $$…$$, original_lang = 'zh' where id = '…';
+update projects set name_en = $$…$$, pitch_en = $$…$$, problem_en = $$…$$, target_user_en = $$…$$, next_step_en = $$…$$, original_lang = 'zh' where id = '…';
 update project_updates set body_en = $$…$$, original_lang = 'zh' where id = '…';
 update project_comments set body = $$中文译文$$, body_en = $$English original$$, original_lang = 'en' where id = '…';
 

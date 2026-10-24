@@ -4,11 +4,14 @@ import {
   User,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
+import { MemberCard } from "@/app/join/member-card";
 import { formatShortDate } from "@/lib/format";
+import { memberCode } from "@/lib/members";
 import {
   NO_MEDIA,
   ROLE_LABEL,
   STATUS_LABEL,
+  type OwnerCard,
   type Project,
   type ProjectEn,
   type ProjectMedia,
@@ -22,6 +25,38 @@ export function projectText(
   field: keyof ProjectEn,
 ): { zh: string | null; en: string | null } {
   return { zh: project[field], en: project.en?.[field] ?? project[field] };
+}
+
+/**
+ * The card's one line: the pitch, or on projects from before pitches existed
+ * the old intro, which the card clamps to two lines.
+ */
+export function pitchText(project: Project) {
+  return projectText(project, project.pitch ? "pitch" : "problem");
+}
+
+/** The owner's member card in miniature, with their name and number. */
+export function OwnerChip({ owner }: { owner: OwnerCard }) {
+  const { card } = owner;
+  return (
+    <span className="owner-chip">
+      <span className="owner-mini" aria-hidden>
+        <MemberCard
+          card={card}
+          design={owner.design}
+          flipped={false}
+          still
+          className="mini"
+        />
+      </span>
+      <span>
+        <b>{card.nickname}</b>
+        {card.memberNo && (
+          <small className="mono">{memberCode(card.memberNo)}</small>
+        )}
+      </span>
+    </span>
+  );
 }
 
 /** Stable small hash so a project always gets the same generative cover. */
@@ -94,7 +129,7 @@ export function ProjectCard({
           )}
         </h3>
         <p className="prob">
-          <T {...projectText(project, "problem")} />
+          <T {...pitchText(project)} />
         </p>
       </div>
       {project.neededRoles.length > 0 && (
@@ -112,10 +147,14 @@ export function ProjectCard({
         </div>
       )}
       <div className="pcard-foot">
-        <span>
-          <User weight="light" size={15} aria-hidden />
-          {project.ownerName}
-        </span>
+        {project.owner ? (
+          <OwnerChip owner={project.owner} />
+        ) : (
+          <span>
+            <User weight="light" size={15} aria-hidden />
+            {project.ownerName}
+          </span>
+        )}
         <span className="mono">
           {project.commentCount > 0 && (
             <span className="pcard-cc">

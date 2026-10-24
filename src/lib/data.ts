@@ -1,7 +1,9 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { readDesign } from "./card-design";
 import { COVER_BUCKET, VIDEO_BUCKET } from "./media";
+import type { LookingFor, MemberSkill, Spark } from "./members";
 import { getSupabase } from "./supabase/client";
 import {
   samplePicks,
@@ -14,6 +16,7 @@ import {
   NO_SIGNUPS,
   type EventSignups,
   type Lang,
+  type OwnerCard,
   type Project,
   type ProjectComment,
   type ProjectUpdate,
@@ -175,9 +178,9 @@ export async function getEventDetail(slug: string): Promise<{
 }
 
 const PROJECT_COLUMNS =
-  "slug,name,problem,target_user,status,needed_roles,next_step,contact,owner_name,repo_url,demo_url,updated_at," +
+  "slug,name,pitch,problem,target_user,status,needed_roles,next_step,contact,owner_name,repo_url,demo_url,updated_at," +
   "cover_path,cover_focus_x,cover_focus_y,video_path,video_poster_path,video_seconds," +
-  "name_en,problem_en,target_user_en,next_step_en,original_lang";
+  "name_en,pitch_en,problem_en,target_user_en,next_step_en,original_lang";
 
 /**
  * The side ops translated, which gets a small "Translated" mark: the other
@@ -194,7 +197,8 @@ function translatedSide(
 type ProjectRow = {
   slug: string;
   name: string;
-  problem: string;
+  pitch: string | null;
+  problem: string | null;
   target_user: string;
   status: Project["status"];
   needed_roles: Project["neededRoles"];
@@ -211,6 +215,7 @@ type ProjectRow = {
   video_poster_path: string | null;
   video_seconds: number | null;
   name_en: string | null;
+  pitch_en: string | null;
   problem_en: string | null;
   target_user_en: string | null;
   next_step_en: string | null;
@@ -246,11 +251,70 @@ async function signAll(
   );
 }
 
+type OwnerCardRow = {
+  slug: string;
+  nickname: string;
+  member_no: number;
+  spark: Spark;
+  major: string;
+  school_degree: string;
+  skills: MemberSkill[];
+  building: string | null;
+  looking_for: LookingFor[];
+  seal: string | null;
+  material: string | null;
+  tint: string | null;
+  pattern: string | null;
+  tagline: string | null;
+  stickers: unknown;
+};
+
+/**
+ * Owners' member cards by project slug, through the one public door
+ * (project_owner_cards in 20261026000000_project_owners_and_pitch.sql): only
+ * approved projects, only members who show their card, only what the card
+ * prints. A failure leaves the cards out rather than taking the page down.
+ */
+async function ownerCards(
+  db: SupabaseClient,
+  slug?: string,
+): Promise<Map<string, OwnerCard>> {
+  const { data, error } = await db.rpc(
+    "project_owner_cards",
+    slug ? { p_slug: slug } : {},
+  );
+  if (error) {
+    console.error("[cards] owner cards failed", error.message);
+    return new Map();
+  }
+  return new Map(
+    (data as OwnerCardRow[]).map((r) => [
+      r.slug,
+      {
+        card: {
+          nickname: r.nickname,
+          schoolDegree: r.school_degree,
+          major: r.major,
+          skills: r.skills,
+          spark: r.spark,
+          memberNo: r.member_no,
+          seal: r.seal,
+          building: r.building,
+          lookingFor: r.looking_for,
+        },
+        // No member_cards row yet: the default design.
+        design: readDesign(r.material ? r : null),
+      },
+    ]),
+  );
+}
+
 async function toProjects(
   db: SupabaseClient,
   rows: ProjectRow[],
 ): Promise<Project[]> {
-  const [covers, videos] = await Promise.all([
+  const [owners, covers, videos] = await Promise.all([
+    ownerCards(db, rows.length === 1 ? rows[0].slug : undefined),
     signAll(
       db,
       COVER_BUCKET,
@@ -268,6 +332,7 @@ async function toProjects(
     const videoUrl = url(videos, r.video_path);
     return {
       ...toProject(r),
+      owner: owners.get(r.slug) ?? null,
       media: {
         coverUrl: url(covers, r.cover_path),
         coverFocus: [r.cover_focus_x, r.cover_focus_y],
@@ -282,6 +347,7 @@ async function toProjects(
 function toProject(p: ProjectRow): Project {
   const en = {
     name: p.name_en,
+    pitch: p.pitch_en,
     problem: p.problem_en,
     targetUser: p.target_user_en,
     nextStep: p.next_step_en,
@@ -289,6 +355,7 @@ function toProject(p: ProjectRow): Project {
   return {
     slug: p.slug,
     name: p.name,
+    pitch: p.pitch,
     problem: p.problem,
     targetUser: p.target_user,
     status: p.status,
@@ -314,7 +381,7 @@ export async function getProjects(): Promise<Project[]> {
   cacheLife("minutes");
   // A new comment only bumps the card's counter, so it refreshes this list in
   // the background rather than making the next visitor wait.
-  cacheTag("projects", "comment-counts");
+  cacheTag("projects", "comment-counts", "cards");
 
   const db = getSupabase();
   if (!db) return sampleProjects;
@@ -334,7 +401,7 @@ export async function getProject(slug: string): Promise<{
 } | null> {
   "use cache";
   cacheLife("minutes");
-  cacheTag("projects", `project:${slug}`);
+  cacheTag("projects", `project:${slug}`, "cards");
 
   const db = getSupabase();
   if (!db) {

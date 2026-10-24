@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MEDIA_PATH, VIDEO_MAX_SECONDS } from "./media";
+import { displayLength, PITCH_MAX } from "./text-length";
 import {
   CODING_LEVELS,
   COMMENT_KINDS,
@@ -140,7 +141,18 @@ const projectMediaSchema = z
 
 export const projectSubmissionSchema = z.object({
   name: text(60),
-  problem: text(280),
+  // The card shows only this line. 36 by displayLength is at most 72
+  // characters, the database's cap.
+  pitch: z
+    .string()
+    .trim()
+    .min(1, "必填|Required")
+    .refine(
+      (v) => displayLength(v) <= PITCH_MAX,
+      `一句话介绍最多 ${PITCH_MAX} 个字（英文字母算半个），细节写进详细介绍|Keep the one-liner to ${PITCH_MAX} Chinese characters or about ${PITCH_MAX * 2} letters; the rest goes in the details`,
+    ),
+  // The longer intro, on the project page only.
+  problem: optionalText(600),
   targetUser: text(80),
   neededRoles: z.array(z.enum(ROLES)).max(ROLES.length),
   nextStep: optionalText(280),
@@ -306,6 +318,7 @@ export function parseVolunteerForm(form: FormData) {
 export function parseProjectForm(form: FormData) {
   return projectSubmissionSchema.safeParse({
     name: form.get("name") ?? "",
+    pitch: form.get("pitch") ?? "",
     problem: form.get("problem") ?? "",
     targetUser: form.get("targetUser") ?? "",
     neededRoles: form.getAll("neededRoles"),

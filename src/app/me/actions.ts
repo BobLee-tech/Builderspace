@@ -1,8 +1,14 @@
 "use server";
 
-import { refresh } from "next/cache";
+import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { getMyZid, saveMyZid, saveSurvey, signOut } from "@/lib/auth";
+import {
+  getMyZid,
+  saveMyZid,
+  saveSurvey,
+  setCardOnProjects,
+  signOut,
+} from "@/lib/auth";
 import { fieldErrors, type FormState } from "@/lib/forms";
 import { parseSurvey, zidSchema } from "@/lib/member-forms";
 
@@ -44,4 +50,12 @@ export async function addZid(
 export async function logOut() {
   await signOut();
   redirect("/join");
+}
+
+/** Shows or hides the member's card on the projects they own. */
+export async function toggleCardOnProjects(form: FormData) {
+  const saved = await setCardOnProjects(form.get("on") === "1");
+  // Project pages cache the owners' cards; show the change right away.
+  if (saved.ok) updateTag("cards");
+  refresh();
 }
