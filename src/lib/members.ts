@@ -130,6 +130,19 @@ export function schoolDomain(email: string): string | null {
 export const isUnsw = (domain: string | null) =>
   !!domain && /(^|\.)unsw\.edu\.au$/.test(domain);
 
+/**
+ * z1234567@ad.unsw.edu.au → "z1234567"; null for any other address. Same rule
+ * as zid_from_email() in 20261025010000_join_zid.sql.
+ */
+export function zidFromEmail(email: string): string | null {
+  const [local = "", domain = ""] = email.trim().toLowerCase().split("@");
+  return isUnsw(domain) && /^z\d{7}$/.test(local) ? local : null;
+}
+
+/** Free-text school says UNSW: only ever a hint, never proof. */
+export const mentionsUnsw = (school: string) =>
+  /\bunsw\b|新南威尔士/i.test(school);
+
 /** "UNSW" on the seal for UNSW addresses, "STUDENT" for any other school. */
 export const sealLabel = (domain: string | null) =>
   isUnsw(domain) ? "UNSW" : "STUDENT";

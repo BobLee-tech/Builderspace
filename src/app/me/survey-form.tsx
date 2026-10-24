@@ -19,9 +19,10 @@ import { submitSurvey } from "./actions";
 /**
  * The second half of the old join form, now optional and after the card:
  * what got in the way last term, where they heard of us, the next event, and
- * the opt-in to back the club application (name and zID only then).
+ * the opt-in to back the club application (name and zID only then). A zID
+ * left when joining is shown, not asked for again.
  */
-export function SurveyForm() {
+export function SurveyForm({ zid }: { zid: string | null }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     submitSurvey,
     { status: "idle" },
@@ -142,13 +143,24 @@ export function SurveyForm() {
                 error={err.fullName}
                 max={80}
               />
-              <TextField
-                name="zid"
-                label={<span style={{ textTransform: "none" }}>zID</span>}
-                placeholder="z1234567"
-                error={err.zid}
-                max={8}
-              />
+              {zid ? (
+                <div className="field">
+                  <span className="mono" style={{ textTransform: "none" }}>
+                    zID
+                  </span>
+                  <p className="mono" style={{ textTransform: "none" }}>
+                    {zid}
+                  </p>
+                </div>
+              ) : (
+                <TextField
+                  name="zid"
+                  label={<span style={{ textTransform: "none" }}>zID</span>}
+                  placeholder="z1234567"
+                  error={err.zid}
+                  max={8}
+                />
+              )}
             </div>
             <label className="consent">
               <input type="checkbox" name="affiliationConsent" />

@@ -5,13 +5,14 @@ import { Suspense } from "react";
 import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
 import { T } from "@/components/t";
-import { getCardDesign, getSession, surveyDone } from "@/lib/auth";
+import { getCardDesign, getMyZid, getSession, surveyDone } from "@/lib/auth";
 import {
   cardViewOf,
   isUnsw,
   LOOKING_LABEL,
   MEMBER_SKILL_LABEL,
   memberCode,
+  mentionsUnsw,
   ordinal,
   SPARK_INFO,
   type Member,
@@ -19,6 +20,7 @@ import {
 import { logOut } from "./actions";
 import { MeCard } from "./me-card";
 import { SurveyForm } from "./survey-form";
+import { ZidForm } from "./zid-form";
 import "../members.css";
 
 export const metadata: Metadata = {
@@ -42,8 +44,17 @@ async function Me() {
   const session = await getSession();
   if (!session?.member) redirect("/join");
   const m = session.member;
-  const [done, design] = await Promise.all([surveyDone(), getCardDesign()]);
+  const [done, design, zid] = await Promise.all([
+    surveyDone(),
+    getCardDesign(),
+    getMyZid(),
+  ]);
   const spark = SPARK_INFO[m.spark];
+  // Joined before the zID was asked for: a UNSW email, or a school that says
+  // UNSW under some other email (a hint only, so that one says "skip if not").
+  const unswEmail = isUnsw(m.schoolDomain);
+  const askZid =
+    !zid && (unswEmail || (!m.schoolDomain && mentionsUnsw(m.schoolDegree)));
 
   return (
     <>
@@ -83,8 +94,9 @@ async function Me() {
               <T zh="重看欢迎 · 加群二维码" en="Welcome again · group QR" />
             </Link>
           </div>
-          <Details m={m} />
-          {!done && <SurveyForm />}
+          <Details m={m} zid={zid} />
+          {askZid && <ZidForm unswEmail={unswEmail} />}
+          {!done && <SurveyForm zid={zid} />}
           <form action={logOut}>
             <button type="submit" className="linkish">
               <T zh="退出登录" en="Sign out" />
@@ -96,7 +108,7 @@ async function Me() {
   );
 }
 
-function Details({ m }: { m: Member }) {
+function Details({ m, zid }: { m: Member; zid: string | null }) {
   const spark = SPARK_INFO[m.spark];
   const rows: [React.ReactNode, React.ReactNode][] = [
     [
@@ -135,6 +147,16 @@ function Details({ m }: { m: Member }) {
         : "—",
     ],
     [<T key="k" zh="登录邮箱" en="Email" />, m.email],
+    ...(zid
+      ? [
+          [
+            <span key="k" style={{ textTransform: "none" }}>
+              zID
+            </span>,
+            zid,
+          ] as [React.ReactNode, React.ReactNode],
+        ]
+      : []),
     [
       <T key="k" zh="认证" en="Verified" />,
       m.verified ? (

@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createMember, sendCode, verifyCode } from "@/lib/auth";
+import { createMember, getSession, sendCode, verifyCode } from "@/lib/auth";
 import { fieldErrors } from "@/lib/forms";
 import {
   codeSchema,
@@ -68,7 +68,14 @@ export async function makeCard(
   _prev: StepState,
   form: FormData,
 ): Promise<StepState> {
-  const parsed = parseMemberProfile(form);
+  const session = await getSession();
+  if (!session) {
+    return {
+      status: "error",
+      message: "先用邮箱登录|Sign in with your email first",
+    };
+  }
+  const parsed = parseMemberProfile(form, session.email);
   if (!parsed.success) {
     return {
       status: "error",

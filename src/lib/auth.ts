@@ -35,6 +35,8 @@ export type Result<T = undefined> =
 const ok = <T>(value: T): Result<T> => ({ ok: true, value });
 const fail = (message: string): Result<never> => ({ ok: false, message });
 const CLOSED = "登录暂未开放，请稍后再试|Sign-in isn't open yet";
+const ZID_NEEDED =
+  "用 UNSW 邮箱加入要填 zID|Joining with a UNSW email needs your zID";
 
 const devMode = () =>
   !isSupabaseConfigured() && process.env.NODE_ENV !== "production";
@@ -82,6 +84,7 @@ type DevSession = {
   member: Member | null;
   survey: boolean;
   card?: CardDesign;
+  zid?: string | null;
 };
 
 async function readDev(): Promise<DevSession | null> {
@@ -143,6 +146,7 @@ export async function verifyCode(
       member: kept?.member ?? null,
       survey: kept?.survey ?? false,
       card: kept?.card,
+      zid: kept?.zid,
     });
     return ok({ hasCard: Boolean(kept?.member) });
   }
@@ -224,7 +228,12 @@ export async function createMember(
       isPublic: false,
       email: session.email,
     };
-    await writeDev({ email: session.email, member, survey: false });
+    await writeDev({
+      email: session.email,
+      member,
+      survey: false,
+      zid: input.zid,
+    });
     return ok(member);
   }
 
@@ -240,9 +249,11 @@ export async function createMember(
       p_building: input.building,
       p_looking_for: input.lookingFor,
       p_channel: input.channel,
+      p_zid: input.zid,
     })
     .single<ProfileRow>();
   if (error || !data) {
+    if (error?.code === "22023") return fail(ZID_NEEDED);
     if (error?.code === "PT429") {
       return fail(
         "加入的人有点多，请一分钟后再试|Lots of people joining right now, try again in a minute",
@@ -283,6 +294,7 @@ export async function saveSurvey(input: SurveyInput): Promise<Result> {
       member: session.member,
       survey: true,
       card: dev?.card,
+      zid: dev?.zid ?? input.zid,
     });
     return ok(undefined);
   }
@@ -308,6 +320,51 @@ export async function saveSurvey(input: SurveyInput): Promise<Result> {
     return fail("提交失败，请稍后再试|Couldn't submit, please try again");
   }
   return ok(undefined);
+}
+
+/* ---------- zID ---------- */
+
+/** The signed-in member's zID, from joining or the survey; null if none. */
+export async function getMyZid(): Promise<string | null> {
+  const session = await getSession();
+  if (!session?.member) return null;
+  if (devMode()) return (await readDev())?.zid ?? null;
+  const supabase = await getSupabaseAuth();
+  if (!supabase) return null;
+  const { data } = await supabase.rpc("my_zid");
+  return typeof data === "string" ? data : null;
+}
+
+/**
+ * Adds a zID for a member who joined without one. Once set it stays (an admin
+ * can change it); returns whichever zID is stored.
+ */
+export async function saveMyZid(zid: string): Promise<Result<string>> {
+  const session = await getSession();
+  if (!session?.member) return fail("先生成你的卡片|Make your card first");
+  if (devMode()) {
+    const dev = await readDev();
+    const saved = dev?.zid ?? zid;
+    await writeDev({
+      email: session.email,
+      member: session.member,
+      survey: dev?.survey ?? false,
+      card: dev?.card,
+      zid: saved,
+    });
+    return ok(saved);
+  }
+  const supabase = await getSupabaseAuth();
+  if (!supabase) return fail(CLOSED);
+  const { data, error } = await supabase.rpc("save_my_zid", { p_zid: zid });
+  if (error || typeof data !== "string") {
+    console.error("[auth] save zid failed", {
+      code: error?.code,
+      message: error?.message,
+    });
+    return fail("保存失败，请稍后再试|Couldn't save, please try again");
+  }
+  return ok(data);
 }
 
 /* ---------- card studio ---------- */
@@ -368,6 +425,7 @@ export async function saveCard(input: CardSaveInput): Promise<Result<Member>> {
       member,
       survey: dev?.survey ?? false,
       card: input.design,
+      zid: dev?.zid,
     });
     return ok(member);
   }

@@ -3,9 +3,11 @@ import { parseMemberProfile, parseSurvey } from "./member-forms";
 import {
   isUnsw,
   memberCode,
+  mentionsUnsw,
   ordinal,
   schoolDomain,
   sealLabel,
+  zidFromEmail,
 } from "./members";
 
 function form(entries: [string, string][]): FormData {
@@ -49,12 +51,31 @@ describe("school email", () => {
     expect(sealLabel("sydney.edu.au")).toBe("STUDENT");
   });
 
+  it("reads a zID only from a z1234567 UNSW address", () => {
+    expect(zidFromEmail("z5555555@ad.unsw.edu.au")).toBe("z5555555");
+    expect(zidFromEmail(" Z5555555@AD.UNSW.EDU.AU ")).toBe("z5555555");
+    expect(zidFromEmail("z5555555@unsw.edu.au")).toBe("z5555555");
+    expect(zidFromEmail("li.bo@student.unsw.edu.au")).toBeNull();
+    expect(zidFromEmail("z555555@ad.unsw.edu.au")).toBeNull();
+    expect(zidFromEmail("z5555555@gmail.com")).toBeNull();
+    expect(zidFromEmail("z5555555@notunsw.edu.au")).toBeNull();
+  });
+
+  it("spots UNSW in a free-text school", () => {
+    expect(mentionsUnsw("unsw es")).toBe(true);
+    expect(mentionsUnsw("UNSW·Bachelor of Engineering")).toBe(true);
+    expect(mentionsUnsw("新南威尔士大学")).toBe(true);
+    expect(mentionsUnsw("USYD · Master of IT")).toBe(false);
+  });
+
   it("pads card numbers to four digits", () => {
     expect(memberCode(7)).toBe("BS-0007");
     expect(memberCode(71)).toBe("BS-0071");
     expect(memberCode(12345)).toBe("BS-12345");
   });
 });
+
+const GMAIL = "bo@gmail.com";
 
 describe("parseMemberProfile", () => {
   const base: [string, string][] = [
@@ -68,7 +89,7 @@ describe("parseMemberProfile", () => {
   ];
 
   it("accepts a minimal profile and trims text", () => {
-    const result = parseMemberProfile(form(base));
+    const result = parseMemberProfile(form(base), GMAIL);
     expect(result.success).toBe(true);
     expect(result.data).toMatchObject({
       nickname: "Bo",
@@ -89,6 +110,7 @@ describe("parseMemberProfile", () => {
     );
     const result = parseMemberProfile(
       form([...base.filter(([k]) => k !== "skills"), ...skills, ...looking]),
+      GMAIL,
     );
     expect(result.success).toBe(false);
     const paths = result.error!.issues.map((i) => i.path[0]);
@@ -103,12 +125,53 @@ describe("parseMemberProfile", () => {
         ["skills", "frontend"],
         ["spark", "pikachu"],
       ]),
+      GMAIL,
     );
     expect(result.success).toBe(false);
     const paths = result.error!.issues.map((i) => i.path[0]);
     expect(paths).toEqual(
       expect.arrayContaining(["nickname", "skills", "spark"]),
     );
+  });
+});
+
+describe("parseMemberProfile zID", () => {
+  const base: [string, string][] = [
+    ["nickname", "Bo"],
+    ["spark", "lumi"],
+  ];
+  const zidOf = (email: string, extra: [string, string][]) => {
+    const result = parseMemberProfile(form([...base, ...extra]), email);
+    return result.success
+      ? { zid: result.data.zid }
+      : { error: result.error.issues.map((i) => i.path[0]) };
+  };
+
+  it("takes the zID from a z1234567 UNSW email and ignores the box", () => {
+    expect(zidOf("z5555555@ad.unsw.edu.au", [])).toEqual({ zid: "z5555555" });
+    expect(zidOf("z5555555@ad.unsw.edu.au", [["zid", "z1111111"]])).toEqual({
+      zid: "z5555555",
+    });
+  });
+
+  it("needs a typed zID for any other UNSW address", () => {
+    const email = "li.bo@student.unsw.edu.au";
+    expect(zidOf(email, [])).toEqual({ error: ["zid"] });
+    expect(zidOf(email, [["zid", "z12345"]])).toEqual({ error: ["zid"] });
+    expect(zidOf(email, [["zid", " Z1234567 "]])).toEqual({ zid: "z1234567" });
+  });
+
+  it("needs one from other emails only when they tick UNSW student", () => {
+    expect(zidOf(GMAIL, [])).toEqual({ zid: null });
+    expect(zidOf(GMAIL, [["zid", "z1234567"]])).toEqual({ zid: null });
+    expect(zidOf(GMAIL, [["unswStudent", "on"]])).toEqual({ error: ["zid"] });
+    expect(
+      zidOf(GMAIL, [
+        ["unswStudent", "on"],
+        ["zid", "1234567"],
+      ]),
+    ).toEqual({ zid: "z1234567" });
+    expect(zidOf("kim@sydney.edu.au", [])).toEqual({ zid: null });
   });
 });
 
@@ -153,5 +216,19 @@ describe("parseSurvey", () => {
       zid: "z1234567",
       affiliationConsent: true,
     });
+  });
+
+  it("uses the zID left when joining instead of asking again", () => {
+    const result = parseSurvey(
+      form([
+        ["affiliationSupport", "on"],
+        ["fullName", "Li Bo"],
+        ["zid", "z9999999"],
+        ["affiliationConsent", "on"],
+      ]),
+      "z1234567",
+    );
+    expect(result.success).toBe(true);
+    expect(result.data).toMatchObject({ zid: "z1234567" });
   });
 });
