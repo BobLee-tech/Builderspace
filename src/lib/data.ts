@@ -180,7 +180,7 @@ export async function getEventDetail(slug: string): Promise<{
 const PROJECT_COLUMNS =
   "slug,name,pitch,problem,target_user,status,needed_roles,next_step,contact,owner_name,repo_url,demo_url,updated_at," +
   "cover_path,cover_focus_x,cover_focus_y,video_path,video_poster_path,video_seconds," +
-  "name_en,pitch_en,problem_en,target_user_en,next_step_en,original_lang";
+  "name_en,pitch_en,problem_en,target_user_en,next_step_en,original_lang,star_count";
 
 /**
  * The side ops translated, which gets a small "Translated" mark: the other
@@ -220,6 +220,7 @@ type ProjectRow = {
   target_user_en: string | null;
   next_step_en: string | null;
   original_lang: Lang | null;
+  star_count: number;
   /** Only the plaza asks for it: `project_comments(count)`. */
   project_comments?: { count: number }[];
 };
@@ -368,6 +369,7 @@ function toProject(p: ProjectRow): Project {
     updatedAt: p.updated_at,
     media: NO_MEDIA,
     commentCount: p.project_comments?.[0]?.count ?? 0,
+    starCount: p.star_count,
     en,
     translated: translatedSide(
       p.original_lang,
@@ -379,9 +381,9 @@ function toProject(p: ProjectRow): Project {
 export async function getProjects(): Promise<Project[]> {
   "use cache";
   cacheLife("minutes");
-  // A new comment only bumps the card's counter, so it refreshes this list in
-  // the background rather than making the next visitor wait.
-  cacheTag("projects", "comment-counts", "cards");
+  // A new comment or star only bumps the card's counter, so it refreshes this
+  // list in the background rather than making the next visitor wait.
+  cacheTag("projects", "comment-counts", "star-counts", "cards");
 
   const db = getSupabase();
   if (!db) return sampleProjects;

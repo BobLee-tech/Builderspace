@@ -1,6 +1,7 @@
 import {
   ChatCircle,
   ClockCounterClockwise,
+  Star,
   User,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
@@ -156,6 +157,15 @@ export function ProjectCard({
           </span>
         )}
         <span className="mono">
+          {project.starCount > 0 && (
+            <span className="pcard-cc">
+              <Star weight="light" size={15} aria-hidden />
+              {project.starCount}
+              <span className="sr-only">
+                <T zh="个 Star" en="stars" />
+              </span>
+            </span>
+          )}
           {project.commentCount > 0 && (
             <span className="pcard-cc">
               <ChatCircle weight="light" size={15} aria-hidden />
