@@ -9,8 +9,17 @@ const securityHeaders = [
   },
 ];
 
+// Team photos on /people come from the public team-photos bucket; next/image
+// may fetch from that bucket and nowhere else on Supabase.
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  images: {
+    remotePatterns: supabaseUrl
+      ? [new URL(`${supabaseUrl}/storage/v1/object/public/team-photos/**`)]
+      : [],
+  },
   partialPrefetching: true,
   poweredByHeader: false,
   async headers() {

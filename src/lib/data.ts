@@ -7,8 +7,10 @@ import {
   samplePicks,
   sampleProjects,
   sampleEvents,
+  sampleTeam,
   sampleTutorials,
 } from "./sample-data";
+import { teamPersonOf, type TeamPerson, type TeamRow } from "./team";
 import {
   NO_MEDIA,
   NO_SIGNUPS,
@@ -115,6 +117,28 @@ export async function getMemberCount(): Promise<number | null> {
     return null;
   }
   return typeof data === "number" ? data : null;
+}
+
+/**
+ * The founders and core team on /people (team_list() in
+ * 20261026000000_team_members.sql). Empty while that function is missing, so
+ * the page shows the departments without people instead of failing.
+ */
+export async function getTeam(): Promise<TeamPerson[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("team");
+
+  const db = getSupabase();
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!db || !url) return sampleTeam;
+
+  const { data, error } = await db.rpc("team_list");
+  if (error) {
+    console.error("[data] team failed", { code: error.code });
+    return [];
+  }
+  return (data as TeamRow[]).flatMap((row) => teamPersonOf(row, url) ?? []);
 }
 
 /** Splits events around "now"; refreshed with the cache, so at most minutes stale. */

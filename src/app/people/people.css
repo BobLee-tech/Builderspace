@@ -1,0 +1,744 @@
+/* /people: the founders, the core team as the member cards they designed, and
+   the enlarged card. Photos stay mono until hovered, like the plaza covers, so
+   the page keeps to black / white / chrome; the cards and mascots bring the colour. */
+
+/* ---------- sub-heading: the page head's slim bar ---------- */
+.tm-sub {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--mute);
+  margin-bottom: 18px;
+}
+.tm-sub h2 {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--paper);
+  white-space: nowrap;
+}
+.tm-sub h2::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 10px;
+  vertical-align: 0.1em;
+  background: var(--paper);
+}
+.tm-rule {
+  flex: 1;
+  min-width: 32px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--paper),
+    var(--line-2) 40%,
+    transparent
+  );
+}
+.tm-n {
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+.tm-swipe {
+  display: none;
+}
+.tag.sample + .tm {
+  margin-top: 20px;
+}
+
+/* ---------- photos ---------- */
+.tm-media {
+  position: relative;
+  overflow: hidden;
+  background: var(--panel);
+}
+.tm-media .tm-photo {
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.08) brightness(0.86);
+  scale: 1.02;
+  transition:
+    filter 0.45s var(--ease),
+    scale 0.6s var(--ease);
+}
+.tm-dots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    var(--mat-halftone) 0 0 / 4px 4px,
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.35),
+      transparent 35%,
+      transparent 55%,
+      rgba(0, 0, 0, 0.6)
+    );
+  transition: opacity 0.6s;
+}
+.tm-mascot {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(70% 60% at 50% 45%, #18181a, var(--panel));
+}
+.tm-mascot img {
+  width: 54%;
+  filter: grayscale(1) brightness(0.62) contrast(1.15);
+  transition:
+    filter 0.45s var(--ease),
+    transform 0.6s var(--ease);
+}
+.tm-lift:focus-within .tm-photo {
+  filter: none;
+}
+.tm-lift:focus-within .tm-mascot img {
+  filter: none;
+}
+@media (hover: hover) {
+  .tm-lift:hover .tm-photo {
+    filter: none;
+    scale: 1.06;
+  }
+  .tm-lift:hover .tm-dots {
+    opacity: 0.35;
+  }
+  .tm-lift:hover .tm-mascot img {
+    filter: none;
+    transform: translateY(-3%) rotate(-4deg);
+  }
+}
+
+/* ---------- founders ---------- */
+.tm-fd-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: clamp(48px, 7vw, 88px);
+}
+.tm-fd {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.tm-fd .tm-media {
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.tm-fd .tm-dots {
+  mask: linear-gradient(180deg, transparent 40%, #000 85%);
+}
+.tm-no {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  color: rgba(244, 244, 242, 0.78);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+.tm-cap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 18px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tm-role {
+  color: rgba(244, 244, 242, 0.82);
+}
+.tm-name {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 10.5cqw;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+  background: var(--mat-chrome);
+  background-size: 100% 220%;
+  background-position: 0 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.tm-name.long {
+  font-size: 8cqw;
+}
+.tm-bio {
+  padding-inline: 4px;
+  color: var(--mute);
+}
+.tm-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding-inline: 4px;
+}
+.tm-links a,
+.tm-cardlink {
+  padding: 0 0 2px;
+  border: 0;
+  border-bottom: 1px solid var(--line-2);
+  background: none;
+  color: var(--paper);
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+.tm-cardlink {
+  cursor: zoom-in;
+}
+.tm-links a:hover,
+.tm-cardlink:hover {
+  border-color: var(--paper);
+}
+
+/* ---------- departments: one row each, hairlines like the old pillars ---------- */
+.tm-depts {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.tm-dept {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 24px 32px;
+  padding: var(--pad);
+}
+.tm-dept + .tm-dept {
+  border-top: 1px solid var(--line);
+}
+.tm-dept-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.tm-glyph {
+  margin-bottom: clamp(16px, 3vw, 40px);
+  font-family: var(--f-mono);
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+}
+.tm-dept-head h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.tm-dept-head h3 .mono {
+  font-weight: 400;
+}
+.tm-dept-head ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tm-dept-head li {
+  padding: 2px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--mute);
+  font-size: var(--fs-xs);
+}
+
+/* ---------- the card grid: three by two, two by three on a phone ---------- */
+.tm-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px 18px;
+  align-content: start;
+  perspective: 1100px;
+  touch-action: pan-y;
+}
+.tm-cell {
+  display: flex;
+  min-width: 0;
+  backface-visibility: hidden;
+}
+.tm-cell > .tm-card {
+  flex: 1;
+}
+.tm .mc-col {
+  position: relative;
+  top: auto;
+}
+.tm-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.tm-card .mc-col {
+  gap: 0;
+  align-items: stretch;
+}
+.tm-card .mc-stage {
+  max-width: none;
+}
+.tm-card .mc-shadow {
+  display: none;
+}
+.tm-card .mc-tilt {
+  transition:
+    transform 0.9s var(--ease),
+    translate 0.5s var(--ease);
+}
+.tm-card.lifted .mc-col {
+  visibility: hidden;
+}
+.tm-open {
+  position: absolute;
+  inset: -4px;
+  z-index: 2;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  cursor: zoom-in;
+}
+.tm-open:focus-visible {
+  outline: 1px solid var(--paper);
+  outline-offset: 2px;
+}
+.tm-card-cap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.tm-av {
+  position: relative;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  background: var(--panel);
+}
+.tm-av > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.08) brightness(0.86);
+  transition: filter 0.4s;
+}
+.tm-av .tm-mascot img {
+  width: 80%;
+}
+.tm-pos {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--mute);
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tm-go {
+  margin-left: auto;
+  color: var(--paper);
+  white-space: nowrap;
+  opacity: 0;
+  translate: -4px 0;
+  transition:
+    opacity 0.3s,
+    translate 0.4s var(--ease);
+}
+.tm-card:focus-within .tm-go {
+  opacity: 1;
+  translate: 0 0;
+}
+@media (hover: hover) {
+  .tm-card:not(.tm-join):hover .mc-tilt {
+    translate: 0 -5px;
+  }
+  .tm-card:hover .tm-av > img,
+  .tm-card:hover .tm-av .tm-mascot img {
+    filter: none;
+  }
+  .tm-card:hover .tm-go {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* the last cell: an empty card that is yours if you apply */
+.tm-slotwrap {
+  display: block;
+  container-type: inline-size;
+}
+.tm-slot {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  aspect-ratio: 1.586;
+  padding: 5cqw;
+  border: 1px dashed var(--line-2);
+  border-radius: 4.1cqw;
+  color: var(--mute);
+  transition:
+    background 0.4s var(--ease),
+    border-color 0.4s,
+    color 0.3s;
+}
+.tm-slot .mono {
+  font-size: max(9px, 3.2cqw);
+}
+.tm-slot b {
+  place-self: center;
+  font-family: var(--f-mono);
+  font-weight: 400;
+  font-size: 12cqw;
+  line-height: 1;
+  transition: transform 0.5s var(--ease);
+}
+.tm-join:focus-visible {
+  outline: none;
+}
+.tm-join:focus-visible .tm-slot {
+  border-style: solid;
+  border-color: var(--paper);
+}
+@media (hover: hover) {
+  .tm-join:hover .tm-slot {
+    background: var(--paper);
+    border-color: var(--paper);
+    color: var(--ink);
+  }
+  .tm-join:hover .tm-slot b {
+    transform: rotate(90deg);
+  }
+}
+
+/* ---------- paging: dashes, counter and buttons under the grid ---------- */
+.tm-foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+}
+.tm-pages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.tm-pages i {
+  position: relative;
+  width: 22px;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--line-2);
+  transition: width 0.45s var(--ease);
+}
+.tm-pages i.on {
+  width: 48px;
+}
+.tm-pages b {
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.tm-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--mute);
+  white-space: nowrap;
+}
+.tm-idx {
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+.tm-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.tm-state::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mute);
+}
+.tm-state.on::before {
+  background: var(--paper);
+  animation: tm-ping 1.8s infinite;
+}
+@keyframes tm-ping {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55);
+  }
+  80%,
+  100% {
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+  }
+}
+.tm-btns,
+.tm-znav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tm-btns button,
+.tm-znav button,
+.tm-zx {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  background: none;
+  color: var(--paper);
+  font-family: var(--f-mono);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.3s var(--ease),
+    color 0.3s var(--ease),
+    border-color 0.3s;
+}
+.tm-btns svg {
+  width: 11px;
+  height: 11px;
+  fill: currentColor;
+}
+@media (hover: hover) {
+  .tm-btns button:hover,
+  .tm-znav button:hover,
+  .tm-zx:hover {
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--paper);
+  }
+}
+
+/* ---------- the enlarged card ---------- */
+html:has(.tm-zoom[open]) {
+  overflow: hidden;
+}
+.tm-zoom {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+}
+.tm-zoom::backdrop {
+  background: transparent;
+}
+/* Hidden until the animation has its starting frame, so nothing flashes. */
+.tm-zoom:not(.ready) :is(.tm-zbg, .tm-zcard, .tm-zinfo) {
+  opacity: 0;
+}
+.tm-zbg {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 5, 0.8);
+  -webkit-backdrop-filter: blur(12px) saturate(0.8);
+  backdrop-filter: blur(12px) saturate(0.8);
+}
+.tm-zbg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px) 0 0 / 48px
+      48px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px) 0 0 /
+      48px 48px;
+  pointer-events: none;
+}
+.tm-zx {
+  position: fixed;
+  z-index: 3;
+  top: max(16px, env(safe-area-inset-top, 0px));
+  right: max(16px, env(safe-area-inset-right, 0px));
+  width: 38px;
+  height: 38px;
+  font-size: 18px;
+}
+.tm-zin {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr);
+  align-items: center;
+  gap: 28px 56px;
+  min-height: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: max(28px, env(safe-area-inset-top, 0px)) var(--gut)
+    max(28px, env(safe-area-inset-bottom, 0px));
+  perspective: 1400px;
+}
+.tm-zcard .mc-stage {
+  max-width: 600px;
+}
+.tm-zinfo {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.tm-zwho {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+.tm-zwho .tm-media {
+  aspect-ratio: 1;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+}
+.tm-zname {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(26px, 3.4vw, 38px);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+}
+.tm-zbio {
+  max-width: 38ch;
+  font-size: var(--fs-lg);
+}
+.tm-zfacts {
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+.tm-zfacts > div {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.tm-zfacts dt {
+  padding-top: 2px;
+}
+.tm-zfacts dd {
+  margin: 0;
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+.tm-zfacts a {
+  border-bottom: 1px solid var(--line-2);
+}
+.tm-zact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tm-znav {
+  gap: 10px;
+  color: var(--mute);
+  font-variant-numeric: tabular-nums;
+}
+.tm-zhint {
+  color: #55555a;
+}
+
+/* ---------- narrower ---------- */
+@media (max-width: 900px) {
+  .tm-dept {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tm-dept-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 16px;
+  }
+  .tm-glyph {
+    grid-row: span 2;
+    margin-bottom: 0;
+    font-size: 28px;
+  }
+}
+@media (max-width: 760px) {
+  .tm-zin {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 22px;
+    padding-top: max(68px, env(safe-area-inset-top, 0px));
+  }
+  .tm-zhint {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  .tm-swipe {
+    display: inline;
+  }
+  /* Founders become a swipe row that shows the edge of the next one. */
+  .tm-fd-grid {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 78%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-inline: calc(var(--gut) * -1);
+    padding-inline: var(--gut);
+    scroll-padding-inline: var(--gut);
+  }
+  .tm-fd-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .tm-fd {
+    scroll-snap-align: start;
+  }
+  .tm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 10px;
+  }
+  .tm-go {
+    display: none;
+  }
+  .tm-foot {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .tm-pages {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .tm-btns {
+    grid-column: 3;
+  }
+  .tm-state {
+    display: none;
+  }
+}
