@@ -1,4 +1,6 @@
 // Domain types mirror supabase/migrations/20261012000000_init.sql.
+import type { CardDesign } from "./card-design";
+import type { CardView } from "./members";
 
 export type EventKind =
   "workshop" | "build_night" | "demo_night" | "online" | "other";
@@ -133,6 +135,7 @@ export type Lang = "zh" | "en";
 /** The English side of a project's text; null where ops left it empty. */
 export type ProjectEn = {
   name: string | null;
+  pitch: string | null;
   problem: string | null;
   targetUser: string | null;
   nextStep: string | null;
@@ -141,7 +144,10 @@ export type ProjectEn = {
 export type Project = {
   slug: string;
   name: string;
-  problem: string;
+  /** The one-line pitch on the card; null on projects from before it existed. */
+  pitch: string | null;
+  /** The longer intro, shown on the project page only. */
+  problem: string | null;
   targetUser: string;
   status: ProjectStatus;
   neededRoles: Role[];
@@ -158,7 +164,12 @@ export type Project = {
   en?: ProjectEn;
   /** The language showing a translation, marked "Translated"; null when the author wrote it. */
   translated?: Lang | null;
+  /** The owner's member card, when a member submitted it and shows their card. */
+  owner?: OwnerCard | null;
 };
+
+/** What a project shows of its owner (project_owner_cards in the database). */
+export type OwnerCard = { card: CardView; design: CardDesign };
 
 /** Signed, short-lived URLs for an approved project's uploads. */
 export type ProjectMedia = {

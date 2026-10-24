@@ -171,6 +171,8 @@ export type Member = {
   schoolDomain: string | null;
   verified: boolean;
   isPublic: boolean;
+  /** Projects they own show their card; on unless they turn it off. */
+  cardOnProjects: boolean;
   email: string;
 };
 

@@ -1977,6 +1977,21 @@ html[data-lang="en"] .d-title[data-size-en="sm"] {
   color: #d9d9d6;
   overflow-wrap: anywhere;
 }
+/* An older project's intro standing in for the pitch: the rest is in About. */
+.d-lede.clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.d-about {
+  margin: 0;
+  max-width: 64ch;
+  white-space: pre-line;
+  line-height: 1.8;
+  color: #d9d9d6;
+  overflow-wrap: anywhere;
+}
 .d-cta {
   display: flex;
   flex-wrap: wrap;
@@ -3786,6 +3801,70 @@ html[data-lang="en"] .d-title[data-size-en="sm"] {
   .mc-tilt {
     transition: none;
   }
+}
+
+/* A card in miniature (a project's owner): the material, colour and stickers
+   read at 44px, the printed text doesn't, so it is hidden. */
+.mc-col.mini {
+  position: static;
+  gap: 0;
+}
+.mc-col.mini .mc-stage {
+  max-width: none;
+}
+.mc-col.mini .mc-shadow,
+.mc-col.mini .mc-top,
+.mc-col.mini .mc-mid,
+.mc-col.mini .mc-bot,
+.mc-col.mini .mc-micro,
+.mc-col.mini .mc-frame {
+  visibility: hidden;
+}
+.mc-col.mini .mc-glare {
+  animation: none;
+}
+.mc-col.mini .mc-back {
+  display: none;
+}
+.owner-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.owner-mini {
+  flex: none;
+  width: 44px;
+}
+.owner-chip > span:last-child {
+  display: grid;
+  min-width: 0;
+  line-height: 1.25;
+}
+.owner-chip b {
+  font-weight: 600;
+  color: var(--paper);
+}
+.owner-chip small {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--mute);
+}
+.d-owner .mc-col {
+  position: static;
+}
+.d-owner-name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+}
+.d-owner-name b {
+  font: 700 var(--fs-lg) var(--f-display);
+  letter-spacing: -0.02em;
+}
+.d-owner-name .mono {
+  font-size: var(--fs-xs);
 }
 
 /* ---------- footer: next page band, variable wordmark, ascii torus, bar ---------- */

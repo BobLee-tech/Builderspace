@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   channelFromSearch,
+  localPath,
   parseProjectCommentForm,
   parseProjectForm,
   parseProjectUpdateForm,
@@ -19,9 +20,9 @@ function form(entries: [string, string][]): FormData {
 describe("parseProjectForm", () => {
   const base: [string, string][] = [
     ["name", "合租雷达"],
+    ["pitch", "按通勤和预算筛合租帖"],
     ["problem", "找室友靠刷帖"],
     ["targetUser", "悉尼留学生"],
-    ["ownerName", "YK"],
     ["contact", "wechat: yk"],
     ["repoUrl", ""],
     ["demoUrl", ""],
@@ -31,6 +32,20 @@ describe("parseProjectForm", () => {
     const result = parseProjectForm(form(base));
     expect(result.success).toBe(true);
     expect(result.data).toMatchObject({ repoUrl: null, demoUrl: null });
+  });
+
+  it("keeps the pitch to one line and the details optional", () => {
+    const without = (k: string) => base.filter(([key]) => key !== k);
+    expect(parseProjectForm(form(without("problem"))).data?.problem).toBeNull();
+    expect(parseProjectForm(form(without("pitch"))).success).toBe(false);
+    const long = parseProjectForm(
+      form([...without("pitch"), ["pitch", "长".repeat(37)]]),
+    );
+    expect(long.error?.issues[0].message).toContain("36");
+    const english = parseProjectForm(
+      form([...without("pitch"), ["pitch", "a".repeat(72)]]),
+    );
+    expect(english.success).toBe(true);
   });
 
   it("rejects non-http links", () => {
@@ -248,6 +263,27 @@ describe("parseVolunteerForm", () => {
     const bad = parseVolunteerForm(form([...base, ["channel", "<script>"]]));
     expect(bad.success).toBe(true);
     expect(bad.data?.channel).toBeNull();
+  });
+});
+
+describe("localPath", () => {
+  it("keeps a path on this site", () => {
+    expect(localPath("/projects/new")).toBe("/projects/new");
+    expect(localPath("/me?tab=card")).toBe("/me?tab=card");
+  });
+  it("refuses anything that could leave the site", () => {
+    for (const v of [
+      "https://evil.com",
+      "//evil.com",
+      "/\\evil.com",
+      "javascript:alert(1)",
+      "projects/new",
+      "/x\nSet-Cookie:a",
+      null,
+      42,
+    ]) {
+      expect(localPath(v)).toBeNull();
+    }
   });
 });
 

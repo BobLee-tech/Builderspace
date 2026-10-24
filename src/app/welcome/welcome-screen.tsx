@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { prefersReducedMotion, hasFinePointer } from "@/components/fx/motion";
 import { T } from "@/components/t";
 import { themeColor, type CardDesign } from "@/lib/card-design";
+import { localPath } from "@/lib/forms";
 import {
   memberCode,
   ordinal,
@@ -368,6 +370,8 @@ export function WelcomeScreen({
   design: CardDesign;
   adminQr: string;
 }) {
+  // Sent here from somewhere that needed a card first (submitting a project).
+  const next = localPath(useSearchParams().get("next"));
   const root = useRef<HTMLElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const cardCol = useRef<HTMLDivElement>(null);
@@ -894,6 +898,11 @@ export function WelcomeScreen({
           </Link>
         </div>
         <div className="wl-actions">
+          {next && (
+            <Link href={next} className="btn solid sm">
+              <T zh="回到刚才的页面" en="Back to where you were" />
+            </Link>
+          )}
           <button
             type="button"
             className="btn ghost sm"

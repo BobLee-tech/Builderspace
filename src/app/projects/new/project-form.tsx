@@ -10,13 +10,22 @@ import {
   useState,
   type FormEvent,
 } from "react";
+import { MemberCard } from "@/app/join/member-card";
 import { ProjectCard } from "@/components/project-card";
 import { SpamGuard } from "@/components/spam-guard";
 import { useRevealResult } from "@/components/use-reveal-result";
 import { Msg, T } from "@/components/t";
 import type { FormState } from "@/lib/forms";
 import { COVER_BUCKET, posterPath } from "@/lib/media";
-import { ROLES, ROLE_LABEL, type Project, type Role } from "@/lib/types";
+import { memberCode } from "@/lib/members";
+import { displayLength, PITCH_MAX } from "@/lib/text-length";
+import {
+  ROLES,
+  ROLE_LABEL,
+  type OwnerCard,
+  type Project,
+  type Role,
+} from "@/lib/types";
 import { uploadFile } from "@/lib/upload";
 import { submitProject } from "./actions";
 import {
@@ -35,7 +44,6 @@ const FIELDS = [
     max: 80,
     hint: "悉尼留学生 / International students in Sydney",
   },
-  { name: "ownerName", zh: "发起人昵称", en: "Your nickname", max: 40 },
   {
     name: "contact",
     zh: "公开联系方式",
@@ -45,7 +53,12 @@ const FIELDS = [
   },
 ] as const;
 
-type Draft = Pick<Project, "name" | "problem" | "targetUser" | "ownerName"> & {
+/** A signed-in member submitting: their card, and whether projects show it. */
+export type Submitter = { owner: OwnerCard; showsCard: boolean };
+
+type Draft = Pick<Project, "name" | "targetUser"> & {
+  pitch: string;
+  problem: string;
   neededRoles: Role[];
 };
 
@@ -54,9 +67,9 @@ function readDraft(form: HTMLFormElement): Draft {
   const s = (k: string) => String(d.get(k) ?? "").trim();
   return {
     name: s("name"),
+    pitch: s("pitch"),
     problem: s("problem"),
     targetUser: s("targetUser"),
-    ownerName: s("ownerName"),
     neededRoles: d.getAll("neededRoles").map(String) as Role[],
   };
 }
@@ -66,19 +79,22 @@ function previewProject(
   draft: Draft | null,
   cover: CoverUpload | null,
   video: VideoUpload | null,
+  submitter: Submitter,
 ): Project {
   return {
     slug: "draft",
     name: draft?.name || "你的项目名 · Your project",
-    problem:
-      draft?.problem ||
-      "一句话说清楚：谁，遇到了什么麻烦。· Who has the problem, and what is it?",
+    pitch:
+      draft?.pitch ||
+      "一句话说清楚：做的是什么，帮谁解决什么。· What it is, and who it helps.",
+    problem: draft?.problem || null,
+    owner: submitter.showsCard ? submitter.owner : null,
     targetUser: draft?.targetUser || "—",
     status: "recruiting",
     neededRoles: draft?.neededRoles ?? [],
     nextStep: null,
     contact: "",
-    ownerName: draft?.ownerName || "你 · You",
+    ownerName: submitter.owner.card.nickname,
     repoUrl: null,
     demoUrl: null,
     // The preview card says "just now" instead of a date.
@@ -94,7 +110,7 @@ function previewProject(
   };
 }
 
-export function ProjectForm() {
+export function ProjectForm({ submitter }: { submitter: Submitter }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     submitProject,
     { status: "idle" },
@@ -128,7 +144,10 @@ export function ProjectForm() {
           </span>
         </div>
         <div className="pv-card">
-          <ProjectCard project={previewProject(draft, cover, video)} preview />
+          <ProjectCard
+            project={previewProject(draft, cover, video, submitter)}
+            preview
+          />
           <span className="pv-stamp" aria-hidden>
             SHIPPED · 待审核
           </span>
@@ -176,7 +195,9 @@ export function ProjectForm() {
           state={state}
           action={action}
           pending={pending}
+          draft={draft}
           onDraft={setDraft}
+          submitter={submitter}
           cover={cover}
           setCover={setCover}
           video={video}
@@ -191,7 +212,9 @@ function Form({
   state,
   action,
   pending,
+  draft,
   onDraft,
+  submitter,
   cover,
   setCover,
   video,
@@ -200,7 +223,9 @@ function Form({
   state: FormState;
   action: (data: FormData) => void;
   pending: boolean;
+  draft: Draft | null;
   onDraft: (d: Draft) => void;
+  submitter: Submitter;
   cover: CoverUpload | null;
   setCover: (fn: (u: CoverUpload | null) => CoverUpload | null) => void;
   video: VideoUpload | null;
@@ -210,6 +235,21 @@ function Form({
   const uploading = [cover, video].some((u) => u?.status === "uploading");
   const [posting, setPosting] = useState(false);
   const postersSent = useRef(new Set<string>());
+  const pitchRef = useRef<HTMLInputElement>(null);
+  const aboutRef = useRef<HTMLTextAreaElement>(null);
+  const pitchLength = displayLength(draft?.pitch ?? "");
+  const pitchOver = pitchLength > PITCH_MAX;
+
+  // A paragraph pasted into the one-liner: keep it as the details instead.
+  const moveToAbout = () => {
+    const pitch = pitchRef.current;
+    const about = aboutRef.current;
+    if (!pitch || !about) return;
+    about.value = about.value ? `${pitch.value}\n${about.value}` : pitch.value;
+    pitch.value = "";
+    if (pitch.form) onDraft(readDraft(pitch.form));
+    pitch.focus();
+  };
 
   // Fields keep their values on a validation error (no form reset); the
   // picked poster frame is uploaded only now, since it can still change.
@@ -267,20 +307,70 @@ function Form({
         ))}
       </div>
 
+      <div className="field">
+        <label className="mono field-k" htmlFor="pitch">
+          <T zh="一句话介绍" en="One-line pitch" />
+          <span className={pitchOver ? "count over" : "count"}>
+            {pitchLength} / {PITCH_MAX}
+          </span>
+        </label>
+        <input
+          id="pitch"
+          ref={pitchRef}
+          type="text"
+          name="pitch"
+          required
+          placeholder="按通勤和预算筛合租帖，过期的自动下架 / Flatmate posts you can filter by commute"
+          aria-invalid={pitchOver || Boolean(err.pitch)}
+          aria-describedby="pitch-hint"
+        />
+        {pitchOver ? (
+          <span className="err" id="pitch-hint">
+            <T
+              zh={`超出 ${pitchLength - PITCH_MAX} 个字。项目卡上只放一句话，细节写进下面的详细介绍。`}
+              en={`${pitchLength - PITCH_MAX} over. The card holds one line; the rest goes in the details below.`}
+            />{" "}
+            <button type="button" className="linkish" onClick={moveToAbout}>
+              <T zh="整段移到详细介绍" en="Move it all to the details" />
+            </button>
+          </span>
+        ) : err.pitch ? (
+          <span className="err" id="pitch-hint">
+            <Msg s={err.pitch} />
+          </span>
+        ) : (
+          <span className="mute small" id="pitch-hint">
+            <T
+              zh="做的是什么、帮谁解决什么。项目卡上只显示这一句；中文一个字算 1，英文字母算半个。"
+              en="What it is and who it helps. It's the only line on the card; letters count half a Chinese character."
+            />
+          </span>
+        )}
+      </div>
+
       <label className="field">
-        <span className="mono">
-          <T zh="要解决的问题" en="The problem" />
+        <span className="mono field-k">
+          <T zh="详细介绍（可选）" en="Details (optional)" />
+          <span className="count">{(draft?.problem ?? "").length} / 600</span>
         </span>
         <textarea
+          ref={aboutRef}
           name="problem"
-          maxLength={280}
-          required
-          placeholder="找室友靠小红书刷帖，信息过期 / Flatmate posts go stale and can't be filtered by commute"
+          maxLength={600}
+          rows={5}
+          placeholder="背景、现在做到哪一步、用了什么技术 / Background, where it stands, what it's built with"
           aria-invalid={Boolean(err.problem)}
         />
-        {err.problem && (
+        {err.problem ? (
           <span className="err">
             <Msg s={err.problem} />
+          </span>
+        ) : (
+          <span className="mute small">
+            <T
+              zh="只在项目详情页的「项目介绍」里显示。"
+              en="Shown only in About on the project page."
+            />
           </span>
         )}
       </label>
@@ -303,7 +393,12 @@ function Form({
         <span className="mono">
           <T zh="下一步" en="Next step" />
         </span>
-        <input type="text" name="nextStep" maxLength={280} />
+        <input
+          type="text"
+          name="nextStep"
+          maxLength={280}
+          placeholder="找 5 位同学试用、找一位设计伙伴 / Find 5 testers, find a designer"
+        />
       </label>
 
       <CoverField value={cover} onChange={setCover} />
@@ -366,6 +461,34 @@ function Form({
         </label>
       </div>
 
+      <div className="owner-line">
+        <span className="owner-mini" aria-hidden>
+          <MemberCard
+            card={submitter.owner.card}
+            design={submitter.owner.design}
+            flipped={false}
+            still
+            className="mini"
+          />
+        </span>
+        <p className="mute small">
+          <b>{submitter.owner.card.nickname}</b>
+          {submitter.owner.card.memberNo &&
+            ` · ${memberCode(submitter.owner.card.memberNo)}`}{" "}
+          {submitter.showsCard ? (
+            <T
+              zh="发起人是你，项目会挂上你的成员卡。在「我的卡片」里可以关掉。"
+              en="You're the owner; the project shows your member card. You can turn that off on My card."
+            />
+          ) : (
+            <T
+              zh="发起人是你。你关掉了作者卡，项目上只显示昵称。"
+              en="You're the owner. Your card is turned off, so the project shows your nickname only."
+            />
+          )}
+        </p>
+      </div>
+
       {state.status === "error" && (
         <p className="form-status err" role="alert">
           <Msg s={state.message} />
@@ -374,7 +497,7 @@ function Form({
       <button
         type="submit"
         className="btn solid primary"
-        disabled={pending || posting || uploading}
+        disabled={pending || posting || uploading || pitchOver}
         style={{ alignSelf: "start" }}
       >
         {uploading ? (

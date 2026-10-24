@@ -12,6 +12,9 @@ import {
   UPDATE_KIND_LABEL,
 } from "@/lib/types";
 import { countKind } from "@/lib/comments";
+import { displayLength, PITCH_MAX } from "@/lib/text-length";
+import { memberCode } from "@/lib/members";
+import { MeCard } from "@/app/me/me-card";
 import { AskToJoin, Comments } from "./comments";
 import { ContactCopy, DetailToc } from "./detail-aside";
 import { UpdateForm } from "./update-form";
@@ -20,18 +23,25 @@ import { CoverMaterial } from "@/components/fx/cover-material";
 import { TimelineFx } from "@/components/fx/scroll-fx";
 import {
   Cover,
+  OwnerChip,
   StatusDot,
   coverSeed,
+  pitchText,
   projectText,
 } from "@/components/project-card";
 import { T, TranslatedMark } from "@/components/t";
+import "../../members.css";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/projects/[slug]">): Promise<Metadata> {
   const result = await getProject((await params).slug);
   return result
-    ? { title: result.project.name, description: result.project.problem }
+    ? {
+        title: result.project.name,
+        description:
+          result.project.pitch ?? result.project.problem ?? undefined,
+      }
     : {};
 }
 
@@ -109,6 +119,12 @@ async function ProjectDetail({ slug }: { slug: string }) {
   const hasMedia = Boolean(
     media.coverUrl || media.videoUrl || media.videoPosterUrl,
   );
+  // The long intro gets its own section; on a project from before pitches it
+  // is the lede already, so only when that lede had to be cut short.
+  const about =
+    Boolean(project.problem) &&
+    (Boolean(project.pitch) ||
+      displayLength(project.problem ?? "") > PITCH_MAX);
 
   return (
     <section className="sec first d-page">
@@ -141,8 +157,8 @@ async function ProjectDetail({ slug }: { slug: string }) {
             >
               <T {...name} />
             </h1>
-            <p className="d-lede">
-              <T {...projectText(project, "problem")} />
+            <p className={project.pitch ? "d-lede" : "d-lede clamp"}>
+              <T {...pitchText(project)} />
             </p>
             <div className="d-cta">
               {project.status !== "paused" && (
@@ -184,7 +200,13 @@ async function ProjectDetail({ slug }: { slug: string }) {
             <dt className="mono mute">
               <T zh="发起人" en="Owner" />
             </dt>
-            <dd>{project.ownerName}</dd>
+            <dd>
+              {project.owner ? (
+                <OwnerChip owner={project.owner} />
+              ) : (
+                project.ownerName
+              )}
+            </dd>
           </div>
           <div>
             <dt className="mono mute">
@@ -222,6 +244,19 @@ async function ProjectDetail({ slug }: { slug: string }) {
 
         <div className="d-body">
           <div className="d-main">
+            {about && (
+              <section className="d-block" id="about">
+                <span className="d-path mono" aria-hidden>
+                  ~/{project.slug}/about
+                </span>
+                <h2 className="h2">
+                  <T zh="项目介绍" en="About" />
+                </h2>
+                <p className="d-about">
+                  <T {...projectText(project, "problem")} />
+                </p>
+              </section>
+            )}
             {project.nextStep && (
               <section className="d-block" id="next">
                 <span className="d-path mono" aria-hidden>
@@ -331,10 +366,32 @@ async function ProjectDetail({ slug }: { slug: string }) {
           </div>
 
           <aside className="d-side">
-            <div className="box d-card">
-              <span className="mono mute">
-                <T zh="联系发起人" en="Contact the owner" />
-              </span>
+            <div
+              className={project.owner ? "box d-card d-owner" : "box d-card"}
+            >
+              {project.owner ? (
+                <>
+                  <span className="mono mute">
+                    <T zh="发起人" en="Owner" />
+                  </span>
+                  <MeCard
+                    card={project.owner.card}
+                    design={project.owner.design}
+                  />
+                  <p className="d-owner-name">
+                    <b>{project.owner.card.nickname}</b>
+                    {project.owner.card.memberNo && (
+                      <span className="mono mute">
+                        {memberCode(project.owner.card.memberNo)}
+                      </span>
+                    )}
+                  </p>
+                </>
+              ) : (
+                <span className="mono mute">
+                  <T zh="联系发起人" en="Contact the owner" />
+                </span>
+              )}
               <ContactCopy contact={project.contact} />
               <p className="mute d-note">
                 <T
@@ -362,6 +419,9 @@ async function ProjectDetail({ slug }: { slug: string }) {
             )}
             <DetailToc
               items={[
+                ...(about
+                  ? [{ id: "about", label: <T zh="项目介绍" en="About" /> }]
+                  : []),
                 ...(project.nextStep
                   ? [{ id: "next", label: <T zh="下一步" en="Next step" /> }]
                   : []),

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MEDIA_PATH, VIDEO_MAX_SECONDS } from "./media";
+import { displayLength, PITCH_MAX } from "./text-length";
 import {
   CODING_LEVELS,
   COMMENT_KINDS,
@@ -63,6 +64,19 @@ export function channelFromSearch(search: string): string | null {
   const params = new URLSearchParams(search);
   return normalizeChannel(params.get("ref") ?? params.get("utm_source"));
 }
+
+/**
+ * A page on this site to come back to (`?next=/projects/new`), or null. Only a
+ * plain path: no other host, no `//evil.com`, no backslash tricks.
+ */
+export function localPath(v: unknown): string | null {
+  return typeof v === "string" && /^\/(?![/\\])[\w\-./?=&%]{0,200}$/.test(v)
+    ? v
+    : null;
+}
+
+export const nextFromSearch = (search: string) =>
+  localPath(new URLSearchParams(search).get("next"));
 
 // Core-team volunteers can be reached, so unlike the join form this one asks
 // for contact details, and nothing is stored unless the applicant consents.
@@ -140,11 +154,21 @@ const projectMediaSchema = z
 
 export const projectSubmissionSchema = z.object({
   name: text(60),
-  problem: text(280),
+  // The card shows only this line. 36 by displayLength is at most 72
+  // characters, the database's cap.
+  pitch: z
+    .string()
+    .trim()
+    .min(1, "必填|Required")
+    .refine(
+      (v) => displayLength(v) <= PITCH_MAX,
+      `一句话介绍最多 ${PITCH_MAX} 个字（英文字母算半个），细节写进详细介绍|Keep the one-liner to ${PITCH_MAX} Chinese characters or about ${PITCH_MAX * 2} letters; the rest goes in the details`,
+    ),
+  // The longer intro, on the project page only.
+  problem: optionalText(600),
   targetUser: text(80),
   neededRoles: z.array(z.enum(ROLES)).max(ROLES.length),
   nextStep: optionalText(280),
-  ownerName: text(40),
   contact: text(120),
   repoUrl: optionalUrl,
   demoUrl: optionalUrl,
@@ -306,11 +330,11 @@ export function parseVolunteerForm(form: FormData) {
 export function parseProjectForm(form: FormData) {
   return projectSubmissionSchema.safeParse({
     name: form.get("name") ?? "",
+    pitch: form.get("pitch") ?? "",
     problem: form.get("problem") ?? "",
     targetUser: form.get("targetUser") ?? "",
     neededRoles: form.getAll("neededRoles"),
     nextStep: form.get("nextStep") ?? "",
-    ownerName: form.get("ownerName") ?? "",
     contact: form.get("contact") ?? "",
     repoUrl: form.get("repoUrl") ?? "",
     demoUrl: form.get("demoUrl") ?? "",

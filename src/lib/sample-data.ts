@@ -31,6 +31,7 @@ export const sampleProjects: Project[] = [
   {
     slug: "coursemate",
     name: "CourseMate",
+    pitch: "选课前，先看看上过的同学说这门课有多累",
     problem: "选课前想知道一门课的真实工作量，现在只能翻群聊记录。",
     targetUser: "授课型硕士新生",
     status: "building",
@@ -45,6 +46,7 @@ export const sampleProjects: Project[] = [
     commentCount: 0,
     en: {
       name: null,
+      pitch: "See how heavy a course really is before you pick it",
       problem:
         "Before picking a course you want to know its real workload, and right now the only way is digging through group chats.",
       targetUser: "New coursework master's students",

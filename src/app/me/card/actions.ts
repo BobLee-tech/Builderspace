@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { saveCard } from "@/lib/auth";
 import { cardSaveSchema } from "@/lib/member-forms";
 
@@ -28,5 +28,7 @@ export async function saveCardDesign(payload: unknown): Promise<SaveCardState> {
   // copy the router is holding.
   revalidatePath("/me", "layout");
   revalidatePath("/welcome");
+  // Projects they own show this card too.
+  updateTag("cards");
   return { status: "ok" };
 }

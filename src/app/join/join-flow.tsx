@@ -11,7 +11,7 @@ import { Arr, Hud } from "@/components/fx/arr";
 import { errorId, FieldError, TextField } from "@/components/form-fields";
 import { SpamGuard } from "@/components/spam-guard";
 import { Msg, T } from "@/components/t";
-import { channelFromSearch } from "@/lib/forms";
+import { channelFromSearch, nextFromSearch } from "@/lib/forms";
 import { ZID_NEEDED, zidSchema } from "@/lib/member-forms";
 import {
   isUnsw,
@@ -204,7 +204,11 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
           <form
             className="form hud"
             noValidate
-            onSubmit={submitWithoutReset(check)}
+            onSubmit={submitWithoutReset((data) => {
+              // Where to go once signed in (e.g. back to submitting a project).
+              data.set("next", nextFromSearch(window.location.search) ?? "");
+              check(data);
+            })}
           >
             <Hud />
             <input type="hidden" name="email" value={email} />
@@ -519,6 +523,7 @@ function ProfileForm({
       onChange={(e) => changed(e.currentTarget)}
       onSubmit={submitWithoutReset((data) => {
         data.set("channel", channelFromSearch(window.location.search) ?? "");
+        data.set("next", nextFromSearch(window.location.search) ?? "");
         onSubmit(data);
       })}
     >

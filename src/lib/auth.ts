@@ -55,6 +55,7 @@ type ProfileRow = {
   school_domain: string | null;
   school_verified_at: string | null;
   is_public: boolean;
+  card_on_projects: boolean;
 };
 
 function toMember(row: ProfileRow, email: string): Member {
@@ -72,6 +73,7 @@ function toMember(row: ProfileRow, email: string): Member {
     schoolDomain: row.school_domain,
     verified: Boolean(row.school_verified_at),
     isPublic: row.is_public,
+    cardOnProjects: row.card_on_projects,
     email,
   };
 }
@@ -182,7 +184,13 @@ export const getSession = cache(
     await connection();
     if (devMode()) {
       const dev = await readDev();
-      return dev ? { email: dev.email, member: dev.member } : null;
+      if (!dev) return null;
+      // Cookies from before the switch existed: on, like the database default.
+      const member = dev.member && {
+        ...dev.member,
+        cardOnProjects: dev.member.cardOnProjects ?? true,
+      };
+      return { email: dev.email, member };
     }
     const supabase = await getSupabaseAuth();
     if (!supabase) return null;
@@ -193,7 +201,7 @@ export const getSession = cache(
     const { data: row } = await supabase
       .from("profiles")
       .select(
-        "id, member_no, handle, nickname, school_degree, major, skills, spark, building, looking_for, school_domain, school_verified_at, is_public",
+        "id, member_no, handle, nickname, school_degree, major, skills, spark, building, looking_for, school_domain, school_verified_at, is_public, card_on_projects",
       )
       .eq("id", claims.sub)
       .maybeSingle<ProfileRow>();
@@ -226,6 +234,7 @@ export async function createMember(
       schoolDomain: domain,
       verified: Boolean(domain),
       isPublic: false,
+      cardOnProjects: true,
       email: session.email,
     };
     await writeDev({
@@ -474,4 +483,46 @@ export async function saveCard(input: CardSaveInput): Promise<Result<Member>> {
     );
   }
   return ok(member);
+}
+
+/* ---------- projects ---------- */
+
+/**
+ * The signed-in member and a database client acting as them, for writes the
+ * database ties to the member (a project's owner_id must be auth.uid()). Null
+ * for visitors, people without a card yet, and development without Supabase.
+ */
+export async function memberWriter() {
+  if (devMode()) return null;
+  const session = await getSession();
+  if (!session?.member) return null;
+  const db = await getSupabaseAuth();
+  return db ? { db, member: session.member } : null;
+}
+
+/** Shows or hides the member's card on the projects they own. */
+export async function setCardOnProjects(on: boolean): Promise<Result> {
+  const session = await getSession();
+  if (!session?.member) return fail("先生成你的卡片|Make your card first");
+  if (devMode()) {
+    const dev = await readDev();
+    if (dev?.member) {
+      await writeDev({ ...dev, member: { ...dev.member, cardOnProjects: on } });
+    }
+    return ok(undefined);
+  }
+  const supabase = await getSupabaseAuth();
+  if (!supabase) return fail(CLOSED);
+  const { error } = await supabase
+    .from("profiles")
+    .update({ card_on_projects: on })
+    .eq("id", session.member.id);
+  if (error) {
+    console.error("[auth] card on projects failed", {
+      code: error.code,
+      message: error.message,
+    });
+    return fail("没存上，请稍后再试|Couldn't save that, try again");
+  }
+  return ok(undefined);
 }
