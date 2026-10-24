@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createMember, getSession, sendCode, verifyCode } from "@/lib/auth";
-import { fieldErrors } from "@/lib/forms";
+import { fieldErrors, localPath } from "@/lib/forms";
 import {
   codeSchema,
   emailSchema,
@@ -59,7 +59,8 @@ export async function confirmCode(
       fieldErrors: { code: verified.message },
     };
   }
-  if (verified.value.hasCard) redirect("/me");
+  // Returning members go to their card, or back to the page that sent them.
+  if (verified.value.hasCard) redirect(localPath(form.get("next")) ?? "/me");
   return { status: "ok", hasCard: false };
 }
 
@@ -85,5 +86,7 @@ export async function makeCard(
   }
   const made = await createMember(parsed.data);
   if (!made.ok) return { status: "error", message: made.message };
-  redirect("/welcome");
+  // The welcome screen offers the way back to the page that sent them.
+  const next = localPath(form.get("next"));
+  redirect(next ? `/welcome?next=${encodeURIComponent(next)}` : "/welcome");
 }

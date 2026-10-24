@@ -44,7 +44,6 @@ const FIELDS = [
     max: 80,
     hint: "悉尼留学生 / International students in Sydney",
   },
-  { name: "ownerName", zh: "发起人昵称", en: "Your nickname", max: 40 },
   {
     name: "contact",
     zh: "公开联系方式",
@@ -57,7 +56,7 @@ const FIELDS = [
 /** A signed-in member submitting: their card, and whether projects show it. */
 export type Submitter = { owner: OwnerCard; showsCard: boolean };
 
-type Draft = Pick<Project, "name" | "targetUser" | "ownerName"> & {
+type Draft = Pick<Project, "name" | "targetUser"> & {
   pitch: string;
   problem: string;
   neededRoles: Role[];
@@ -71,7 +70,6 @@ function readDraft(form: HTMLFormElement): Draft {
     pitch: s("pitch"),
     problem: s("problem"),
     targetUser: s("targetUser"),
-    ownerName: s("ownerName"),
     neededRoles: d.getAll("neededRoles").map(String) as Role[],
   };
 }
@@ -81,7 +79,7 @@ function previewProject(
   draft: Draft | null,
   cover: CoverUpload | null,
   video: VideoUpload | null,
-  submitter: Submitter | null,
+  submitter: Submitter,
 ): Project {
   return {
     slug: "draft",
@@ -90,13 +88,13 @@ function previewProject(
       draft?.pitch ||
       "一句话说清楚：做的是什么，帮谁解决什么。· What it is, and who it helps.",
     problem: draft?.problem || null,
-    owner: submitter?.showsCard ? submitter.owner : null,
+    owner: submitter.showsCard ? submitter.owner : null,
     targetUser: draft?.targetUser || "—",
     status: "recruiting",
     neededRoles: draft?.neededRoles ?? [],
     nextStep: null,
     contact: "",
-    ownerName: submitter?.owner.card.nickname || draft?.ownerName || "你 · You",
+    ownerName: submitter.owner.card.nickname,
     repoUrl: null,
     demoUrl: null,
     // The preview card says "just now" instead of a date.
@@ -112,7 +110,7 @@ function previewProject(
   };
 }
 
-export function ProjectForm({ submitter }: { submitter: Submitter | null }) {
+export function ProjectForm({ submitter }: { submitter: Submitter }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     submitProject,
     { status: "idle" },
@@ -227,7 +225,7 @@ function Form({
   pending: boolean;
   draft: Draft | null;
   onDraft: (d: Draft) => void;
-  submitter: Submitter | null;
+  submitter: Submitter;
   cover: CoverUpload | null;
   setCover: (fn: (u: CoverUpload | null) => CoverUpload | null) => void;
   video: VideoUpload | null;
@@ -286,36 +284,27 @@ function Form({
       noValidate
     >
       <SpamGuard />
-      {submitter && (
-        <input
-          type="hidden"
-          name="ownerName"
-          value={submitter.owner.card.nickname}
-        />
-      )}
       <div className="row2">
-        {FIELDS.filter((f) => !(submitter && f.name === "ownerName")).map(
-          (f) => (
-            <label key={f.name} className="field">
-              <span className="mono">
-                <T zh={f.zh} en={f.en} />
+        {FIELDS.map((f) => (
+          <label key={f.name} className="field">
+            <span className="mono">
+              <T zh={f.zh} en={f.en} />
+            </span>
+            <input
+              type="text"
+              name={f.name}
+              maxLength={f.max}
+              placeholder={"hint" in f ? f.hint : undefined}
+              aria-invalid={Boolean(err[f.name])}
+              required
+            />
+            {err[f.name] && (
+              <span className="err">
+                <Msg s={err[f.name]} />
               </span>
-              <input
-                type="text"
-                name={f.name}
-                maxLength={f.max}
-                placeholder={"hint" in f ? f.hint : undefined}
-                aria-invalid={Boolean(err[f.name])}
-                required
-              />
-              {err[f.name] && (
-                <span className="err">
-                  <Msg s={err[f.name]} />
-                </span>
-              )}
-            </label>
-          ),
-        )}
+            )}
+          </label>
+        ))}
       </div>
 
       <div className="field">
@@ -472,45 +461,33 @@ function Form({
         </label>
       </div>
 
-      {submitter ? (
-        <div className="owner-line">
-          <span className="owner-mini" aria-hidden>
-            <MemberCard
-              card={submitter.owner.card}
-              design={submitter.owner.design}
-              flipped={false}
-              still
-              className="mini"
-            />
-          </span>
-          <p className="mute small">
-            <b>{submitter.owner.card.nickname}</b>
-            {submitter.owner.card.memberNo &&
-              ` · ${memberCode(submitter.owner.card.memberNo)}`}{" "}
-            {submitter.showsCard ? (
-              <T
-                zh="发起人是你，项目会挂上你的成员卡。在「我的卡片」里可以关掉。"
-                en="You're the owner; the project shows your member card. You can turn that off on My card."
-              />
-            ) : (
-              <T
-                zh="发起人是你。你关掉了作者卡，项目上只显示昵称。"
-                en="You're the owner. Your card is turned off, so the project shows your nickname only."
-              />
-            )}
-          </p>
-        </div>
-      ) : (
+      <div className="owner-line">
+        <span className="owner-mini" aria-hidden>
+          <MemberCard
+            card={submitter.owner.card}
+            design={submitter.owner.design}
+            flipped={false}
+            still
+            className="mini"
+          />
+        </span>
         <p className="mute small">
-          <T
-            zh="加入后再提交，项目会挂上你的成员卡。"
-            en="Join first and the project carries your member card."
-          />{" "}
-          <Link href="/join" className="linkish">
-            <T zh="加入（约 1 分钟）" en="Join (about a minute)" />
-          </Link>
+          <b>{submitter.owner.card.nickname}</b>
+          {submitter.owner.card.memberNo &&
+            ` · ${memberCode(submitter.owner.card.memberNo)}`}{" "}
+          {submitter.showsCard ? (
+            <T
+              zh="发起人是你，项目会挂上你的成员卡。在「我的卡片」里可以关掉。"
+              en="You're the owner; the project shows your member card. You can turn that off on My card."
+            />
+          ) : (
+            <T
+              zh="发起人是你。你关掉了作者卡，项目上只显示昵称。"
+              en="You're the owner. Your card is turned off, so the project shows your nickname only."
+            />
+          )}
         </p>
-      )}
+      </div>
 
       {state.status === "error" && (
         <p className="form-status err" role="alert">

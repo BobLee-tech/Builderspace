@@ -526,3 +526,16 @@
 .switch[aria-checked="true"]::after {
   translate: 18px 0;
 }
+
+/* /projects/new for visitors: join first */
+.join-first {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  max-width: 640px;
+  padding: var(--pad);
+}
+.join-first p {
+  margin: 0;
+}

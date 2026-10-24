@@ -4,12 +4,13 @@ import { Suspense } from "react";
 import { PageHead } from "@/components/page-head";
 import { SpecRow } from "@/components/spec-row";
 import { getSession } from "@/lib/auth";
+import { localPath } from "@/lib/forms";
 import { JoinFlow } from "./join-flow";
 import "../members.css";
 
 export const metadata: Metadata = { title: "加入" };
 
-export default function JoinPage() {
+export default function JoinPage({ searchParams }: PageProps<"/join">) {
   return (
     <section className="sec first">
       <div className="wrap">
@@ -61,16 +62,20 @@ export default function JoinPage() {
           ]}
         />
         <Suspense fallback={<div className="join-wait" aria-busy />}>
-          <JoinGate />
+          <JoinGate searchParams={searchParams} />
         </Suspense>
       </div>
     </section>
   );
 }
 
-/** Members who already have a card go straight to it. */
-async function JoinGate() {
+/** Members who already have a card go straight to it, or back where they came from. */
+async function JoinGate({
+  searchParams,
+}: {
+  searchParams: PageProps<"/join">["searchParams"];
+}) {
   const session = await getSession();
-  if (session?.member) redirect("/me");
+  if (session?.member) redirect(localPath((await searchParams).next) ?? "/me");
   return <JoinFlow signedInEmail={session?.email ?? null} />;
 }

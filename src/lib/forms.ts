@@ -65,6 +65,19 @@ export function channelFromSearch(search: string): string | null {
   return normalizeChannel(params.get("ref") ?? params.get("utm_source"));
 }
 
+/**
+ * A page on this site to come back to (`?next=/projects/new`), or null. Only a
+ * plain path: no other host, no `//evil.com`, no backslash tricks.
+ */
+export function localPath(v: unknown): string | null {
+  return typeof v === "string" && /^\/(?![/\\])[\w\-./?=&%]{0,200}$/.test(v)
+    ? v
+    : null;
+}
+
+export const nextFromSearch = (search: string) =>
+  localPath(new URLSearchParams(search).get("next"));
+
 // Core-team volunteers can be reached, so unlike the join form this one asks
 // for contact details, and nothing is stored unless the applicant consents.
 // Still no student card and no zID.
@@ -156,7 +169,6 @@ export const projectSubmissionSchema = z.object({
   targetUser: text(80),
   neededRoles: z.array(z.enum(ROLES)).max(ROLES.length),
   nextStep: optionalText(280),
-  ownerName: text(40),
   contact: text(120),
   repoUrl: optionalUrl,
   demoUrl: optionalUrl,
@@ -323,7 +335,6 @@ export function parseProjectForm(form: FormData) {
     targetUser: form.get("targetUser") ?? "",
     neededRoles: form.getAll("neededRoles"),
     nextStep: form.get("nextStep") ?? "",
-    ownerName: form.get("ownerName") ?? "",
     contact: form.get("contact") ?? "",
     repoUrl: form.get("repoUrl") ?? "",
     demoUrl: form.get("demoUrl") ?? "",

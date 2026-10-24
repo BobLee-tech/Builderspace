@@ -173,7 +173,10 @@ export function ProjectPlaza({
             <T zh="提交你的项目卡" en="Submit your project" />
           </span>
           <span className="mono">
-            <T zh="人工审核后公开" en="Public after review" />
+            <T
+              zh="成员提交，人工审核后公开"
+              en="For members · public after review"
+            />
           </span>
         </Link>
       </div>
