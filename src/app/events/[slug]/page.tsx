@@ -9,11 +9,10 @@ import {
   Ticket,
   UsersThree,
 } from "@phosphor-icons/react/dist/ssr";
-import { Suspense } from "react";
 import { Arr } from "@/components/fx/arr";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
-import { getEventDetail } from "@/lib/data";
+import { getEventDetail, getEvents } from "@/lib/data";
 import { eventCopy, getEventPage, type EventTool } from "@/lib/event-pages";
 import { getEventResults } from "@/lib/event-results";
 import {
@@ -38,6 +37,20 @@ import { SignupForm } from "./signup-form";
 import "../events.css";
 import "./event.css";
 
+// Every published event is prerendered whole, with params read outside any
+// <Suspense>, so the HTML is the page itself rather than a "Loading…" shell
+// that the content replaces later. Coming back from /prompt or /live (full
+// page loads), the browser restores the scroll on that first HTML; against
+// the short shell it landed on the sign-up form. An event added after a deploy
+// renders on its first visit and is cached from then on. Cache Components
+// needs at least one param, hence the stand-in, which renders the 404.
+export async function generateStaticParams() {
+  const events = await getEvents();
+  return events.length
+    ? events.map(({ slug }) => ({ slug }))
+    : [{ slug: "__none__" }];
+}
+
 export async function generateMetadata({
   params,
 }: PageProps<"/events/[slug]">): Promise<Metadata> {
@@ -50,27 +63,10 @@ export async function generateMetadata({
   };
 }
 
-export default function EventPageRoute({
+export default async function EventPageRoute({
   params,
 }: PageProps<"/events/[slug]">) {
-  return (
-    <Suspense
-      fallback={
-        <section className="sec first">
-          <div className="wrap">
-            <Crumb />
-            <p className="mute" style={{ marginTop: 32 }}>
-              <T zh="加载中…" en="Loading…" />
-            </p>
-          </div>
-        </section>
-      }
-    >
-      {params.then(({ slug }) => (
-        <EventDetail slug={slug} />
-      ))}
-    </Suspense>
-  );
+  return <EventDetail slug={(await params).slug} />;
 }
 
 function Crumb() {
