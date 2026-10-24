@@ -121,7 +121,7 @@ export async function getMemberCount(): Promise<number | null> {
 
 /**
  * The founders and core team on /people (team_list() in
- * 20261026000000_team_members.sql). Empty while that function is missing, so
+ * 20261026020000_team_members.sql). Empty while that function is missing, so
  * the page shows the departments without people instead of failing.
  */
 export async function getTeam(): Promise<TeamPerson[]> {

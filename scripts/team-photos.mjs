@@ -19,7 +19,7 @@ const SIZES = {
   avatar: { width: 800, height: 800, suffix: "sq" },
   portrait: { width: 1200, height: 1500, suffix: "pt" },
 };
-// One file in the bucket may be at most 1 MB (20261026000000_team_members.sql).
+// One file in the bucket may be at most 1 MB (20261026020000_team_members.sql).
 const MAX_BYTES = 1024 * 1024;
 
 const args = process.argv.slice(2);

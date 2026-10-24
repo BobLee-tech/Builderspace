@@ -1,6 +1,6 @@
 # 成员页：创始团队和核心成员
 
-/people 上出现的人都在 Supabase 的 `team_members` 表里，一人一行。运营在后台的 Table editor 里改，不用发版，改完一分钟左右页面就更新。数据库结构见迁移 `20261026000000_team_members.sql`。
+/people 上出现的人都在 Supabase 的 `team_members` 表里，一人一行。运营在后台的 Table editor 里改，不用发版，改完一分钟左右页面就更新。数据库结构见迁移 `20261026020000_team_members.sql`。
 
 ## 规矩
 
