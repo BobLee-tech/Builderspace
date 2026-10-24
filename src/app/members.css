@@ -151,6 +151,13 @@
   color: var(--ink);
 }
 
+/* zID on the profile step: only UNSW students see the box */
+.zid-part {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 /* one input for the code: paste and autofill just work */
 .field input.otp {
   max-width: 300px;

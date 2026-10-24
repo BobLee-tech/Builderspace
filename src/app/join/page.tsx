@@ -54,8 +54,8 @@ export default function JoinPage() {
             {
               k: { zh: "隐私", en: "Privacy" },
               v: {
-                zh: "不收学生证 · zID 自愿 · 随时可删",
-                en: "No student card · zID opt-in · delete anytime",
+                zh: "不收学生证 · zID 只给社团后台看 · 随时可删",
+                en: "No student card · zID seen only by admins · delete anytime",
               },
             },
           ]}

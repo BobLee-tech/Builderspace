@@ -12,6 +12,7 @@ import { errorId, FieldError, TextField } from "@/components/form-fields";
 import { SpamGuard } from "@/components/spam-guard";
 import { Msg, T } from "@/components/t";
 import { channelFromSearch } from "@/lib/forms";
+import { ZID_NEEDED, zidSchema } from "@/lib/member-forms";
 import {
   isUnsw,
   LOOKING_FOR,
@@ -27,6 +28,7 @@ import {
   type LookingFor,
   type MemberSkill,
   type Spark,
+  zidFromEmail,
 } from "@/lib/members";
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 import { confirmCode, makeCard, requestCode, type StepState } from "./actions";
@@ -109,6 +111,7 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
   const at = STEPS.findIndex(([s]) => s === step);
   const toProfile = useCallback(() => setStep("profile"), []);
   const toSpark = useCallback(() => setStep("spark"), []);
+  const toEmail = useCallback(() => setStep("email"), []);
 
   return (
     <div className="join2">
@@ -266,8 +269,10 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
         {(step === "profile" || step === "spark") && (
           <ProfileForm
             step={step}
+            email={email}
             onNext={toSpark}
             onBack={toProfile}
+            onChangeEmail={toEmail}
             state={made}
             pending={making}
             onSubmit={make}
@@ -373,18 +378,110 @@ function Resend({ email }: { email: string }) {
   );
 }
 
+/**
+ * UNSW students leave a zID. A z1234567@…unsw.edu.au sign-in brings its own,
+ * another UNSW address types one, and anyone else ticks "I'm a UNSW student"
+ * first. Everyone else never sees it.
+ */
+function ZidField({
+  email,
+  error,
+  onChangeEmail,
+}: {
+  email: string;
+  error?: string;
+  onChangeEmail: () => void;
+}) {
+  const [student, setStudent] = useState(false);
+  const fromEmail = zidFromEmail(email);
+  const unswEmail = isUnsw(schoolDomain(email));
+  if (fromEmail) {
+    return (
+      <div className="mail-hint school">
+        <span className="ic">✓</span>
+        <span>
+          <b>zID {fromEmail}</b>
+          <T
+            zh="：从 UNSW 邮箱自动带出，不用再填。"
+            en=": taken from your UNSW email, nothing to fill in."
+          />
+        </span>
+      </div>
+    );
+  }
+  return (
+    <div className="zid-part">
+      {!unswEmail && (
+        <label className="consent">
+          <input
+            type="checkbox"
+            name="unswStudent"
+            checked={student}
+            onChange={(e) => setStudent(e.target.checked)}
+          />
+          <span>
+            <T zh="我是 UNSW 在读学生" en="I'm a current UNSW student" />
+          </span>
+        </label>
+      )}
+      {(unswEmail || student) && (
+        <>
+          <TextField
+            name="zid"
+            label={<span style={{ textTransform: "none" }}>zID</span>}
+            placeholder="z1234567"
+            error={error}
+            max={8}
+          />
+          <p className="mute small">
+            {unswEmail && (
+              <T
+                zh="这个 UNSW 邮箱里看不出 zID，填一下就好。"
+                en="We can't tell your zID from this UNSW email, so add it here."
+              />
+            )}{" "}
+            <T
+              zh="zID 只用来确认你是 UNSW 学生，只给社团后台看，不公开。"
+              en="We only use your zID to confirm you're at UNSW. Only club admins see it; it's never public."
+            />
+            {!unswEmail && (
+              <>
+                {" "}
+                <button
+                  type="button"
+                  className="linkish"
+                  onClick={onChangeEmail}
+                >
+                  <T
+                    zh="也可以退回去换成 UNSW 邮箱，zID 会自动带出。"
+                    en="Or go back and use your UNSW email; your zID fills itself in."
+                  />
+                </button>
+              </>
+            )}
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
 function ProfileForm({
   step,
+  email,
   onNext,
   onBack,
+  onChangeEmail,
   state,
   pending,
   onSubmit,
   onCard,
 }: {
   step: "profile" | "spark";
+  email: string;
   onNext: () => void;
   onBack: () => void;
+  onChangeEmail: () => void;
   state: StepState;
   pending: boolean;
   onSubmit: (data: FormData) => void;
@@ -395,11 +492,14 @@ function ProfileForm({
   const [skillCount, setSkillCount] = useState(0);
   const [spark, setSpark] = useState<Spark>("lumi");
   const [nickErr, setNickErr] = useState<string | undefined>();
+  const [zidErr, setZidErr] = useState<string | undefined>();
 
   // A server-side error on a step-3 field sends the member back to it.
   const backToProfile =
     state.status === "error" &&
-    Boolean(err.nickname || err.schoolDegree || err.major || err.skills);
+    Boolean(
+      err.nickname || err.schoolDegree || err.major || err.skills || err.zid,
+    );
   useEffect(() => {
     if (backToProfile) onBack();
   }, [state, backToProfile, onBack]);
@@ -448,6 +548,11 @@ function ProfileForm({
           max={80}
           optional
         />
+        <ZidField
+          email={email}
+          error={zidErr ?? err.zid}
+          onChangeEmail={onChangeEmail}
+        />
         <fieldset
           className="field"
           style={{ border: 0, padding: 0, margin: 0 }}
@@ -485,17 +590,25 @@ function ProfileForm({
           className="btn solid primary"
           style={{ alignSelf: "start" }}
           onClick={() => {
-            const nick = String(
-              new FormData(ref.current!).get("nickname") ?? "",
-            ).trim();
-            if (!nick) {
-              setNickErr(
-                "填个昵称，卡片上会印它|Add a nickname, it goes on your card",
-              );
-              return;
-            }
-            setNickErr(undefined);
-            onNext();
+            const data = new FormData(ref.current!);
+            const nick = String(data.get("nickname") ?? "").trim();
+            setNickErr(
+              nick
+                ? undefined
+                : "填个昵称，卡片上会印它|Add a nickname, it goes on your card",
+            );
+            // The zID box is only there when this member needs one.
+            const zid = data.get("zid");
+            const zidCheck =
+              zid === null ? null : zidSchema.safeParse(String(zid));
+            setZidErr(
+              !zidCheck || zidCheck.success
+                ? undefined
+                : String(zid).trim()
+                  ? zidCheck.error.issues[0].message
+                  : ZID_NEEDED,
+            );
+            if (nick && (!zidCheck || zidCheck.success)) onNext();
           }}
         >
           <T zh="下一步：选你的拼块" en="Next: pick your piece" /> <Arr />
