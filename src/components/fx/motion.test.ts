@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createFrameLoop,
+  follow,
   spring,
   tickerPeriod,
   wrapTickerPosition,
@@ -25,6 +26,19 @@ describe("spring", () => {
     s.t = 0;
     for (let i = 0; i < 600; i++) s.step(1 / 60);
     expect(s.x).toBe(0);
+  });
+});
+
+describe("follow", () => {
+  it("covers the same distance per second at any frame rate", () => {
+    const after = (fps: number) => {
+      let x = 0;
+      for (let i = 0; i < fps; i++) x += (1 - x) * follow(0.04, 1 / fps);
+      return x;
+    };
+    expect(after(30)).toBeCloseTo(after(60), 10);
+    expect(after(120)).toBeCloseTo(after(60), 10);
+    expect(after(60)).toBeCloseTo(1 - 0.96 ** 60, 10);
   });
 });
 

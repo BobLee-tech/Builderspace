@@ -125,6 +125,13 @@ export function createFrameLoop(
 
 export const frameLoop = createFrameLoop();
 
+/**
+ * How far to move toward a target this frame, given the share `rate` it
+ * would cover in one 60 Hz frame; the same glide at any frame rate.
+ */
+export const follow = (rate: number, dt: number) =>
+  1 - Math.pow(1 - rate, dt * 60);
+
 /** Width of one complete ticker copy, including the inter-copy gap. */
 export function tickerPeriod(firstOffset: number, nextCopyOffset: number) {
   return Math.max(0, nextCopyOffset - firstOffset);

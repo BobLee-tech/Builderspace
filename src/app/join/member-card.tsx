@@ -22,6 +22,7 @@ import {
   type CardDesign,
   type PlacedSticker,
 } from "@/lib/card-design";
+import { newLight, stepLight } from "@/lib/card-light";
 import { STICKER_ART, stickerMask, stickerSvg } from "@/lib/card-stickers";
 import {
   LOOKING_LABEL,
@@ -37,12 +38,6 @@ export type { CardView } from "@/lib/members";
 export type CardLook = Omit<CardDesign, "stickers"> & {
   stickers: PlacedSticker[];
 };
-
-/** Where the virtual light sits when nothing is hovering: a slow loop. */
-const idleLight = (t: number) => [
-  0.5 + Math.cos(t / 2200) * 0.38,
-  0.35 + Math.sin(t / 2200) * 0.3,
-];
 
 /**
  * Moves the card's light to (x, y), in 0–1 of the card, and tilts it by
@@ -61,10 +56,13 @@ export function setCardLight(el: HTMLElement, x: number, y: number, tilt = 0) {
   s.setProperty("--lk", Math.min(1, Math.hypot(dx, dy) * 1.6).toFixed(2));
   s.setProperty("--px", (dx * 2).toFixed(3));
   s.setProperty("--py", (dy * 2).toFixed(3));
-  if (tilt) {
-    s.setProperty("--ry", `${(dx * 20 * tilt).toFixed(2)}deg`);
-    s.setProperty("--rx", `${(-dy * 14 * tilt).toFixed(2)}deg`);
-  }
+  if (tilt) tiltCard(el, x, y, tilt);
+}
+
+/** Tilts the card toward (x, y), in 0–1 of the card, by `tilt`. */
+function tiltCard(el: HTMLElement, x: number, y: number, tilt: number) {
+  el.style.setProperty("--ry", `${((x - 0.5) * 20 * tilt).toFixed(2)}deg`);
+  el.style.setProperty("--rx", `${(-(y - 0.5) * 14 * tilt).toFixed(2)}deg`);
 }
 
 /** Puts the card back level and stops the tilt from easing (pointer left). */
@@ -115,6 +113,8 @@ export function MemberCard({
   const col = colRef ?? own;
   const tiltEl = useRef<HTMLDivElement>(null);
   const hovering = useRef(false);
+  /** The last pointer position over the card, in 0–1 of the card. */
+  const pointer = useRef({ x: 0.5, y: 0.5 });
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const spark = SPARK_INFO[card.spark];
   const major = [card.major, card.schoolDegree].filter(Boolean).join(" · ");
@@ -123,24 +123,27 @@ export function MemberCard({
   const tint = TINT_INFO[d.tint];
   const ti = d.tint === "none" ? TINT_INFO.geo : tint;
 
-  // Set on the column so the shadow under the card can follow the light too.
-  const light = (x: number, y: number, tiltToo: boolean) => {
-    if (col.current) setCardLight(col.current, x, y, tiltToo ? tilt : 0);
-  };
-
-  // Idle drift, only while the card is on screen.
+  // The light, only while the card is on screen. It glides between the idle
+  // drift and the pointer (card-light.ts), so it drifts home when the pointer
+  // leaves instead of jumping. Written on the column so the shadow under the
+  // card follows it too.
   useEffect(() => {
     const el = tiltEl.current;
     if (!el || still || prefersReducedMotion()) return;
+    const lit = newLight();
     let stop: (() => void) | null = null;
     const io = new IntersectionObserver(([e]) => {
       stop?.();
       stop = e.isIntersecting
-        ? frameLoop.add((_, now) => {
-            if (!hovering.current && col.current) {
-              const [x, y] = idleLight(now);
-              setCardLight(col.current, x, y);
-            }
+        ? frameLoop.add((dt, now) => {
+            if (!col.current) return true;
+            stepLight(lit, {
+              now,
+              dt,
+              hovering: hovering.current,
+              pointer: pointer.current,
+            });
+            setCardLight(col.current, lit.x, lit.y);
             return true;
           })
         : null;
@@ -183,13 +186,12 @@ export function MemberCard({
           // A sticker being dragged owns the pointer; keep the card level.
           if (e.buttons) return;
           const r = e.currentTarget.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width;
+          const y = (e.clientY - r.top) / r.height;
           hovering.current = true;
+          pointer.current = { x, y };
           tiltEl.current?.classList.add("tracking");
-          light(
-            (e.clientX - r.left) / r.width,
-            (e.clientY - r.top) / r.height,
-            true,
-          );
+          if (col.current) tiltCard(col.current, x, y, tilt);
         }}
         onPointerLeave={() => {
           if (still) return;
