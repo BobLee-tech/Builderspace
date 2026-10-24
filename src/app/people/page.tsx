@@ -3,38 +3,24 @@ import Link from "next/link";
 import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
 import { T } from "@/components/t";
+import { getMemberCount } from "@/lib/data";
+import { DEPARTMENTS, POSITION_LABEL } from "@/lib/types";
 
 export const metadata: Metadata = { title: "成员" };
 
-// Public materials name roles, never people.
-const TEAM = [
-  {
-    glyph: "→ OUT",
-    title: { zh: "方向与对外", en: "Direction & outreach" },
-    body: {
-      zh: "社团方向、合作与对外联络。",
-      en: "Where the club is going, partners and outreach.",
-    },
-  },
-  {
-    glyph: "</>",
-    title: { zh: "开发与技术", en: "Engineering" },
-    body: {
-      zh: "官网、项目广场和技术支持。",
-      en: "The website, the project plaza and technical help.",
-    },
-  },
-  {
-    glyph: "[OPS]",
-    title: { zh: "运营与设计", en: "Community & design" },
-    body: {
-      zh: "社群、活动、设计与宣传。",
-      en: "Community, events, design and promotion.",
-    },
-  },
-];
+// Public materials name roles, never people: one card per core-team department.
+const GLYPH: Record<(typeof DEPARTMENTS)[number]["name"]["en"], string> = {
+  Operations: "[OPS]",
+  Tech: "</>",
+  Events: "→ EVT",
+};
 
-export default function PeoplePage() {
+/** 73 → "70+": a floor that stays true until the next ten. */
+const roughly = (n: number) =>
+  n < 10 ? String(n) : `${Math.floor(n / 10) * 10}+`;
+
+export default async function PeoplePage() {
+  const members = await getMemberCount();
   return (
     <section className="sec first">
       <div className="wrap">
@@ -43,13 +29,20 @@ export default function PeoplePage() {
           eyebrow={{ zh: "成员 / People", en: "People" }}
           title={["Meet the", "builders."]}
           aside={[
+            ...(members === null
+              ? []
+              : [
+                  {
+                    k: { zh: "成员", en: "Members" },
+                    v: { zh: roughly(members), en: roughly(members) },
+                  },
+                ]),
             {
-              k: { zh: "第一周加入", en: "Joined in week 1" },
-              v: { zh: "70+", en: "70+" },
-            },
-            {
-              k: { zh: "筹备团队", en: "Organisers" },
-              v: { zh: "3 人", en: "3 students" },
+              k: { zh: "核心团队", en: "Core team" },
+              v: {
+                zh: `${DEPARTMENTS.length} 个部门`,
+                en: `${DEPARTMENTS.length} departments`,
+              },
             },
             {
               k: { zh: "费用", en: "Cost" },
@@ -58,21 +51,30 @@ export default function PeoplePage() {
           ]}
         />
         <p className="lede" style={{ marginBottom: 40 }}>
+          {members !== null && (
+            <T
+              zh={`已经有 ${roughly(members)} 位同学加入。`}
+              en={`${roughly(members)} builders have joined. `}
+            />
+          )}
           <T
-            zh="第一周就有 70 多位 UNSW 同学加入。背后是一个三人学生筹备团队。"
-            en="More than 70 UNSW students joined in the first week. Behind it is a three-student organising team."
+            zh={`社团由学生自己运营，核心团队分成下面 ${DEPARTMENTS.length} 个部门。`}
+            en={`Students run the club, and the core team works in the ${DEPARTMENTS.length} departments below.`}
           />
         </p>
 
         <div className="pillars">
-          {TEAM.map((role) => (
-            <div className="pillar" key={role.glyph}>
-              <span className="glyph">{role.glyph}</span>
+          {DEPARTMENTS.map((dept) => (
+            <div className="pillar" key={dept.name.en}>
+              <span className="glyph">{GLYPH[dept.name.en]}</span>
               <h3>
-                <T {...role.title} />
+                <T {...dept.name} />
               </h3>
               <p className="mute">
-                <T {...role.body} />
+                <T
+                  zh={`${dept.positions.map((p) => POSITION_LABEL[p].zh).join("、")}。`}
+                  en={`${dept.positions.map((p) => POSITION_LABEL[p].en).join(", ")}.`}
+                />
               </p>
             </div>
           ))}

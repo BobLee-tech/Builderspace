@@ -40,8 +40,8 @@ export default async function LearnPage() {
                 v: { zh: "48 小时内", en: "Within 48h" },
               },
               {
-                k: { zh: "每周精选", en: "Weekly picks" },
-                v: { zh: "周四", en: "Thursdays" },
+                k: { zh: "精选", en: "Picks" },
+                v: { zh: "不定期", en: "Now and then" },
               },
             ]}
           />
@@ -146,7 +146,7 @@ export default async function LearnPage() {
           <div className="sec-head">
             <div>
               <p className="eyebrow mono">
-                <T zh="每周精选 · Weekly" en="Weekly picks" />
+                <T zh="精选 · Picks" en="Picks" />
               </p>
               <h2 className="h2">
                 <T
@@ -157,8 +157,8 @@ export default async function LearnPage() {
             </div>
             <span className="mono mute">
               <T
-                zh="每周四更新 · 只写摘要，附原文链接"
-                en="Thursdays · summaries with a link to the source"
+                zh="不定期更新 · 只写摘要，附原文链接"
+                en="Now and then · summaries with a link to the source"
               />
             </span>
           </div>

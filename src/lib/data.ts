@@ -96,6 +96,27 @@ export async function getEventSignups(): Promise<Record<string, EventSignups>> {
   );
 }
 
+/**
+ * How many people have joined (member_count() in
+ * 20261025000000_member_count.sql). Null without Supabase or while that
+ * function is missing, so the page leaves the number out instead of failing.
+ */
+export async function getMemberCount(): Promise<number | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("members");
+
+  const db = getSupabase();
+  if (!db) return null;
+
+  const { data, error } = await db.rpc("member_count");
+  if (error) {
+    console.error("[data] member count failed", { code: error.code });
+    return null;
+  }
+  return typeof data === "number" ? data : null;
+}
+
 /** Splits events around "now"; refreshed with the cache, so at most minutes stale. */
 export async function getEventSchedule(): Promise<{
   upcoming: SiteEvent[];
