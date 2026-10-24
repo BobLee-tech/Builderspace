@@ -44,6 +44,7 @@ export const sampleProjects: Project[] = [
     updatedAt: "2026-10-10T12:00:00+11:00",
     media: NO_MEDIA,
     commentCount: 0,
+    starCount: 0,
     en: {
       name: null,
       pitch: "See how heavy a course really is before you pick it",

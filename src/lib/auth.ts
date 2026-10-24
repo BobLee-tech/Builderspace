@@ -20,8 +20,10 @@ import {
   type MemberSkill,
   type Spark,
 } from "./members";
+import { sampleProjects } from "./sample-data";
 import { isSupabaseConfigured } from "./supabase/client";
 import { getSupabaseAuth } from "./supabase/server";
+import type { StarredProject } from "./types";
 
 // Every member read and write goes through here. With Supabase configured the
 // session lives in Supabase's cookies and the database functions in
@@ -169,7 +171,10 @@ export async function verifyCode(
 }
 
 export async function signOut() {
-  if (devMode()) return writeDev(null);
+  if (devMode()) {
+    await writeDevStars(null);
+    return writeDev(null);
+  }
   const supabase = await getSupabaseAuth();
   await supabase?.auth.signOut();
 }
@@ -525,4 +530,115 @@ export async function setCardOnProjects(on: boolean): Promise<Result> {
     return fail("没存上，请稍后再试|Couldn't save that, try again");
   }
   return ok(undefined);
+}
+
+/* ---------- stars ---------- */
+
+// Development keeps stars in a second cookie, tied to the signed-in email, so
+// the session writers above don't have to carry them.
+const DEV_STARS_COOKIE = "bs_dev_stars";
+/** Starred slugs with when, newest first. */
+type DevStars = { email: string; stars: { slug: string; at: string }[] };
+
+async function readDevStars(email: string): Promise<DevStars> {
+  const raw = (await cookies()).get(DEV_STARS_COOKIE)?.value;
+  try {
+    const dev = raw
+      ? (JSON.parse(Buffer.from(raw, "base64url").toString()) as DevStars)
+      : null;
+    if (dev?.email === email) return dev;
+  } catch {}
+  return { email, stars: [] };
+}
+
+async function writeDevStars(dev: DevStars | null) {
+  const store = await cookies();
+  if (!dev) {
+    store.delete(DEV_STARS_COOKIE);
+    return;
+  }
+  store.set(
+    DEV_STARS_COOKIE,
+    Buffer.from(JSON.stringify(dev)).toString("base64url"),
+    { httpOnly: true, sameSite: "lax", path: "/" },
+  );
+}
+
+/** Projects the signed-in member starred, newest first. Memoised per request. */
+export const getMyStars = cache(async (): Promise<StarredProject[]> => {
+  const session = await getSession();
+  if (!session?.member) return [];
+  if (devMode()) {
+    const { stars } = await readDevStars(session.email);
+    return stars.flatMap(({ slug, at }) => {
+      const p = sampleProjects.find((s) => s.slug === slug);
+      return p
+        ? [{ slug, name: p.name, ownerName: p.ownerName, starredAt: at }]
+        : [];
+    });
+  }
+  const supabase = await getSupabaseAuth();
+  if (!supabase) return [];
+  // RLS returns only this member's stars, and only approved projects embed.
+  const { data, error } = await supabase
+    .from("project_stars")
+    .select("created_at,projects!inner(slug,name,owner_name)")
+    .order("created_at", { ascending: false })
+    .limit(200)
+    .overrideTypes<
+      {
+        created_at: string;
+        projects: { slug: string; name: string; owner_name: string };
+      }[]
+    >();
+  if (error) {
+    console.error("[auth] my stars failed", { code: error.code });
+    return [];
+  }
+  return data.map((s) => ({
+    slug: s.projects.slug,
+    name: s.projects.name,
+    ownerName: s.projects.owner_name,
+    starredAt: s.created_at,
+  }));
+});
+
+/** Stars or unstars a public project; returns its new star count. */
+export async function setStar(
+  slug: string,
+  starred: boolean,
+): Promise<Result<number>> {
+  const session = await getSession();
+  if (!session?.member) return fail("先生成你的卡片|Make your card first");
+
+  if (devMode()) {
+    const project = sampleProjects.find((p) => p.slug === slug);
+    if (!project) return fail("找不到这个项目|Project not found");
+    const dev = await readDevStars(session.email);
+    dev.stars = dev.stars.filter((s) => s.slug !== slug);
+    if (starred) dev.stars.unshift({ slug, at: new Date().toISOString() });
+    await writeDevStars(dev);
+    return ok(project.starCount + (starred ? 1 : 0));
+  }
+
+  const supabase = await getSupabaseAuth();
+  if (!supabase) return fail(CLOSED);
+  const { data, error } = await supabase.rpc("set_project_star", {
+    p_slug: slug,
+    p_starred: starred,
+  });
+  if (error || typeof data !== "number") {
+    if (error?.code === "P0002") {
+      return fail("找不到这个项目|Project not found");
+    }
+    if (error?.code === "PT429") {
+      return fail("点得太快了，请稍后再试|Too fast, try again in a moment");
+    }
+    console.error("[auth] set star failed", {
+      code: error?.code,
+      message: error?.message,
+    });
+    return fail("没点上，请再试一次|That didn't go through, try again");
+  }
+  return ok(data);
 }

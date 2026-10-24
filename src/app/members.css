@@ -484,6 +484,32 @@
 }
 
 /* /me: show my card on my projects */
+.me-stars h2 {
+  margin: 0 0 10px;
+  font-weight: 400;
+}
+.me-stars ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.me-stars li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px dashed var(--line);
+}
+.me-stars li > a {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-underline-offset: 3px;
+}
+.me-stars li > .mono {
+  flex: none;
+}
 .me-public {
   display: flex;
   align-items: center;

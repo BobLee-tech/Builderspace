@@ -160,6 +160,8 @@ export type Project = {
   media: ProjectMedia;
   /** Visible comments, replies included; 0 for sample data and previews. */
   commentCount: number;
+  /** Members who starred it; 0 for previews. */
+  starCount: number;
   /** Absent on the submit form's preview. */
   en?: ProjectEn;
   /** The language showing a translation, marked "Translated"; null when the author wrote it. */
@@ -170,6 +172,14 @@ export type Project = {
 
 /** What a project shows of its owner (project_owner_cards in the database). */
 export type OwnerCard = { card: CardView; design: CardDesign };
+
+/** A project the signed-in member starred, newest star first. */
+export type StarredProject = {
+  slug: string;
+  name: string;
+  ownerName: string;
+  starredAt: string;
+};
 
 /** Signed, short-lived URLs for an approved project's uploads. */
 export type ProjectMedia = {

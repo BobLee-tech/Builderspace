@@ -107,6 +107,7 @@ function previewProject(
       videoSeconds: video?.seconds ?? null,
     },
     commentCount: 0,
+    starCount: 0,
   };
 }
 

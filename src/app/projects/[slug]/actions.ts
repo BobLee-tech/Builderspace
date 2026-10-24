@@ -4,6 +4,7 @@ import { revalidateTag, updateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { ADMIN_FLAG_COOKIE, ADMIN_KEY_COOKIE } from "@/lib/admin";
+import { setStar } from "@/lib/auth";
 import {
   parseProjectCommentForm,
   parseProjectUpdateForm,
@@ -179,4 +180,29 @@ export async function deleteProjectComment(
   updateTag(`comments:${input.data.slug}`);
   revalidateTag("comment-counts", "max");
   return { ok: true };
+}
+
+export type StarResult =
+  { ok: true; count: number } | { ok: false; message: string };
+
+/** Stars or unstars a public project for the signed-in member. */
+export async function toggleStar(
+  slug: string,
+  starred: boolean,
+): Promise<StarResult> {
+  const input = z
+    .object({
+      slug: z.string().regex(/^[a-z0-9-]{1,80}$/),
+      starred: z.boolean(),
+    })
+    .safeParse({ slug, starred });
+  if (!input.success) {
+    return { ok: false, message: "找不到这个项目|Project not found" };
+  }
+  const result = await setStar(input.data.slug, input.data.starred);
+  if (!result.ok) return { ok: false, message: result.message };
+  // The page shows the new count right away; the plaza catches up after.
+  updateTag(`project:${input.data.slug}`);
+  revalidateTag("star-counts", "max");
+  return { ok: true, count: result.value };
 }
