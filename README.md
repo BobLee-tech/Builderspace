@@ -11,11 +11,11 @@
 
 网站整体用黑、白、镀铬三种颜色，彩色留给了这五位：
 
-- 🩷 **Vivi** 知微 · 探索者：*What if…?*
-- 💛 **Lumi** 灵犀 · 灵感家：*I've got an idea!*
-- 💙 **Geo** 格物 · 研究者：*Let's figure it out.*
-- 💚 **Momo** 青禾 · 实践家：*Let's build it!*
-- 💜 **Kiko** 同舟 · 协作者：*Together, we can!*
+- 🩷 **Vivi** 知微 · 探索者：_What if…?_
+- 💛 **Lumi** 灵犀 · 灵感家：_I've got an idea!_
+- 💙 **Geo** 格物 · 研究者：_Let's figure it out._
+- 💚 **Momo** 青禾 · 实践家：_Let's build it!_
+- 💜 **Kiko** 同舟 · 协作者：_Together, we can!_
 
 加入时选一只，会印在你的会员卡上哦。
 
