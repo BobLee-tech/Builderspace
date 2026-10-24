@@ -152,6 +152,20 @@
 .has-cursor textarea {
   cursor: text;
 }
+/* The video player is a modal <dialog> (and can go fullscreen), so it sits in
+   the top layer above .cur / .cur-ring: with `cursor: none` the pointer
+   vanished there. Use the system cursor inside it and hide ours until it
+   closes. */
+.has-cursor .vlb {
+  cursor: auto;
+}
+.has-cursor .vlb button {
+  cursor: pointer;
+}
+.has-cursor:has(.vlb[open]) .cur,
+.has-cursor:has(.vlb[open]) .cur-ring {
+  opacity: 0;
+}
 
 /* ---------- boot screen (once per session; see components/fx/boot.tsx) ---------- */
 .boot {
