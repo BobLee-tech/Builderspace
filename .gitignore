@@ -28,3 +28,6 @@ promo/
 site/
 demo/
 .claude/
+
+# scripts/team-photos.mjs output (photos of real people, never committed)
+team-photos-out/

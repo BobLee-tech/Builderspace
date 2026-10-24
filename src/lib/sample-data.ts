@@ -1,8 +1,12 @@
+import { DEFAULT_DESIGN, type CardDesign } from "./card-design";
+import type { Spark } from "./members";
+import { teamLine, type TeamKey, type TeamPerson } from "./team";
 import {
   NO_MEDIA,
   type Project,
   type SiteEvent,
   type Tutorial,
+  type VolunteerPosition,
   type WeeklyPick,
 } from "./types";
 
@@ -56,3 +60,82 @@ export const sampleProjects: Project[] = [
 
 export const sampleTutorials: Tutorial[] = [];
 export const samplePicks: WeeklyPick[] = [];
+
+// Placeholders that lay out /people, not people: every name says what it is,
+// there are no photos, and <SampleNotice /> sits above them. Ops has enough
+// to page, so paging can be checked locally.
+function placeholder(
+  name: string,
+  team: TeamKey,
+  position: VolunteerPosition | null,
+  spark: Spark,
+  design: Partial<CardDesign> = {},
+): TeamPerson {
+  return {
+    id: `sample-${name.toLowerCase().replace(/\W+/g, "-")}`,
+    slug: `sample-${name.toLowerCase().replace(/\W+/g, "-")}`,
+    team,
+    position,
+    title: team === "founder" ? "Co-President" : null,
+    bio: null,
+    bioEn: null,
+    link: null,
+    avatar: null,
+    portrait: null,
+    card: {
+      nickname: name,
+      schoolDegree: "",
+      major: teamLine(team),
+      skills: [],
+      spark,
+      memberNo: null,
+      seal: null,
+      building: null,
+      lookingFor: [],
+    },
+    design: { ...DEFAULT_DESIGN, ...design },
+  };
+}
+
+export const sampleTeam: TeamPerson[] = [
+  placeholder("Founder A", "founder", null, "vivi"),
+  placeholder("Founder B", "founder", null, "lumi", { tint: "lumi" }),
+  placeholder("Founder C", "founder", null, "geo", { material: "chrome" }),
+  placeholder("Ops 1", "ops", "content", "momo", {
+    tint: "momo",
+    pattern: "topo",
+  }),
+  placeholder("Ops 2", "ops", "design_media", "kiko", {
+    material: "glass",
+    tint: "kiko",
+  }),
+  placeholder("Ops 3", "ops", "recruiting", "vivi", {
+    tint: "vivi",
+    pattern: "dots",
+  }),
+  placeholder("Ops 4", "ops", "content", "geo", { material: "carbon" }),
+  placeholder("Ops 5", "ops", "design_media", "lumi", {
+    tint: "lumi",
+    pattern: "grid",
+  }),
+  placeholder("Ops 6", "ops", "recruiting", "momo", {
+    material: "chrome",
+    tint: "momo",
+  }),
+  placeholder("Tech 1", "tech", "product", "geo", {
+    tint: "geo",
+    pattern: "grid",
+  }),
+  placeholder("Tech 2", "tech", "web_tools", "kiko", {
+    material: "carbon",
+    tint: "kiko",
+  }),
+  placeholder("Tech 3", "tech", "teaching", "momo", { pattern: "puzzle" }),
+  placeholder("Events 1", "events", "events", "vivi", {
+    material: "glass",
+    tint: "vivi",
+  }),
+  placeholder("Events 2", "events", "partnerships", "lumi", {
+    pattern: "topo",
+  }),
+];
