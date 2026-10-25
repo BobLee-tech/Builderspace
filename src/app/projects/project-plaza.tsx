@@ -96,10 +96,10 @@ export function ProjectPlaza({
           <div
             className="filters"
             role="group"
-            aria-label="Filter by needed role / 按所缺角色筛选"
+            aria-label="Filter by needed role / 按在寻找的角色筛选"
           >
             <span className="mono mute label">
-              <T zh="缺的角色" en="Needs" />
+              <T zh="在寻找的角色" en="Needs" />
             </span>
             <Chip on={!role} onClick={() => setRole(null)}>
               <T zh="不限" en="Any" />

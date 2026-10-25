@@ -377,7 +377,7 @@ function Form({
 
       <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
         <legend className="mono mute" style={{ marginBottom: 8 }}>
-          <T zh="缺的角色" en="Roles you need" />
+          <T zh="在寻找的角色" en="Roles you need" />
         </legend>
         <div className="filters">
           {ROLES.map((r) => (
