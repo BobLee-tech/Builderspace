@@ -5,7 +5,14 @@ import { Suspense } from "react";
 import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
 import { T } from "@/components/t";
-import { getCardDesign, getMyZid, getSession, surveyDone } from "@/lib/auth";
+import {
+  getCardDesign,
+  getMyStars,
+  getMyZid,
+  getSession,
+  surveyDone,
+} from "@/lib/auth";
+import { formatShortDate } from "@/lib/format";
 import {
   cardViewOf,
   isUnsw,
@@ -17,6 +24,7 @@ import {
   SPARK_INFO,
   type Member,
 } from "@/lib/members";
+import type { StarredProject } from "@/lib/types";
 import { logOut, toggleCardOnProjects } from "./actions";
 import { MeCard } from "./me-card";
 import { SurveyForm } from "./survey-form";
@@ -44,10 +52,11 @@ async function Me() {
   const session = await getSession();
   if (!session?.member) redirect("/join");
   const m = session.member;
-  const [done, design, zid] = await Promise.all([
+  const [done, design, zid, stars] = await Promise.all([
     surveyDone(),
     getCardDesign(),
     getMyZid(),
+    getMyStars(),
   ]);
   const spark = SPARK_INFO[m.spark];
   // Joined before the zID was asked for: a UNSW email, or a school that says
@@ -96,6 +105,7 @@ async function Me() {
           </div>
           <Details m={m} zid={zid} />
           <CardOnProjects on={m.cardOnProjects} />
+          <MyStars stars={stars} />
           {askZid && <ZidForm unswEmail={unswEmail} />}
           {!done && <SurveyForm zid={zid} />}
           <form action={logOut}>
@@ -216,5 +226,38 @@ function CardOnProjects({ on }: { on: boolean }) {
         aria-label="在项目页展示我的卡片 / Show my card on my projects"
       />
     </form>
+  );
+}
+
+/** Projects this member starred, newest star first. */
+function MyStars({ stars }: { stars: StarredProject[] }) {
+  return (
+    <section className="hud me-details me-stars">
+      <h2 className="mono mute">
+        <T zh="我 Star 的项目" en="Projects I starred" />
+      </h2>
+      {stars.length === 0 ? (
+        <p className="mute small">
+          <T
+            zh="在项目页点 Star，会收在这里。"
+            en="Star a project on its page and it shows up here."
+          />{" "}
+          <Link href="/projects" className="linkish">
+            <T zh="去项目广场" en="Browse projects" /> →
+          </Link>
+        </p>
+      ) : (
+        <ul>
+          {stars.map((s) => (
+            <li key={s.slug}>
+              <Link href={`/projects/${s.slug}`}>{s.name}</Link>
+              <span className="mono mute">
+                {s.ownerName} · {formatShortDate(s.starredAt)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

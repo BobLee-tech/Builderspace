@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { getMyStars, getSession } from "@/lib/auth";
 import { getProject, getProjectComments } from "@/lib/data";
 import { dateStamp, formatDate, formatShortDate } from "@/lib/format";
 import {
@@ -17,6 +18,7 @@ import { memberCode } from "@/lib/members";
 import { MeCard } from "@/app/me/me-card";
 import { AskToJoin, Comments } from "./comments";
 import { ContactCopy, DetailToc } from "./detail-aside";
+import { StarButton } from "./star-button";
 import { UpdateForm } from "./update-form";
 import { Arr } from "@/components/fx/arr";
 import { CoverMaterial } from "@/components/fx/cover-material";
@@ -107,6 +109,19 @@ function titleSize(name: string) {
   return units <= 5 ? "xl" : units <= 9 ? "lg" : units <= 16 ? "md" : "sm";
 }
 
+/** The Star button with this visitor's own star; reads the session. */
+async function ProjectStar({ slug, count }: { slug: string; count: number }) {
+  const [session, stars] = await Promise.all([getSession(), getMyStars()]);
+  return (
+    <StarButton
+      slug={slug}
+      count={count}
+      starred={stars.some((s) => s.slug === slug)}
+      viewer={session?.member ? "member" : session ? "no-card" : "guest"}
+    />
+  );
+}
+
 async function ProjectDetail({ slug }: { slug: string }) {
   const [result, comments] = await Promise.all([
     getProject(slug),
@@ -166,6 +181,18 @@ async function ProjectDetail({ slug }: { slug: string }) {
                   <T zh="我想加入" en="I want to join" /> <Arr />
                 </AskToJoin>
               )}
+              <Suspense
+                fallback={
+                  <StarButton
+                    slug={project.slug}
+                    count={project.starCount}
+                    starred={false}
+                    viewer="loading"
+                  />
+                }
+              >
+                <ProjectStar slug={project.slug} count={project.starCount} />
+              </Suspense>
               {project.repoUrl && (
                 <a
                   href={project.repoUrl}

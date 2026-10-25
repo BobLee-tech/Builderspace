@@ -10,10 +10,11 @@ export function Plaza({ projects }: { projects: Project[] }) {
   );
   return (
     <ProjectPlaza
-      projects={projects.map(({ slug, status, neededRoles }) => ({
+      projects={projects.map(({ slug, status, neededRoles, starCount }) => ({
         slug,
         status,
         neededRoles,
+        starCount,
       }))}
       cards={cards}
     />

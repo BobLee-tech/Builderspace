@@ -22,12 +22,14 @@ export function ProjectPlaza({
   projects,
   cards,
 }: {
-  projects: Pick<Project, "slug" | "status" | "neededRoles">[];
+  /** Newest update first, as the database returns them. */
+  projects: Pick<Project, "slug" | "status" | "neededRoles" | "starCount">[];
   cards: Record<string, ReactNode>;
 }) {
   const [status, setStatus] = useState<ProjectStatus | null>(null);
   const [role, setRole] = useState<Role | null>(null);
   const [list, setList] = useState(false);
+  const [byStars, setByStars] = useState(false);
 
   // Remember grid vs list per visitor. This re-runs when a hidden page comes
   // back, so it also picks up a choice made in the other plaza (home vs /projects).
@@ -48,11 +50,15 @@ export function ProjectPlaza({
   const count = (s: ProjectStatus) =>
     projects.filter((p) => p.status === s).length;
 
-  const visible = projects.filter(
+  const filtered = projects.filter(
     (p) =>
       (!status || p.status === status) &&
       (!role || p.neededRoles.includes(role)),
   );
+  // A stable sort keeps the newest first among equal counts.
+  const visible = byStars
+    ? [...filtered].sort((a, b) => b.starCount - a.starCount)
+    : filtered;
 
   return (
     <>
@@ -117,44 +123,62 @@ export function ProjectPlaza({
             <b style={{ color: "var(--paper)" }}>{visible.length}</b> /{" "}
             {projects.length}
           </span>
-          <div className="seg icons" role="group" aria-label="Layout / 视图">
-            <button
-              type="button"
-              aria-pressed={!list}
-              aria-label="Cards / 卡片视图"
-              onClick={() => pickLayout(false)}
-            >
-              <svg
-                viewBox="0 0 16 16"
-                width="14"
-                height="14"
-                fill="currentColor"
-                aria-hidden
+          <div className="tb-views">
+            <div className="seg" role="group" aria-label="Sort / 排序">
+              <button
+                type="button"
+                aria-pressed={!byStars}
+                onClick={() => setByStars(false)}
               >
-                <rect x="1" y="1" width="6" height="6" />
-                <rect x="9" y="1" width="6" height="6" />
-                <rect x="1" y="9" width="6" height="6" />
-                <rect x="9" y="9" width="6" height="6" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              aria-pressed={list}
-              aria-label="List / 列表视图"
-              onClick={() => pickLayout(true)}
-            >
-              <svg
-                viewBox="0 0 16 16"
-                width="14"
-                height="14"
-                fill="currentColor"
-                aria-hidden
+                <T zh="最近更新" en="Latest" />
+              </button>
+              <button
+                type="button"
+                aria-pressed={byStars}
+                onClick={() => setByStars(true)}
               >
-                <rect x="1" y="2" width="14" height="2" />
-                <rect x="1" y="7" width="14" height="2" />
-                <rect x="1" y="12" width="14" height="2" />
-              </svg>
-            </button>
+                <T zh="最多 Star" en="Most stars" />
+              </button>
+            </div>
+            <div className="seg icons" role="group" aria-label="Layout / 视图">
+              <button
+                type="button"
+                aria-pressed={!list}
+                aria-label="Cards / 卡片视图"
+                onClick={() => pickLayout(false)}
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  width="14"
+                  height="14"
+                  fill="currentColor"
+                  aria-hidden
+                >
+                  <rect x="1" y="1" width="6" height="6" />
+                  <rect x="9" y="1" width="6" height="6" />
+                  <rect x="1" y="9" width="6" height="6" />
+                  <rect x="9" y="9" width="6" height="6" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                aria-pressed={list}
+                aria-label="List / 列表视图"
+                onClick={() => pickLayout(true)}
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  width="14"
+                  height="14"
+                  fill="currentColor"
+                  aria-hidden
+                >
+                  <rect x="1" y="2" width="14" height="2" />
+                  <rect x="1" y="7" width="14" height="2" />
+                  <rect x="1" y="12" width="14" height="2" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
