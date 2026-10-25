@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   channelFromSearch,
+  maskEmail,
   parseProjectCommentForm,
   parseProjectForm,
   parseProjectUpdateForm,
@@ -364,6 +365,7 @@ const validSignup: [string, string][] = [
   ["slug", "put-yourself-online"],
   ["fullName", " Yuki Tan "],
   ["wechat", "yuki_t"],
+  ["email", " Yuki.Tan@Example.com "],
   ["codingLevel", "none"],
   ["unswStudent", "yes"],
   ["zid", "Z1234567"],
@@ -381,6 +383,7 @@ describe("parseRegistrationForm", () => {
     expect(result.success).toBe(true);
     expect(result.data).toMatchObject({
       fullName: "Yuki Tan",
+      email: "yuki.tan@example.com",
       seatGroup: "unsw",
       zid: "z1234567",
       school: null,
@@ -465,5 +468,17 @@ describe("parseRegistrationForm", () => {
     expect(parseRegistrationForm(form(swap("wechat", " "))).success).toBe(
       false,
     );
+  });
+
+  it("masks the email the confirmation went to", () => {
+    expect(maskEmail("xiaoming@gmail.com")).toBe("x•••@gmail.com");
+    expect(maskEmail("nope")).toBe(null);
+  });
+
+  it("requires a well-formed email", () => {
+    expect(parseRegistrationForm(form(swap("email", ""))).success).toBe(false);
+    expect(
+      parseRegistrationForm(form(swap("email", "yuki@example"))).success,
+    ).toBe(false);
   });
 });

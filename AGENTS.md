@@ -18,4 +18,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Member numbers are the real join order (`join_submissions.member_no`, backfilled by `created_at`); never renumber them.
 - Forms submit through `submitWithoutReset` so server-side validation errors do not wipe the fields.
 - Times are shown in `Australia/Sydney` via `src/lib/format.ts`.
+- Event sign-up: `register_for_event()` dedupes on WeChat ID or email per event and, for a new sign-up, emails the confirmation (with an .ics) through Resend from the database (`20261020040000_event_registration_email.sql`, key in Vault; the designed template is `send_event_confirmation()` in `20261020050000_event_email_design.sql`, its images are PNGs in `public/email/` from `scripts/generate-email-images.mjs`). The site keeps the registration id in an httpOnly cookie scoped to `/events/<slug>` (`src/lib/signup-store.ts`), so the page shows the success card instead of the form on refresh.
 - Run `pnpm check` before committing.

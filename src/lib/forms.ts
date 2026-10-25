@@ -3,6 +3,7 @@ import { MEDIA_PATH, VIDEO_MAX_SECONDS } from "./media";
 import {
   CODING_LEVELS,
   COMMENT_KINDS,
+  type MySignup,
   ROLES,
   UPDATE_KINDS,
   VOLUNTEER_POSITIONS,
@@ -189,8 +190,10 @@ export const projectCommentSchema = z
 export type ProjectCommentSubmission = z.infer<typeof projectCommentSchema>;
 
 // Event sign-up (20261018000000_event_registrations.sql, coding level from
-// 20261019000000_event_coding_level.sql). The name and WeChat
-// ID are for check-in and the participants' group; no student card, no zID.
+// 20261019000000_event_coding_level.sql, email from
+// 20261020040000_event_registration_email.sql). The name and WeChat ID are for
+// check-in and the participants' group, the email for the confirmation; no
+// student card.
 // A GitHub profile link or "@name" is reduced to the username.
 const githubUsername = z
   .string()
@@ -217,6 +220,13 @@ export const registrationSchema = z
     slug: z.string().regex(/^[a-z0-9-]+$/),
     fullName: text(40),
     wechat: text(60),
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .min(1, "必填|Required")
+      .max(254)
+      .pipe(z.email({ error: "请填写有效的邮箱|Enter a valid email" })),
     // "yes" is a UNSW student; otherwise the group they picked.
     codingLevel: z.enum(CODING_LEVELS, { error: "请选一项|Pick one" }),
     unswStudent: z.enum(["yes", "no"], { error: "请选一项|Pick one" }),
@@ -267,6 +277,7 @@ export function parseRegistrationForm(form: FormData) {
     slug: form.get("slug") ?? "",
     fullName: form.get("fullName") ?? "",
     wechat: form.get("wechat") ?? "",
+    email: form.get("email") ?? "",
     codingLevel: form.get("codingLevel") ?? null,
     unswStudent: form.get("unswStudent") ?? null,
     otherGroup: form.get("otherGroup") ?? null,
@@ -278,14 +289,20 @@ export function parseRegistrationForm(form: FormData) {
   });
 }
 
+/** `xiaoming@gmail.com` → `x•••@gmail.com`, as my_event_registration() does. */
+export function maskEmail(email: string) {
+  const at = email.lastIndexOf("@");
+  if (at < 1) return null;
+  return `${email[0]}•••${email.slice(at)}`;
+}
+
 export type RegistrationState =
   | { status: "idle" }
   | { status: "error"; message: string; fieldErrors?: Record<string, string> }
   | {
       status: "ok";
-      name: string;
-      result: "confirmed" | "waitlist";
-      /** This WeChat ID had already signed up; nothing new was stored. */
+      signup: MySignup;
+      /** This WeChat ID or email had already signed up; nothing new was stored. */
       already: boolean;
     };
 

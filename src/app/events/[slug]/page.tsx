@@ -19,6 +19,7 @@ import {
   formatTime,
   formatTimeRange,
 } from "@/lib/format";
+import { findMySignup } from "@/lib/signup-store";
 import { siteUrl } from "@/lib/site-url";
 import {
   EVENT_KIND_LABEL,
@@ -30,7 +31,7 @@ import { AddressBar } from "../address-bar";
 import { TimeLeft } from "../countdown";
 import { EVENT_ICONS as ICONS, eventIsFull, shownSeats } from "../event-parts";
 import { SignupDock, SignupFocus } from "./signup-dock";
-import { SignupForm } from "./signup-form";
+import { SignupDone, SignupForm } from "./signup-form";
 import "../events.css";
 import "./event.css";
 
@@ -78,7 +79,10 @@ function Crumb() {
 }
 
 async function EventDetail({ slug }: { slug: string }) {
-  const detail = await getEventDetail(slug);
+  const [detail, signedUp] = await Promise.all([
+    getEventDetail(slug),
+    findMySignup(slug),
+  ]);
   if (!detail) notFound();
   const { event, signups, phase } = detail;
   const page = getEventPage(event.slug);
@@ -87,6 +91,8 @@ async function EventDetail({ slug }: { slug: string }) {
   const calendarUrl = `${siteUrl.replace(/^https?:/, "webcal:")}/events.ics`;
   const { capacity, left, groups } = shownSeats(event, signups);
   const open = phase === "open" && event.registrationClosesAt !== null;
+  // This browser signed up: its card stays until the event starts.
+  const mine = open || phase === "closed" ? signedUp : null;
 
   return (
     <section className="sec first evp">
@@ -207,15 +213,19 @@ async function EventDetail({ slug }: { slug: string }) {
             <div className="evp-panel surf">
               <div className="evp-panel-top">
                 <h2 className="evp-h2">
-                  {phase === "open"
-                    ? full
-                      ? "Waitlist open."
-                      : "Save a seat."
-                    : phase === "closed"
-                      ? "Sign-up closed."
-                      : phase === "past"
-                        ? "That's a wrap."
-                        : "See you there."}
+                  {mine
+                    ? mine.status === "waitlist"
+                      ? "On the waitlist."
+                      : "You're in."
+                    : phase === "open"
+                      ? full
+                        ? "Waitlist open."
+                        : "Save a seat."
+                      : phase === "closed"
+                        ? "Sign-up closed."
+                        : phase === "past"
+                          ? "That's a wrap."
+                          : "See you there."}
                 </h2>
                 {phase !== "past" && <TimeLeft to={event.startsAt} chip />}
               </div>
@@ -228,25 +238,34 @@ async function EventDetail({ slug }: { slug: string }) {
                     seatQuotas={event.seatQuotas}
                     signups={signups}
                     asksGithub={page?.asksGithub ?? false}
+                    mine={mine}
                   />
-                  <ol className="evp-next">
-                    <li>
-                      <span className="mono">01</span>
-                      <T zh="30 秒填完" en="30 s to fill in" />
-                    </li>
-                    <li>
-                      <span className="mono">02</span>
-                      <T zh="截止后拉你进群" en="We add you to the group" />
-                    </li>
-                    <li>
-                      <span className="mono">03</span>
-                      <T zh="带电脑来签到" en="Bring a laptop, check in" />
-                    </li>
-                  </ol>
+                  {!mine && (
+                    <ol className="evp-next">
+                      <li>
+                        <span className="mono">01</span>
+                        <T zh="30 秒填完" en="30 s to fill in" />
+                      </li>
+                      <li>
+                        <span className="mono">02</span>
+                        <T zh="截止后拉你进群" en="We add you to the group" />
+                      </li>
+                      <li>
+                        <span className="mono">03</span>
+                        <T zh="带电脑来签到" en="Bring a laptop, check in" />
+                      </li>
+                    </ol>
+                  )}
                   <SignupFocus />
                 </>
               )}
-              {phase === "closed" && (
+              {phase === "closed" && mine && (
+                <SignupDone
+                  signup={mine}
+                  asksGithub={page?.asksGithub ?? false}
+                />
+              )}
+              {phase === "closed" && !mine && (
                 <p className="evp-msg mute">
                   <T
                     zh="报名的同学请留意微信群里的确认消息。没报上也没关系，下一场活动会在这里和群里第一时间公布。"
@@ -340,7 +359,7 @@ async function EventDetail({ slug }: { slug: string }) {
           </div>
         </div>
       </div>
-      {open && (
+      {open && !mine && (
         <SignupDock
           title={<T {...title} />}
           zh={`${formatDate(event.startsAt)}${left === null ? "" : ` · 剩 ${left} 个名额`}`}

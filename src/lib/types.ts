@@ -124,6 +124,14 @@ export const NO_SIGNUPS: EventSignups = {
 
 export type RegistrationStatus = "confirmed" | "waitlist";
 
+/** The sign-up this browser made for an event, as its success card shows it. */
+export type MySignup = {
+  name: string;
+  status: RegistrationStatus;
+  /** Masked like `x•••@gmail.com`; null for sign-ups made before emails. */
+  emailHint: string | null;
+};
+
 export type Project = {
   slug: string;
   name: string;

@@ -302,7 +302,8 @@
 .evp-form legend {
   font-size: var(--fs-xs);
 }
-.evp-form .field input[type="text"] {
+.evp-form .field input[type="text"],
+.evp-form .field input[type="email"] {
   height: 44px;
   padding: 0 14px;
 }
@@ -323,6 +324,66 @@
 }
 .evp-done .d-cta {
   margin-top: 4px;
+}
+.evp-done-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.evp-done-tag i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
+}
+.evp-done-tag i[data-wait] {
+  background: transparent;
+  border: 1px solid var(--paper);
+}
+.evp-mail {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: var(--fs-sm);
+}
+.evp-mail svg {
+  flex: none;
+  margin-top: 1px;
+}
+.evp-mail p {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.evp-mail b {
+  font-weight: 500;
+}
+.evp-mail .mute {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.evp-resend {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--paper);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.evp-resend:disabled {
+  opacity: 0.6;
+  cursor: progress;
 }
 .evp-next {
   display: grid;
