@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AccountButton } from "./account-button";
 import { NavPill } from "./fx/nav-pill";
 import { LangToggle } from "./lang-toggle";
 import { NavItems } from "./nav-items";
-import { T } from "./t";
 
 export function SiteHeader() {
   return (
@@ -23,9 +23,7 @@ export function SiteHeader() {
           <NavPill />
           <NavItems />
         </nav>
-        <Link href="/join" className="btn solid sm">
-          <T zh="加入" en="Join" />
-        </Link>
+        <AccountButton />
         <LangToggle />
       </div>
       <div className="progress" aria-hidden>

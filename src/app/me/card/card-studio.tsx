@@ -151,10 +151,13 @@ export function CardStudio({
   card,
   design: stored,
   verified,
+  compact = false,
 }: {
   card: CardView;
   design: CardDesign;
   verified: boolean;
+  /** One column, card on top: the 我的 sheet. */
+  compact?: boolean;
 }) {
   // Start from what the card shows: verified-only parts fall back if need be.
   const [initial] = useState(() => shownDesign(stored, verified));
@@ -466,6 +469,8 @@ export function CardStudio({
           removeSticker(st.uid!);
           return;
         case "Escape":
+          // Handled: the 我的 sheet leaves it alone instead of closing.
+          e.preventDefault();
           setSel(null);
           return;
         case "ArrowLeft":
@@ -549,7 +554,7 @@ export function CardStudio({
   );
 
   return (
-    <div className="studio">
+    <div className={compact ? "studio compact" : "studio"}>
       <div className="stage-col">
         <div
           ref={stage}

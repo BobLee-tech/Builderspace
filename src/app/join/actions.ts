@@ -13,7 +13,7 @@ import { HONEYPOT_FIELD } from "@/lib/spam";
 export type StepState =
   | { status: "idle" }
   | { status: "error"; message: string; fieldErrors?: Record<string, string> }
-  | { status: "ok"; email?: string; hasCard?: boolean };
+  | { status: "ok"; email?: string; hasCard?: boolean; next?: string };
 
 /** Step 1: email in, a 6-digit code goes out. */
 export async function requestCode(
@@ -59,8 +59,15 @@ export async function confirmCode(
       fieldErrors: { code: verified.message },
     };
   }
-  // Returning members go to their card, or back to the page that sent them.
-  if (verified.value.hasCard) redirect(localPath(form.get("next")) ?? "/me");
+  // Returning members go to their card, or back to the page that sent them;
+  // the form loads it in full (see join-flow.tsx).
+  if (verified.value.hasCard) {
+    return {
+      status: "ok",
+      hasCard: true,
+      next: localPath(form.get("next")) ?? "/me",
+    };
+  }
   return { status: "ok", hasCard: false };
 }
 
