@@ -249,7 +249,8 @@ fieldset.grp > legend + * {
 .opts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  /* Rows a little apart: the 认证 badge sits on an option's top border. */
+  gap: 12px 8px;
 }
 .opt {
   position: relative;
@@ -291,14 +292,20 @@ fieldset.grp > legend + * {
 .opt.locked .t {
   opacity: 0.45;
 }
+/* On the option's top border, so it never lands on the name however narrow
+   the option gets (the 我的 sheet, phones). */
 .opt .lk {
   position: absolute;
-  top: 5px;
-  right: 6px;
+  top: -8px;
+  right: 8px;
   display: flex;
   align-items: center;
   gap: 3px;
-  font: 9px var(--f-mono);
+  padding: 1px 6px;
+  border: 1px solid rgba(143, 227, 176, 0.35);
+  border-radius: 999px;
+  background: var(--panel);
+  font: 9px/1.2 var(--f-mono);
   letter-spacing: 0.04em;
   color: #8fe3b0;
 }

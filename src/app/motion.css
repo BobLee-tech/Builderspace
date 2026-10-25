@@ -101,7 +101,10 @@
   left: 0;
   top: 0;
   pointer-events: none;
-  z-index: 100;
+  /* Above every overlay (the 我的 sheet, the celebration canvas): links,
+     buttons and labels hide the system pointer, so if anything covered
+     these, the pointer would vanish over it. */
+  z-index: 2000;
   border-radius: 50%;
   mix-blend-mode: difference;
   display: none;
@@ -3895,7 +3898,6 @@ html[data-lang="en"] .d-title[data-size-en="sm"] {
 .mc-col.mini .mc-stage {
   max-width: none;
 }
-.mc-col.mini .mc-shadow,
 .mc-col.mini .mc-top,
 .mc-col.mini .mc-mid,
 .mc-col.mini .mc-bot,
@@ -3905,6 +3907,11 @@ html[data-lang="en"] .d-title[data-size-en="sm"] {
 }
 .mc-col.mini .mc-glare {
   animation: none;
+}
+/* Gone, not just hidden: its height would sit the card high above the
+   middle of the button or line it is in. */
+.mc-col.mini .mc-shadow {
+  display: none;
 }
 .mc-col.mini .mc-back {
   display: none;
