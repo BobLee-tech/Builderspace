@@ -237,11 +237,11 @@ async function ProjectDetail({ slug }: { slug: string }) {
           </div>
           <div>
             <dt className="mono mute">
-              <T zh="缺的角色" en="Roles needed" />
+              <T zh="在寻找的角色" en="Roles needed" />
             </dt>
             <dd className="need">
               {project.neededRoles.length === 0 ? (
-                <T zh="暂不缺人" en="Team is complete" />
+                <T zh="暂不寻找新成员" en="Team is complete" />
               ) : (
                 project.neededRoles.map((r) => (
                   <span key={r} className="tag dash">
@@ -430,7 +430,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
             {project.neededRoles.length > 0 && project.status !== "paused" && (
               <div className="box d-card">
                 <span className="mono mute">
-                  <T zh="缺的角色" en="Roles needed" />
+                  <T zh="在寻找的角色" en="Roles needed" />
                 </span>
                 <div className="need">
                   {project.neededRoles.map((r) => (

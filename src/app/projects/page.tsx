@@ -37,7 +37,7 @@ export default async function ProjectsPage() {
               v: { zh: String(recruiting), en: String(recruiting) },
             },
             {
-              k: { zh: "最缺的角色", en: "Most needed" },
+              k: { zh: "最多项目在寻找的角色", en: "Most needed" },
               v: topRole ? ROLE_LABEL[topRole] : { zh: "—", en: "—" },
             },
           ]}
@@ -47,7 +47,7 @@ export default async function ProjectsPage() {
             {
               k: { zh: "每张卡", en: "Each card" },
               v: {
-                zh: "问题 · 目标用户 · 进度 · 缺的角色",
+                zh: "问题 · 目标用户 · 进度 · 在寻找的角色",
                 en: "Problem · users · progress · roles needed",
               },
             },

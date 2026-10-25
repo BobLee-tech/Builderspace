@@ -28,7 +28,7 @@ export default function NewProjectPage() {
             {
               k: { zh: "写清", en: "Describe" },
               v: {
-                zh: "一句话介绍 · 目标用户 · 缺的角色",
+                zh: "一句话介绍 · 目标用户 · 在寻找的角色",
                 en: "One-line pitch · users · roles needed",
               },
             },

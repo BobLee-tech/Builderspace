@@ -136,7 +136,7 @@ export function ProjectCard({
       {project.neededRoles.length > 0 && (
         <div className="pcard-need">
           <span className="mono mute need-k">
-            <T zh="缺" en="Needs" />
+            <T zh="在寻找" en="Needs" />
           </span>
           <div className="need">
             {project.neededRoles.map((role) => (
