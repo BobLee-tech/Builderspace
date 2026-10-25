@@ -700,6 +700,10 @@ html:has(.tm-zoom[open]) {
   }
 }
 @media (max-width: 640px) {
+  /* On a phone the page goes straight from the head to the people. */
+  .tm-lede {
+    display: none;
+  }
   .tm-swipe {
     display: inline;
   }

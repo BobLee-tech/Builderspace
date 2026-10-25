@@ -51,7 +51,7 @@ export default async function PeoplePage() {
             },
           ]}
         />
-        <p className="lede" style={{ marginBottom: 40 }}>
+        <p className="lede tm-lede" style={{ marginBottom: 40 }}>
           {members !== null && (
             <T
               zh={`已经有 ${roughly(members)} 位同学加入。`}
