@@ -581,3 +581,18 @@ fieldset.grp > legend + * {
     animation: none;
   }
 }
+
+/* In the 我的 sheet: one column, the card on top, no printed dimensions. */
+.studio.compact {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+.studio.compact .stage-col {
+  position: static;
+  padding-top: 14px;
+  gap: 12px;
+}
+.studio.compact .dim,
+.studio.compact .studio-hint {
+  display: none;
+}

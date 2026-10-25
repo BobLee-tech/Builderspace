@@ -565,3 +565,20 @@
 .join-first p {
   margin: 0;
 }
+
+/* The 我的 sheet's heading (app/me/me-sheet.tsx) */
+.me-sheet-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding-right: 48px;
+}
+.me-sheet-head .h2 {
+  margin: 4px 0 0;
+}
+.me-sheet-head p {
+  margin: 0;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+}

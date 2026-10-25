@@ -105,8 +105,22 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
       setEmail(sent.email);
       setStep("code");
     }
-    if (seen.checked !== checked && checked.status === "ok") setStep("profile");
+    if (
+      seen.checked !== checked &&
+      checked.status === "ok" &&
+      !checked.hasCard
+    ) {
+      setStep("profile");
+    }
   }
+
+  // A returning member: a full page load to their card (or where they came
+  // from). A client-side hop to /me would open the 我的 sheet over this form.
+  useEffect(() => {
+    if (checked.status === "ok" && checked.hasCard) {
+      location.assign(checked.next ?? "/me");
+    }
+  }, [checked]);
 
   const at = STEPS.findIndex(([s]) => s === step);
   const toProfile = useCallback(() => setStep("profile"), []);

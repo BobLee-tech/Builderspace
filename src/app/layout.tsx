@@ -52,9 +52,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children, sheet }: LayoutProps<"/">) {
   return (
     <html
       lang="zh-CN"
@@ -88,6 +86,8 @@ export default function RootLayout({
         </Suspense>
         <SiteFooter />
         <Dock />
+        {/* /me opened over the page from the header (app/@sheet/(.)me). */}
+        {sheet}
       </body>
     </html>
   );
