@@ -221,7 +221,7 @@ export default async function LearnPage() {
   );
 }
 
-/** An event's materials pack: a peek at the wall, then open or download. */
+/** An event's materials pack: a peek at the wall, then open it. */
 function PackCard({ event }: { event: SiteEvent }) {
   const m = getEventMaterials(event.slug)!;
   const shots = (getEventResults(event.slug)?.works ?? [])
@@ -256,9 +256,6 @@ function PackCard({ event }: { event: SiteEvent }) {
         <Link href={`/learn/${event.slug}`} className="text-link">
           <T zh="打开资料包" en="Open the materials" /> →
         </Link>
-        <a href={m.zip} download className="text-link">
-          <T zh="下载" en="Download" /> ↓
-        </a>
       </div>
     </article>
   );
