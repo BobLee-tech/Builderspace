@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_DESIGN } from "./card-design";
+import { FOUNDER_PROFILES } from "./founder-profiles";
 import {
   CARDS_PER_PAGE,
+  CORE_TEAM_FLOOR,
   pageCount,
   pageRange,
   pageSlots,
+  roughly,
   TEAM_DEPARTMENTS,
   teamPersonOf,
   type TeamRow,
@@ -146,5 +149,31 @@ describe("paging", () => {
   it("counts the real people on a page", () => {
     expect(pageRange(14, 1)).toEqual([6, 10]);
     expect(pageRange(14, 2)).toEqual([11, 14]);
+  });
+});
+
+describe("profile slugs", () => {
+  it("uses the slug ops set for the profile address", () => {
+    const p = teamPersonOf(
+      row({ team: "founder", position: null, slug: "evan", handle: "evanj" }),
+      BASE,
+    )!;
+    expect(p).toMatchObject({ slug: "evan", profileSlug: "evan" });
+  });
+
+  it("has no profile without a slug", () => {
+    const p = teamPersonOf(row({ handle: "kai" }), BASE)!;
+    expect(p).toMatchObject({ slug: "kai", profileSlug: null });
+  });
+
+  it("never reads the core team as fewer than 20", () => {
+    expect(roughly(Math.max(0, CORE_TEAM_FLOOR))).toBe("20+");
+    expect(roughly(Math.max(34, CORE_TEAM_FLOOR))).toBe("30+");
+  });
+
+  it("only points profiles at files the bucket accepts", () => {
+    // the same check as team_members.avatar_path in 20261026020000_team_members.sql
+    for (const p of Object.values(FOUNDER_PROFILES))
+      if (p.site) expect(p.site.image).toMatch(/^[a-z0-9-]{8,64}\.webp$/);
   });
 });

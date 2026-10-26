@@ -47,7 +47,7 @@
   margin-top: 20px;
 }
 
-/* ---------- photos ---------- */
+/* ---------- photos: original colour; a dark fade at the bottom keeps names readable ---------- */
 .tm-media {
   position: relative;
   overflow: hidden;
@@ -55,26 +55,14 @@
 }
 .tm-media .tm-photo {
   object-fit: cover;
-  filter: grayscale(1) contrast(1.08) brightness(0.86);
   scale: 1.02;
-  transition:
-    filter 0.45s var(--ease),
-    scale 0.6s var(--ease);
+  transition: scale 0.6s var(--ease);
 }
-.tm-dots {
+.tm-fade {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    var(--mat-halftone) 0 0 / 4px 4px,
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.35),
-      transparent 35%,
-      transparent 55%,
-      rgba(0, 0, 0, 0.6)
-    );
-  transition: opacity 0.6s;
+  background: linear-gradient(180deg, transparent 52%, rgba(0, 0, 0, 0.72));
 }
 .tm-mascot {
   position: absolute;
@@ -85,32 +73,18 @@
 }
 .tm-mascot img {
   width: 54%;
-  filter: grayscale(1) brightness(0.62) contrast(1.15);
-  transition:
-    filter 0.45s var(--ease),
-    transform 0.6s var(--ease);
-}
-.tm-lift:focus-within .tm-photo {
-  filter: none;
-}
-.tm-lift:focus-within .tm-mascot img {
-  filter: none;
+  transition: transform 0.6s var(--ease);
 }
 @media (hover: hover) {
   .tm-lift:hover .tm-photo {
-    filter: none;
     scale: 1.06;
   }
-  .tm-lift:hover .tm-dots {
-    opacity: 0.35;
-  }
   .tm-lift:hover .tm-mascot img {
-    filter: none;
     transform: translateY(-3%) rotate(-4deg);
   }
 }
 
-/* ---------- founders ---------- */
+/* ---------- founders: three 4:5 portraits, a card is a link to the profile ---------- */
 .tm-fd-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -123,15 +97,20 @@
   flex-direction: column;
   gap: 14px;
   min-width: 0;
+  color: inherit;
+}
+.tm-fd:focus-visible {
+  outline: none;
+}
+.tm-fd:focus-visible .tm-media {
+  outline: 1px solid var(--paper);
+  outline-offset: 3px;
 }
 .tm-fd .tm-media {
   aspect-ratio: 4 / 5;
   border-radius: var(--radius);
   border: 1px solid var(--line-2);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-.tm-fd .tm-dots {
-  mask: linear-gradient(180deg, transparent 40%, #000 85%);
 }
 .tm-no {
   position: absolute;
@@ -154,7 +133,7 @@
   gap: 6px;
 }
 .tm-role {
-  color: rgba(244, 244, 242, 0.82);
+  color: rgba(244, 244, 242, 0.85);
 }
 .tm-name {
   font-family: var(--f-display);
@@ -169,40 +148,74 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  filter: drop-shadow(0 1px 8px rgba(0, 0, 0, 0.45));
 }
 .tm-name.long {
   font-size: 8cqw;
 }
-.tm-bio {
+.tm-below {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
   padding-inline: 4px;
+}
+.tm-focus {
+  min-width: 0;
+  font-size: var(--fs-sm);
+}
+.tm-bio {
   color: var(--mute);
 }
-.tm-links {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-  padding-inline: 4px;
-}
-.tm-links a,
-.tm-cardlink {
-  padding: 0 0 2px;
-  border: 0;
-  border-bottom: 1px solid var(--line-2);
-  background: none;
+.tm-more {
+  display: inline-flex;
+  gap: 6px;
   color: var(--paper);
-  font: inherit;
-  letter-spacing: inherit;
-  text-transform: inherit;
+  opacity: 0.55;
+  white-space: nowrap;
+  transition:
+    opacity 0.3s,
+    gap 0.4s var(--ease);
+}
+.tm-fd:focus-visible .tm-more {
+  opacity: 1;
+  gap: 10px;
+}
+@media (hover: hover) {
+  .tm-fd:hover .tm-more {
+    opacity: 1;
+    gap: 10px;
+  }
+}
+/* dashes under the founders on a phone, the same look as the core-team pager */
+.tm-fd-dots {
+  display: none;
+  justify-content: center;
+  gap: 6px;
+  margin: -32px 0 44px;
+}
+.tm-fd-dots button {
+  width: 22px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: none;
   cursor: pointer;
-  transition: border-color 0.3s;
+  transition: width 0.45s var(--ease);
 }
-.tm-cardlink {
-  cursor: zoom-in;
+.tm-fd-dots button::before {
+  content: "";
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line-2);
+  transition: background 0.3s;
 }
-.tm-links a:hover,
-.tm-cardlink:hover {
-  border-color: var(--paper);
+.tm-fd-dots button[aria-current="true"] {
+  width: 44px;
+}
+.tm-fd-dots button[aria-current="true"]::before {
+  background: var(--paper);
 }
 
 /* ---------- departments: one row each, hairlines like the old pillars ---------- */
@@ -337,8 +350,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: grayscale(1) contrast(1.08) brightness(0.86);
-  transition: filter 0.4s;
 }
 .tm-av .tm-mascot img {
   width: 80%;
@@ -707,23 +718,38 @@ html:has(.tm-zoom[open]) {
   .tm-swipe {
     display: inline;
   }
-  /* Founders become a swipe row that shows the edge of the next one. */
+  /* No readouts either: the founders come right after the title. */
+  .tm-page .page-aside {
+    display: none;
+  }
+  /* Founders become a swipe row snapped to the centre, so the middle one opens
+     with both neighbours peeking in. */
   .tm-fd-grid {
     grid-template-columns: none;
     grid-auto-flow: column;
-    grid-auto-columns: 78%;
+    grid-auto-columns: 80%;
+    gap: 12px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
     margin-inline: calc(var(--gut) * -1);
-    padding-inline: var(--gut);
-    scroll-padding-inline: var(--gut);
+    padding-inline: 10%;
   }
   .tm-fd-grid::-webkit-scrollbar {
     display: none;
   }
   .tm-fd {
-    scroll-snap-align: start;
+    gap: 12px;
+    scroll-snap-align: center;
+  }
+  .tm-fd-dots {
+    display: flex;
+  }
+  .tm-name {
+    font-size: 11.5cqw;
+  }
+  .tm-more {
+    display: none;
   }
   .tm-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -744,5 +770,409 @@ html:has(.tm-zoom[open]) {
   }
   .tm-state {
     display: none;
+  }
+}
+
+/* ---------- a founder's profile: /people/<slug> ---------- */
+.tm-pf-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: clamp(20px, 3vw, 36px);
+  color: var(--mute);
+}
+.tm-pf-back,
+.tm-pf-nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: none;
+  color: var(--paper);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.3s var(--ease),
+    color 0.3s var(--ease),
+    border-color 0.3s;
+}
+.tm-pf-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.tm-pf-nav a {
+  width: 34px;
+  padding: 0;
+  font-family: var(--f-mono);
+}
+@media (hover: hover) {
+  .tm-pf-back:hover,
+  .tm-pf-nav a:hover {
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--paper);
+  }
+}
+.tm-pf-path {
+  min-width: 0;
+  overflow: hidden;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tm-pf-path b {
+  color: var(--paper);
+  font-weight: 500;
+}
+.tm-pf-page .tag.sample {
+  margin-bottom: 20px;
+}
+
+.tm-pf {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  align-items: start;
+  gap: clamp(24px, 4vw, 64px);
+}
+/* The photo column sits above the text, so the photo is never drawn under words. */
+.tm-pf-photo-col {
+  position: sticky;
+  top: 88px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tm-pf-photo {
+  aspect-ratio: 4 / 5;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+}
+.tm-pf-cap {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--mute);
+}
+.tm-pf-body {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(26px, 3vw, 40px);
+  min-width: 0;
+  padding-top: 4px;
+}
+.tm-pf-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tm-pf-name {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(40px, 6vw, 84px);
+  line-height: 0.94;
+  letter-spacing: -0.045em;
+  background: var(--mat-chrome);
+  background-size: 100% 220%;
+  background-position: 0 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.tm-pf-cn {
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: clamp(18px, 1.8vw, 24px);
+  letter-spacing: 0.02em;
+  color: var(--mute);
+}
+/* One point per line: the first carries it, the lines after qualify it. */
+.tm-ln {
+  display: block;
+  text-wrap: pretty;
+}
+.tm-ln + .tm-ln {
+  margin-top: 3px;
+}
+.tm-ln.next {
+  color: #b9b9be;
+  font-size: 14px;
+}
+.tm-pf-headline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: clamp(17px, 1.6vw, 20px);
+  line-height: 1.45;
+}
+.tm-pf-headline .tm-ln.next {
+  color: var(--mute);
+  font-size: 0.86em;
+}
+.tm-pf-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tm-pf-links .btn {
+  --h: 42px;
+  font-size: var(--fs-sm);
+}
+.tm-pf-quote {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0 14px;
+  margin: 0;
+  padding: 22px 0 20px;
+  border-block: 1px solid var(--line);
+}
+.tm-pf-mark {
+  padding-top: 6px;
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 56px;
+  line-height: 0.8;
+  background: var(--mat-chrome);
+  background-size: 100% 220%;
+  background-position: 0 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.tm-pf-quote blockquote {
+  margin: 0;
+  font-family: var(--f-serif), "Songti SC", Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(21px, 2vw, 28px);
+  line-height: 1.45;
+  letter-spacing: 0.06em;
+}
+.tm-pf-quote .tm-ln + .tm-ln {
+  margin-top: 0;
+}
+.tm-pf-quote .tm-ln.next {
+  color: inherit;
+  font-size: inherit;
+}
+html[data-lang="en"] .tm-pf-quote blockquote {
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.tm-pf-quote figcaption {
+  grid-column: 2;
+  margin-top: 10px;
+  color: var(--mute);
+}
+.tm-pf-sec h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: var(--mute);
+  font-weight: 400;
+}
+.tm-pf-sec h2::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.tm-pf-facts {
+  margin: 0;
+}
+.tm-pf-facts > div {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.tm-pf-facts > div:first-child {
+  padding-top: 2px;
+}
+.tm-pf-facts dt {
+  color: var(--mute);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+}
+.tm-pf-facts dd {
+  margin: 0;
+  font-size: var(--fs-md);
+  line-height: 1.6;
+}
+.tm-pf-wins {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tm-pf-wins li {
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr);
+  gap: 4px 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.tm-pf-wins li:first-child {
+  padding-top: 2px;
+}
+.tm-pf-wins b {
+  font-weight: 600;
+}
+.tm-pf-badge {
+  grid-row: span 2;
+  align-self: start;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.tm-pf-badge.gold {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--paper);
+}
+.tm-pf-win-lines {
+  color: var(--mute);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.tm-pf-win-lines .tm-ln.next {
+  color: var(--mute);
+  font-size: inherit;
+}
+.tm-pf-win-lines .tm-ln:first-child {
+  color: #b9b9be;
+}
+.tm-pf-site {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  background: var(--mat-frost), var(--panel);
+  transition:
+    border-color 0.3s,
+    transform 0.5s var(--ease);
+}
+.tm-pf-thumb {
+  min-height: 148px;
+  border-right: 1px solid var(--line);
+  background: radial-gradient(120% 90% at 30% 20%, #1d1d20, #09090a) center /
+    cover no-repeat;
+}
+.tm-pf-site-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px 18px;
+}
+.tm-pf-domain {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.tm-pf-site-title {
+  font-weight: 600;
+}
+.tm-pf-site-blurb {
+  color: var(--mute);
+  font-size: 13.5px;
+}
+@media (hover: hover) {
+  .tm-pf-site:hover {
+    border-color: var(--paper);
+    transform: translateY(-2px);
+  }
+}
+/* The words arrive after the photo has landed. */
+@media (prefers-reduced-motion: no-preference) {
+  .tm-rv {
+    animation: tm-rise 0.55s var(--ease) both;
+    animation-delay: 0.45s;
+  }
+  .tm-pf-body .tm-rv:nth-child(2) {
+    animation-delay: 0.5s;
+  }
+  .tm-pf-body .tm-rv:nth-child(3) {
+    animation-delay: 0.55s;
+  }
+  .tm-pf-body .tm-rv:nth-child(n + 4) {
+    animation-delay: 0.6s;
+  }
+}
+@keyframes tm-rise {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
+}
+/* The founder photo morphs between the card and the profile. */
+::view-transition-group(.morph) {
+  animation-duration: 0.6s;
+  animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+}
+@media (max-width: 900px) {
+  .tm-pf {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tm-pf-photo-col {
+    position: relative;
+    top: auto;
+    max-width: 460px;
+  }
+}
+@media (max-width: 640px) {
+  .tm-pf-path {
+    display: none;
+  }
+  .tm-pf-back .t {
+    display: none;
+  }
+  .tm-pf-back {
+    width: 34px;
+    padding: 0;
+  }
+  .tm-pf-photo-col {
+    max-width: none;
+  }
+  .tm-pf-facts > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+  .tm-pf-wins li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .tm-pf-badge {
+    grid-row: auto;
+  }
+  .tm-pf-mark {
+    font-size: 44px;
+  }
+  .tm-pf-site {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tm-pf-thumb {
+    min-height: 150px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
   }
 }

@@ -64,19 +64,22 @@ export const sampleProjects: Project[] = [
 export const sampleTutorials: Tutorial[] = [];
 export const samplePicks: WeeklyPick[] = [];
 
-// Placeholders that lay out /people, not people: every name says what it is,
-// there are no photos, and <SampleNotice /> sits above them. Ops has enough
-// to page, so paging can be checked locally.
+// The three founders are the real ones (their profile pages live in
+// founder-profiles.ts); the core team are placeholders whose names say what
+// they are. No photos, and <SampleNotice /> sits above them. Ops has enough to
+// page, so paging can be checked locally.
 function placeholder(
   name: string,
   team: TeamKey,
   position: VolunteerPosition | null,
   spark: Spark,
   design: Partial<CardDesign> = {},
+  profileSlug: string | null = null,
 ): TeamPerson {
   return {
     id: `sample-${name.toLowerCase().replace(/\W+/g, "-")}`,
-    slug: `sample-${name.toLowerCase().replace(/\W+/g, "-")}`,
+    slug: profileSlug ?? `sample-${name.toLowerCase().replace(/\W+/g, "-")}`,
+    profileSlug,
     team,
     position,
     title: team === "founder" ? "Co-President" : null,
@@ -101,9 +104,9 @@ function placeholder(
 }
 
 export const sampleTeam: TeamPerson[] = [
-  placeholder("Founder A", "founder", null, "vivi"),
-  placeholder("Founder B", "founder", null, "lumi", { tint: "lumi" }),
-  placeholder("Founder C", "founder", null, "geo", { material: "chrome" }),
+  placeholder("Xin He", "founder", null, "vivi", {}, "xin"),
+  placeholder("Evan Jia", "founder", null, "lumi", { tint: "lumi" }, "evan"),
+  placeholder("Bob Lee", "founder", null, "geo", { material: "chrome" }, "bob"),
   placeholder("Ops 1", "ops", "content", "momo", {
     tint: "momo",
     pattern: "topo",

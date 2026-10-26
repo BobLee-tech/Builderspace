@@ -53,6 +53,7 @@ node scripts/team-photos.mjs --out team-photos-out 原图1.jpg 原图2.jpg …
 | `member_id`                     | 本人在官网的成员账号：Authentication → Users 里按邮箱找到这个人的 User UID 填进来。填了以后页面显示本人设计的成员卡和真实编号；不填就是默认卡面                                                                                                        |
 | `spark`                         | 没照片也没关联账号时用哪只吉祥物占位：`vivi` / `lumi` / `geo` / `momo` / `kiko`                                                                                                                                                                        |
 | `sort`                          | 同一部门里的顺序，小的在前                                                                                                                                                                                                                             |
+| `slug`                          | 只给有个人介绍页的人填，比如 `evan`，地址就是 `/people/evan`。介绍页正文在 `src/lib/founder-profiles.ts`，按 slug 对应；不填的人卡片点不开                                                                                                             |
 | `consent_at`                    | 本人同意的时间                                                                                                                                                                                                                                         |
 | `listed`                        | 默认 `true`                                                                                                                                                                                                                                            |
 
@@ -67,7 +68,7 @@ node scripts/team-photos.mjs --out team-photos-out 原图1.jpg 原图2.jpg …
 
 ## 页面上怎么显示
 
-- 创始人在上面，一排三张竖版大照片，下面有「成员卡 ↗」。
+- 创始人在上面，一排三张竖版大照片，按 `sort` 排（Evan 在中间）。点照片进入 `/people/<slug>` 个人介绍页，照片从卡片移过去。介绍页的经历、奖项、个人网站写在 `src/lib/founder-profiles.ts`，改这些文字要发版。
 - 核心成员按运营 / 技术 / 活动分三行，每人显示自己设计的成员卡，下面是小头像和职位。点卡片会放大，能翻到背面、左右换人。地址会变成 `/people?m=…`，可以直接把某个人的卡发出去。
 - 一个部门超过 5 个人就分页，每 6 秒自动翻一页，鼠标放上去会停。
-- 照片平时是黑白的，鼠标放上去或点一下才显出原色。
+- 照片都是原色。
