@@ -83,7 +83,12 @@ type Open = (p: TeamPerson, from: Element | null | undefined) => void;
  */
 export function Team({ people }: { people: TeamPerson[] }) {
   const founders = people.filter((p) => p.team === "founder");
-  const core = people.filter((p) => p.team !== "founder");
+  // Everyone with a card in a department: the core team, and founders who also
+  // work in one (they come first in it).
+  const core = [
+    ...founders.filter((p) => p.dept),
+    ...people.filter((p) => p.team !== "founder"),
+  ];
   const [zoom, setZoom] = useState<{
     list: TeamPerson[];
     i: number;
@@ -92,7 +97,7 @@ export function Team({ people }: { people: TeamPerson[] }) {
   const opener = useRef<HTMLElement | null>(null);
 
   const listFor = (p: TeamPerson) =>
-    p.team === "founder" ? founders : core.filter((x) => x.team === p.team);
+    p.dept ? core.filter((x) => x.dept === p.dept) : founders;
 
   const open: Open = (p, from) => {
     const list = listFor(p);
@@ -110,10 +115,13 @@ export function Team({ people }: { people: TeamPerson[] }) {
     const slug = new URLSearchParams(location.search).get("m");
     const p = slug ? people.find((x) => x.slug === slug) : undefined;
     if (!p) return;
-    const list =
-      p.team === "founder"
-        ? people.filter((x) => x.team === "founder")
-        : people.filter((x) => x.team === p.team);
+    const inDept = [
+      ...people.filter((x) => x.team === "founder" && x.dept),
+      ...people.filter((x) => x.team !== "founder"),
+    ];
+    const list = p.dept
+      ? inDept.filter((x) => x.dept === p.dept)
+      : people.filter((x) => x.team === "founder");
     // Opening from the address is a one-off on load, after hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setZoom({ list, i: list.indexOf(p), from: null });
@@ -152,7 +160,7 @@ export function Team({ people }: { people: TeamPerson[] }) {
       </div>
       <div className="tm-depts">
         {TEAM_DEPARTMENTS.map((d) => {
-          const team = core.filter((p) => p.team === d.key);
+          const team = core.filter((p) => p.dept === d.key);
           return (
             <section
               className="tm-dept"
@@ -996,10 +1004,9 @@ function Zoom({
       PATTERN_LABEL[design.pattern][lang],
     ].join(" · ");
   const n = design.stickers.length;
-  const dept =
-    p.team === "founder"
-      ? { zh: "创始团队", en: "Founding team" }
-      : TEAM_DEPARTMENTS.find((d) => d.key === p.team)!.name;
+  const dept = p.dept
+    ? TEAM_DEPARTMENTS.find((d) => d.key === p.dept)!.name
+    : { zh: "创始团队", en: "Founding team" };
   const role = p.position
     ? POSITION_LABEL[p.position]
     : p.title

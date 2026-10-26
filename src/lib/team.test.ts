@@ -177,3 +177,36 @@ describe("profile slugs", () => {
       if (p.site) expect(p.site.image).toMatch(/^[a-z0-9-]{8,64}\.webp$/);
   });
 });
+
+describe("founders in a department", () => {
+  it("puts a founder's card in the department they work in", () => {
+    const p = teamPersonOf(
+      row({
+        team: "founder",
+        dept: "events",
+        position: "partnerships",
+        slug: "evan",
+      }),
+      BASE,
+    )!;
+    expect(p).toMatchObject({
+      team: "founder",
+      dept: "events",
+      position: "partnerships",
+    });
+  });
+
+  it("keeps a founder outside departments without a position", () => {
+    const p = teamPersonOf(row({ team: "founder", position: null }), BASE)!;
+    expect(p).toMatchObject({ dept: null, position: null });
+  });
+
+  it("drops a founder whose position isn't in their department", () => {
+    expect(
+      teamPersonOf(
+        row({ team: "founder", dept: "tech", position: "events" }),
+        BASE,
+      ),
+    ).toBeNull();
+  });
+});

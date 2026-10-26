@@ -1,6 +1,6 @@
 import { DEFAULT_DESIGN, type CardDesign } from "./card-design";
 import type { Spark } from "./members";
-import { teamLine, type TeamKey, type TeamPerson } from "./team";
+import { teamLine, type CoreTeam, type TeamKey, type TeamPerson } from "./team";
 import {
   NO_MEDIA,
   type Project,
@@ -75,12 +75,15 @@ function placeholder(
   spark: Spark,
   design: Partial<CardDesign> = {},
   profileSlug: string | null = null,
+  dept: CoreTeam | null = team === "founder" ? null : team,
+  memberNo: number | null = null,
 ): TeamPerson {
   return {
     id: `sample-${name.toLowerCase().replace(/\W+/g, "-")}`,
     slug: profileSlug ?? `sample-${name.toLowerCase().replace(/\W+/g, "-")}`,
     profileSlug,
     team,
+    dept,
     position,
     title: team === "founder" ? "Co-President" : null,
     bio: null,
@@ -94,7 +97,7 @@ function placeholder(
       major: teamLine(team),
       skills: [],
       spark,
-      memberNo: null,
+      memberNo,
       seal: null,
       building: null,
       lookingFor: [],
@@ -104,9 +107,28 @@ function placeholder(
 }
 
 export const sampleTeam: TeamPerson[] = [
-  placeholder("Xin He", "founder", null, "vivi", {}, "xin"),
-  placeholder("Evan Jia", "founder", null, "lumi", { tint: "lumi" }, "evan"),
-  placeholder("Bob Lee", "founder", null, "geo", { material: "chrome" }, "bob"),
+  // Founders also hold a card in one department, numbered by when they joined.
+  placeholder("Xin He", "founder", "content", "vivi", {}, "xin", "ops", 55),
+  placeholder(
+    "Evan Jia",
+    "founder",
+    "partnerships",
+    "lumi",
+    { tint: "lumi" },
+    "evan",
+    "events",
+    1,
+  ),
+  placeholder(
+    "Bob Lee",
+    "founder",
+    "web_tools",
+    "geo",
+    { material: "chrome" },
+    "bob",
+    "tech",
+    11,
+  ),
   placeholder("Ops 1", "ops", "content", "momo", {
     tint: "momo",
     pattern: "topo",

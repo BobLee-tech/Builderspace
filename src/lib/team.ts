@@ -35,6 +35,12 @@ export type TeamPerson = {
   /** Set only when ops gave this person a profile page address. */
   profileSlug: string | null;
   team: TeamKey;
+  /**
+   * The department this person's card sits in: the core team's own, or the one
+   * a founder also works in (null for a founder who isn't in one).
+   */
+  dept: CoreTeam | null;
+  /** Their position in that department. */
   position: VolunteerPosition | null;
   /** For founders, e.g. Co-President. */
   title: string | null;
@@ -64,6 +70,8 @@ export type TeamRow = {
   id: string;
   /** Missing until 20261027000000_team_slugs.sql has run. */
   slug?: string | null;
+  /** A founder's department; missing until 20261027010000_team_founder_depts.sql. */
+  dept?: string | null;
   team: string;
   position: string | null;
   title: string | null;
@@ -112,13 +120,17 @@ export function teamPersonOf(
   photoBase: string,
 ): TeamPerson | null {
   if (!isTeam(row.team)) return null;
-  const position =
+  const dept =
     row.team === "founder"
-      ? null
-      : (TEAM_DEPARTMENTS.find((d) => d.key === row.team)?.positions.find(
-          (p) => p === row.position,
-        ) ?? null);
-  if (row.team !== "founder" && !position) return null;
+      ? (CORE_TEAMS.find((d) => d === row.dept) ?? null)
+      : row.team;
+  const position = dept
+    ? (TEAM_DEPARTMENTS.find((d) => d.key === dept)?.positions.find(
+        (p) => p === row.position,
+      ) ?? null)
+    : null;
+  // Someone in a department needs a position that belongs to it.
+  if (dept && !position) return null;
   const photo = (path: string | null) =>
     path ? teamPhotoUrl(photoBase, path) : null;
   const spark: Spark = oneOf(SPARKS)(row.spark) ? row.spark : "geo";
@@ -128,6 +140,7 @@ export function teamPersonOf(
     slug: row.slug ?? row.handle ?? row.id,
     profileSlug: row.slug ?? null,
     team: row.team,
+    dept,
     position,
     title: row.title,
     bio: row.bio,
