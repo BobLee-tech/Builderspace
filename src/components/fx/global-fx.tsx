@@ -12,8 +12,24 @@ import {
 } from "./motion";
 
 const SPOT = ".pcard, .box, .lcard, .form, .pillars, .surf, .ccard";
-// The ring wraps things you can click, and steps aside while you type.
+// The ring wraps only button-like controls; other links and clickable cards
+// keep a round ring that grows a little. It steps aside while you type.
 const CLICKABLE = "a, button, label.chip, summary";
+const WRAP = [
+  ".btn",
+  ".chip",
+  ".top .nav > a",
+  ".lang button",
+  ".seg button",
+  ".rmode button",
+  ".totop",
+  ".cstar",
+  ".tm-btns button",
+  ".switch",
+  "[data-cursor='wrap']",
+].join(", ");
+// Anything bigger than this isn't a button, whatever its class says.
+const WRAP_MAX = { w: 360, h: 72 };
 const TYPING = "input, textarea, select, [contenteditable]";
 // The ring settles in ~0.18s: it still reads as following the pointer, but
 // never drags behind it. Buttons and cards no longer move with the pointer
@@ -22,10 +38,21 @@ const RING = { stiffness: 1000, damping: 63 };
 // Size and corners ease a little softer and just under-damped, so wrapping a
 // control, letting go of it and releasing a click each land with some give.
 const SHAPE = { stiffness: 520, damping: 36 };
-// Free ring diameter, room around a wrapped control, and the press squeeze.
+// Free ring diameter, its growth over a link or card, room around a wrapped
+// control, and the press squeeze.
 const SIZE = 46,
+  HOVER = 1.2,
   PAD = 12,
   PRESS = 0.9;
+
+/** The control to wrap under `target`, if it is a button-sized button. */
+function wrapTarget(target: Element) {
+  const el = target.closest<HTMLElement>(CLICKABLE);
+  if (!el || el.closest("[data-cursor='free']") || !el.matches(WRAP))
+    return null;
+  const r = el.getBoundingClientRect();
+  return r.width <= WRAP_MAX.w && r.height <= WRAP_MAX.h ? el : null;
+}
 
 export function GlobalFx() {
   const cur = useRef<HTMLDivElement>(null);
@@ -97,9 +124,9 @@ export function GlobalFx() {
       if (cur.current) cur.current.style.translate = `${x}px ${y}px`;
       const typing = !!target?.closest(TYPING);
       root.classList.toggle("cur-text", typing);
-      const hit = typing
-        ? null
-        : (target?.closest<HTMLElement>(CLICKABLE) ?? null);
+      const hit = typing || !target ? null : wrapTarget(target);
+      // A link or card that isn't wrapped still answers: the ring grows.
+      const grow = !typing && !hit && !!target?.closest(CLICKABLE);
       if (hit !== wrapped) {
         wrapped = hit;
         wrapRadius = hit
@@ -121,7 +148,7 @@ export function GlobalFx() {
       const box = ringTarget(
         x,
         y,
-        SIZE,
+        grow ? SIZE * HOVER : SIZE,
         PAD,
         wrapped && {
           rect: wrapped.getBoundingClientRect(),
