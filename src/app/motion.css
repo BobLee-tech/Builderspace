@@ -3952,6 +3952,14 @@ html[data-lang="en"] .d-title[data-size-en="sm"] {
   rotate: -4deg;
   translate: 0 -1px;
 }
+/* While its card is out, the slot is empty and flat, so it lands where it
+   left. */
+.owner-chip.lifted .owner-mini {
+  visibility: hidden;
+  rotate: none;
+  translate: none;
+  transition: none;
+}
 .owner-mini {
   flex: none;
   width: 44px;
@@ -6790,8 +6798,10 @@ button.cstar:active {
 }
 
 /* ---------- an owner's card, enlarged (owner-chip.tsx) ---------- */
+/* The scrollbar's space stays, so the page doesn't shift under the card. */
 html:has(.oz[open]) {
   overflow: hidden;
+  scrollbar-gutter: stable;
 }
 .oz {
   position: fixed;

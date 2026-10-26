@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { MemberCard } from "@/app/join/member-card";
 import { prefersReducedMotion } from "@/components/fx/motion";
@@ -8,8 +8,23 @@ import { memberCode } from "@/lib/members";
 import type { OwnerCard } from "@/lib/types";
 import { T } from "./t";
 
-let gsapLoad: Promise<typeof import("gsap").gsap> | null = null;
-const loadGsap = () => (gsapLoad ??= import("gsap").then((m) => m.gsap));
+type Fx = {
+  gsap: typeof import("gsap").gsap;
+  Flip: typeof import("gsap/Flip").Flip;
+};
+let fxLoad: Promise<Fx> | null = null;
+const loadFx = () =>
+  (fxLoad ??= Promise.all([import("gsap"), import("gsap/Flip")]).then(
+    ([{ gsap }, { Flip }]) => {
+      gsap.registerPlugin(Flip);
+      return { gsap, Flip };
+    },
+  ));
+
+const onScreen = (el: Element) => {
+  const r = el.getBoundingClientRect();
+  return r.width > 0 && r.bottom > 0 && r.top < innerHeight;
+};
 
 /**
  * The owner's member card in miniature, with their name and number. A button
@@ -18,23 +33,23 @@ const loadGsap = () => (gsapLoad ??= import("gsap").then((m) => m.gsap));
  */
 export function OwnerChip({ owner }: { owner: OwnerCard }) {
   const { card } = owner;
-  const mini = useRef<HTMLSpanElement>(null);
-  const [from, setFrom] = useState<DOMRect | null | undefined>(undefined);
+  const chip = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
+  const slot = useCallback(
+    () => chip.current?.querySelector<HTMLElement>(".mc-stage") ?? null,
+    [],
+  );
   return (
     <>
       <button
+        ref={chip}
         type="button"
-        className="owner-chip"
+        className={open ? "owner-chip lifted" : "owner-chip"}
         aria-haspopup="dialog"
-        onPointerEnter={() => void loadGsap()}
-        onClick={() =>
-          setFrom(
-            mini.current?.querySelector(".mc-stage")?.getBoundingClientRect() ??
-              null,
-          )
-        }
+        onPointerEnter={() => void loadFx()}
+        onClick={() => setOpen(true)}
       >
-        <span className="owner-mini" ref={mini} aria-hidden>
+        <span className="owner-mini" aria-hidden>
           <MemberCard
             card={card}
             design={owner.design}
@@ -53,19 +68,14 @@ export function OwnerChip({ owner }: { owner: OwnerCard }) {
           </span>
         </span>
       </button>
-      {from !== undefined &&
+      {open &&
         createPortal(
           <OwnerZoom
             owner={owner}
-            from={from}
-            back={() =>
-              mini.current?.querySelector(".mc-stage")?.getBoundingClientRect()
-            }
+            slot={slot}
             onClosed={() => {
-              setFrom(undefined);
-              mini.current
-                ?.closest<HTMLElement>(".owner-chip")
-                ?.focus({ preventScroll: true });
+              setOpen(false);
+              chip.current?.focus({ preventScroll: true });
             }}
           />,
           document.body,
@@ -75,19 +85,19 @@ export function OwnerChip({ owner }: { owner: OwnerCard }) {
 }
 
 /**
- * The enlarged card: flies up from the chip, tilts with the pointer, turns
- * over to the builder profile, and flies back to the chip on close.
+ * The enlarged card: lifts out of the chip, tilts with the pointer, turns over
+ * to the builder profile, and settles back into the chip on close. Flip
+ * measures the chip's card when each flight starts, so it leaves from and
+ * lands on exactly where that card is, wherever the page has moved.
  */
 function OwnerZoom({
   owner,
-  from,
-  back,
+  slot,
   onClosed,
 }: {
   owner: OwnerCard;
-  from: DOMRect | null;
-  /** Where the chip is now, to fly back to. */
-  back: () => DOMRect | undefined;
+  /** The small card in the chip, emptied while this one is out. */
+  slot: () => HTMLElement | null;
   onClosed: () => void;
 }) {
   const { card } = owner;
@@ -95,6 +105,7 @@ function OwnerZoom({
   const bg = useRef<HTMLDivElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const info = useRef<HTMLDivElement>(null);
+  const opening = useRef<gsap.core.Timeline | null>(null);
   const closing = useRef(false);
   const [flipped, setFlipped] = useState(false);
   const [ready, setReady] = useState(false);
@@ -105,37 +116,40 @@ function OwnerZoom({
   useEffect(() => {
     dlg.current?.showModal();
     let alive = true;
-    void loadGsap().then((gsap) => {
+    void loadFx().then(({ gsap, Flip }) => {
       const el = stage();
+      const from = slot();
       if (!alive || !el) return;
       const quick = prefersReducedMotion();
-      const to = el.getBoundingClientRect();
       setReady(true);
-      gsap.fromTo(
+      const tl = (opening.current = gsap.timeline());
+      tl.fromTo(
         bg.current,
         { opacity: 0 },
-        { opacity: 1, duration: quick ? 0 : 0.4, ease: "power2.out" },
+        { opacity: 1, duration: quick ? 0 : 0.5, ease: "power2.out" },
+        0,
       );
-      if (from && from.width > 0 && !quick)
-        gsap.fromTo(
+      if (from && onScreen(from) && !quick) {
+        // Sit exactly on the small card, then lift off with a slight tilt and
+        // a slow start, so it reads as that card leaving its slot.
+        Flip.fit(el, from, { scale: true });
+        gsap.set(el, { rotation: -4 });
+        tl.to(
           el,
-          {
-            x: from.left - to.left,
-            y: from.top - to.top,
-            scale: from.width / to.width,
-            transformOrigin: "0 0",
-          },
           {
             x: 0,
             y: 0,
-            scale: 1,
-            duration: 0.75,
-            ease: "expo.out",
+            scaleX: 1,
+            scaleY: 1,
+            rotation: 0,
+            duration: 0.85,
+            ease: "expo.inOut",
             clearProps: "transform",
           },
+          0,
         );
-      else
-        gsap.fromTo(
+      } else
+        tl.fromTo(
           el,
           { y: 30, scale: 0.92, opacity: 0 },
           {
@@ -146,32 +160,36 @@ function OwnerZoom({
             ease: "expo.out",
             clearProps: "transform,opacity",
           },
+          0,
         );
       if (info.current)
-        gsap.fromTo(
+        tl.fromTo(
           info.current.children,
-          { opacity: 0, y: 12 },
+          { opacity: 0, y: 14 },
           {
             opacity: 1,
             y: 0,
-            duration: 0.45,
+            duration: 0.5,
             stagger: 0.05,
-            delay: quick ? 0 : 0.2,
             ease: "power3.out",
             clearProps: "opacity,transform",
           },
+          quick ? 0 : 0.45,
         );
     });
     return () => {
       alive = false;
+      opening.current?.kill();
     };
-  }, [from]);
+  }, [slot]);
 
   const close = () => {
     if (closing.current) return;
     closing.current = true;
     setFlipped(false);
-    void loadGsap().then((gsap) => {
+    void loadFx().then(({ gsap, Flip }) => {
+      // Closing mid-flight turns the card round from where it got to.
+      opening.current?.kill();
       const done = () => {
         dlg.current?.close();
         onClosed();
@@ -179,35 +197,25 @@ function OwnerZoom({
       const el = stage();
       if (!el) return done();
       const quick = prefersReducedMotion();
-      const at = el.getBoundingClientRect();
-      // Back into the chip if it's still on screen; otherwise it fades away.
-      const target = back();
-      const onScreen = Boolean(
-        target &&
-        target.width > 0 &&
-        target.bottom > 0 &&
-        target.top < innerHeight,
-      );
+      const to = slot();
       const tl = gsap.timeline({ onComplete: done });
       if (info.current)
         tl.to(
           info.current.children,
-          { opacity: 0, y: 8, duration: quick ? 0 : 0.18, stagger: 0.02 },
+          { opacity: 0, y: 8, duration: quick ? 0 : 0.2, stagger: 0.02 },
           0,
         );
-      tl.to(bg.current, { opacity: 0, duration: quick ? 0 : 0.4 }, 0.1);
-      if (target && onScreen && !quick)
+      tl.to(bg.current, { opacity: 0, duration: quick ? 0 : 0.45 }, 0.15);
+      // Back into the chip if it's on screen; otherwise it fades away.
+      if (to && onScreen(to) && !quick)
         tl.to(
           el,
           {
-            x: target.left - at.left,
-            y: target.top - at.top,
-            scale: target.width / at.width,
-            transformOrigin: "0 0",
-            duration: 0.55,
-            ease: "power3.inOut",
+            ...(Flip.fit(el, to, { scale: true, getVars: true }) as object),
+            duration: 0.7,
+            ease: "expo.inOut",
           },
-          0,
+          0.05,
         );
       else
         tl.to(
