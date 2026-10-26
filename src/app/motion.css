@@ -96,7 +96,8 @@
 }
 /* ---------- custom cursor (fine pointers only; enabled by fx) ---------- */
 .cur,
-.cur-ring {
+.cur-ring,
+.cur-gl {
   position: fixed;
   left: 0;
   top: 0;
@@ -105,44 +106,48 @@
      buttons and labels hide the system pointer, so if anything covered
      these, the pointer would vanish over it. */
   z-index: 2000;
-  border-radius: 50%;
-  mix-blend-mode: difference;
   display: none;
   opacity: 0;
   transition: opacity 0.3s;
 }
 .cur-live .cur,
-.cur-live .cur-ring {
+.cur-live .cur-ring,
+.cur-live.cur-chrome .cur-gl {
   opacity: 1;
 }
 .cur {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   background: #fff;
-  margin: -3px 0 0 -3px;
+  margin: -4px 0 0 -4px;
+  mix-blend-mode: difference;
 }
-/* Positioned through `translate` (global-fx.tsx); hover only scales, so nothing
-   re-lays out per frame. */
+/* global-fx.tsx sizes the ring and places it through `translate`: a circle on
+   the pointer, or wrapped round the hovered control. This hairline is the
+   fallback; once three.js has loaded (.cur-chrome) the same box is drawn as
+   faint liquid chrome on .cur-gl instead. */
 .cur-ring {
-  width: 34px;
-  height: 34px;
   border: 1px solid #fff;
-  margin: -17px 0 0 -17px;
-  transition:
-    opacity 0.3s,
-    scale 0.25s var(--ease);
+  border-radius: 50%;
+  mix-blend-mode: difference;
 }
-.cur-ring.big {
-  scale: 1.55;
+.cur-chrome .cur-ring {
+  visibility: hidden;
 }
-.cur-ring.text {
-  scale: 0.4;
+.cur-gl {
+  width: 100%;
+  height: 100%;
+  z-index: 1999;
 }
-.cur-live .cur-ring.text {
+/* Typing: the ring steps aside, the dot stays. */
+.cur-live.cur-text .cur-ring,
+.cur-live.cur-text .cur-gl {
   opacity: 0;
 }
 .has-cursor .cur,
-.has-cursor .cur-ring {
+.has-cursor .cur-ring,
+.has-cursor .cur-gl {
   display: block;
 }
 .has-cursor,
@@ -156,7 +161,7 @@
   cursor: text;
 }
 /* The video player is a modal <dialog> (and can go fullscreen), so it sits in
-   the top layer above .cur / .cur-ring: with `cursor: none` the pointer
+   the top layer above the cursor: with `cursor: none` the pointer
    vanished there. Use the system cursor inside it and hide ours until it
    closes. */
 .has-cursor .vlb {
@@ -166,7 +171,8 @@
   cursor: pointer;
 }
 .has-cursor:has(.vlb[open]) .cur,
-.has-cursor:has(.vlb[open]) .cur-ring {
+.has-cursor:has(.vlb[open]) .cur-ring,
+.has-cursor:has(.vlb[open]) .cur-gl {
   opacity: 0;
 }
 
