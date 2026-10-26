@@ -3,8 +3,8 @@
 -- position 是在那个部门里的职位（和核心成员一样，必须属于这个部门）。
 --
 -- 成员卡跟账号走：member_no 记这个人加入时的编号（join_submissions.member_no）。
--- 有了这个编号的账号（profiles.member_no）以后，卡面就是他自己在 /me/card 设计、
--- 自己能改的那张；还没开通账号时显示默认卡面和这个编号。member_id 仍然优先。
+-- 有了这个编号的账号（profiles.member_no）以后，卡面就是本人在 /me/card 设计、
+-- 本人能改的那张；还没开通账号时显示默认卡面和这个编号。member_id 仍然优先。
 -- team_list() 多返回 dept，member_no 在没有账号时取这里的编号；返回的列变了，
 -- 只能先删再建。依赖 20261027000000_team_slugs.sql。
 
