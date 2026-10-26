@@ -9,6 +9,12 @@
 alter table team_members
   add column slug text unique check (slug ~ '^[a-z][a-z0-9-]{1,31}$');
 
+-- link_url 原来的检查写成 \S{1,300}，超过了 Postgres 正则重复次数的上限 255，
+-- 一填链接就报 invalid repetition count。改成正则只管格式、长度单独查。
+alter table team_members drop constraint team_members_link_url_check;
+alter table team_members add constraint team_members_link_url_check
+  check (link_url ~ '^https://\S+$' and char_length(link_url) <= 308);
+
 drop function team_list();
 
 create function team_list() returns table (
