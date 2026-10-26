@@ -13,6 +13,7 @@ import { Arr } from "@/components/fx/arr";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { getEventDetail, getEvents } from "@/lib/data";
+import { getEventMaterials } from "@/lib/event-materials";
 import { eventCopy, getEventPage, type EventTool } from "@/lib/event-pages";
 import { getEventResults } from "@/lib/event-results";
 import {
@@ -30,7 +31,12 @@ import {
 } from "@/lib/types";
 import { AddressBar } from "../address-bar";
 import { TimeLeft } from "../countdown";
-import { EVENT_ICONS as ICONS, eventIsFull, shownSeats } from "../event-parts";
+import {
+  EVENT_ICONS as ICONS,
+  eventIsFull,
+  shownSeats,
+  titleEms,
+} from "../event-parts";
 import { EventResultsSection } from "./results";
 import { SignupDock, SignupFocus } from "./signup-dock";
 import { SignupForm } from "./signup-form";
@@ -88,6 +94,7 @@ async function EventDetail({ slug }: { slug: string }) {
   const { capacity, left, groups } = shownSeats(event, signups);
   const open = phase === "open" && event.registrationClosesAt !== null;
   const results = phase === "past" ? getEventResults(event.slug) : null;
+  const materials = getEventMaterials(event.slug) !== null;
 
   return (
     <section className="sec first evp">
@@ -268,14 +275,20 @@ async function EventDetail({ slug }: { slug: string }) {
                         en="It's over. The sites people made are below, one click away."
                       />
                     </p>
-                    <a
-                      href="#results"
-                      className="btn solid primary"
-                      style={{ alignSelf: "start" }}
-                    >
-                      <T zh="看活动成果" en="See the results" />{" "}
-                      <ArrowDown weight="light" size="1.15em" aria-hidden />
-                    </a>
+                    <div className="evp-cta">
+                      <a href="#results" className="btn solid primary">
+                        <T zh="看活动成果" en="See the results" />{" "}
+                        <ArrowDown weight="light" size="1.15em" aria-hidden />
+                      </a>
+                      {materials && (
+                        <Link
+                          href={`/learn/${event.slug}`}
+                          className="btn ghost"
+                        >
+                          <T zh="带走资料包" en="Take the materials" /> <Arr />
+                        </Link>
+                      )}
+                    </div>
                   </>
                 ) : (
                   <p className="evp-msg mute">
@@ -419,17 +432,6 @@ function Tools({ tools }: { tools: EventTool[] }) {
       </ul>
     </div>
   );
-}
-
-/**
- * Rough width of a title in ems (CJK one each, the rest about half), so the
- * CSS can size it to fit its column on one line.
- */
-function titleEms(title: string) {
-  let ems = 0;
-  for (const c of title)
-    ems += /[\u3000-\u9fff\uff00-\uffef]/.test(c) ? 1 : 0.58;
-  return Math.max(ems, 4).toFixed(2);
 }
 
 /** Head-count, seats per group and the deadline, above the form. */

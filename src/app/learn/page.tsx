@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { PageHead } from "@/components/page-head";
 import { getEvents, getTutorials, getWeeklyPicks } from "@/lib/data";
+import { getEventMaterials } from "@/lib/event-materials";
+import { eventCopy } from "@/lib/event-pages";
+import { getEventResults } from "@/lib/event-results";
+import type { SiteEvent } from "@/lib/types";
 import { formatDate, formatShortDate } from "@/lib/format";
 import { T } from "@/components/t";
 import { Typewriter } from "./terminal";
@@ -21,6 +27,8 @@ export default async function LearnPage() {
     getEvents(),
   ]);
   const workshops = events.filter((e) => e.kind === "workshop").length;
+  // Newest first, like the tutorials.
+  const packs = events.filter((e) => getEventMaterials(e.slug)).reverse();
 
   return (
     <>
@@ -96,7 +104,10 @@ export default async function LearnPage() {
               </div>
             </article>
 
-            {tutorials.length === 0 ? (
+            {packs.map((e) => (
+              <PackCard key={e.slug} event={e} />
+            ))}
+            {packs.length + tutorials.length === 0 ? (
               <div className="empty">
                 <T
                   zh="首场工作坊结束后，讲义、示例仓库和录屏会出现在这里。"
@@ -207,6 +218,49 @@ export default async function LearnPage() {
         </div>
       </section>
     </>
+  );
+}
+
+/** An event's materials pack: a peek at the wall, then open or download. */
+function PackCard({ event }: { event: SiteEvent }) {
+  const m = getEventMaterials(event.slug)!;
+  const shots = (getEventResults(event.slug)?.works ?? [])
+    .filter((w) => !w.organiser)
+    .slice(0, 3);
+  return (
+    <article id={event.slug} className="box lpack">
+      <Link href={`/learn/${event.slug}`} className="lpack-link">
+        {shots.length > 0 && (
+          <span className="lpack-shots" aria-hidden>
+            {shots.map((w) => (
+              <Image
+                key={w.url}
+                src={w.shot}
+                alt=""
+                width={1280}
+                height={800}
+                sizes="(max-width: 640px) 33vw, 200px"
+              />
+            ))}
+          </span>
+        )}
+        <span className="mono mute">{formatDate(event.startsAt)}</span>
+        <h3 style={{ fontSize: 20 }}>
+          <T {...eventCopy(event).title} />
+        </h3>
+        <span className="mute">
+          <T {...m.lede} />
+        </span>
+      </Link>
+      <div className="links">
+        <Link href={`/learn/${event.slug}`} className="text-link">
+          <T zh="打开资料包" en="Open the materials" /> →
+        </Link>
+        <a href={m.zip} download className="text-link">
+          <T zh="下载" en="Download" /> ↓
+        </a>
+      </div>
+    </article>
   );
 }
 

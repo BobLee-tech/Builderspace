@@ -86,12 +86,6 @@ export function EventResultsSection({ results }: { results: EventResults }) {
               </li>
             ))}
           </ul>
-          <p className="mute evp-wall-note">
-            <T
-              zh="只放本人同意展示的网站。想加上自己的，或者想撤下，跟我们说一声。"
-              en="Only sites their makers agreed to show. Want yours added or taken down? Just tell us."
-            />
-          </p>
         </div>
       )}
     </section>
