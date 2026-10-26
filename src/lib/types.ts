@@ -168,6 +168,11 @@ export type Project = {
   translated?: Lang | null;
   /** The owner's member card, when a member submitted it and shows their card. */
   owner?: OwnerCard | null;
+  /**
+   * Tied to a member's account. Such a project without `owner` belongs to a
+   * member who keeps their card off projects, so it shows only the name.
+   */
+  ownerLinked?: boolean;
 };
 
 /** What a project shows of its owner (project_owner_cards in the database). */

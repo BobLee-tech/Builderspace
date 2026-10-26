@@ -201,6 +201,36 @@ export const DEFAULT_DESIGN: CardDesign = {
   stickers: [{ id: "logo", x: 84, y: 46, r: -8, s: 1.45, f: "orig" }],
 };
 
+/** Materials anyone may have, for designs nobody picked. */
+const OPEN_MATERIALS = MATERIALS.filter((m) => !VERIFIED_MATERIALS.includes(m));
+
+/**
+ * A card nobody designed yet, picked from the seed so it stays the same on
+ * every page: a member's number before they open the studio (which starts from
+ * it), or an owner's name on a project not tied to an account yet.
+ */
+export function seededDesign(seed: string): {
+  design: CardDesign;
+  spark: Spark;
+} {
+  let h = [...seed].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const pick = <T>(list: readonly T[]) => {
+    h = (Math.imul(h ^ (h >>> 15), 2246822507) + 0x9e3779b9) >>> 0;
+    return list[h % list.length];
+  };
+  const design: CardDesign = {
+    material: pick(OPEN_MATERIALS),
+    tint: pick(TINTS),
+    pattern: pick(PATTERNS.filter((p) => p !== "none")),
+    tagline: "",
+    stickers: [{ ...DEFAULT_DESIGN.stickers[0], r: pick([-14, -8, -3, 4, 9]) }],
+  };
+  return { design, spark: pick(SPARKS) };
+}
+
+/** The seed for a member's own undesigned card, the same wherever it shows. */
+export const memberSeed = (memberNo: number) => `member:${memberNo}`;
+
 /**
  * A stored design, read leniently: whatever doesn't parse falls back to the
  * default and unknown stickers are dropped, so one bad value never breaks a

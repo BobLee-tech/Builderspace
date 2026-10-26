@@ -3,7 +3,9 @@ import {
   cardDesignSchema,
   DEFAULT_DESIGN,
   lockedParts,
+  memberSeed,
   readDesign,
+  seededDesign,
   shownDesign,
   stickerCat,
   STICKERS,
@@ -168,5 +170,25 @@ describe("themeColor", () => {
   it("follows the tint, or the mascot when there is none", () => {
     expect(themeColor(design({ tint: "kiko" }), "lumi")).toBe("#b8a0ff");
     expect(themeColor(DEFAULT_DESIGN, "lumi")).toBe("#ffd23f");
+  });
+});
+
+describe("seededDesign", () => {
+  it("gives the same seed the same card, and a saveable one", () => {
+    const a = seededDesign(memberSeed(12));
+    expect(seededDesign(memberSeed(12))).toEqual(a);
+    expect(cardDesignSchema.parse(a.design)).toEqual(a.design);
+  });
+
+  it("varies by seed and never uses verified-only parts", () => {
+    const cards = Array.from({ length: 40 }, (_, i) =>
+      seededDesign(`owner:${i}`),
+    );
+    expect(new Set(cards.map((c) => c.design.material)).size).toBeGreaterThan(
+      1,
+    );
+    expect(new Set(cards.map((c) => c.spark)).size).toBeGreaterThan(1);
+    for (const { design } of cards)
+      expect(lockedParts(design)).toEqual({ material: false, stickers: false });
   });
 });

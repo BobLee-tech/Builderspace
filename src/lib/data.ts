@@ -1,7 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { readDesign } from "./card-design";
+import { memberSeed, readDesign, seededDesign } from "./card-design";
 import { COVER_BUCKET, VIDEO_BUCKET } from "./media";
 import type { LookingFor, MemberSkill, Spark } from "./members";
 import { getSupabase } from "./supabase/client";
@@ -204,7 +204,7 @@ export async function getEventDetail(slug: string): Promise<{
 const PROJECT_COLUMNS =
   "slug,name,pitch,problem,target_user,status,needed_roles,next_step,contact,owner_name,repo_url,demo_url,updated_at," +
   "cover_path,cover_focus_x,cover_focus_y,video_path,video_poster_path,video_seconds," +
-  "name_en,pitch_en,problem_en,target_user_en,next_step_en,original_lang,star_count";
+  "name_en,pitch_en,problem_en,target_user_en,next_step_en,original_lang,star_count,owner_id";
 
 /**
  * The side ops translated, which gets a small "Translated" mark: the other
@@ -245,6 +245,7 @@ type ProjectRow = {
   next_step_en: string | null;
   original_lang: Lang | null;
   star_count: number;
+  owner_id: string | null;
   /** Only the plaza asks for it: `project_comments(count)`. */
   project_comments?: { count: number }[];
 };
@@ -327,8 +328,10 @@ async function ownerCards(
           building: r.building,
           lookingFor: r.looking_for,
         },
-        // No member_cards row yet: the default design.
-        design: readDesign(r.material ? r : null),
+        // No member_cards row yet: the design their studio would start from.
+        design: r.material
+          ? readDesign(r)
+          : seededDesign(memberSeed(r.member_no)).design,
       },
     ]),
   );
@@ -394,6 +397,7 @@ function toProject(p: ProjectRow): Project {
     media: NO_MEDIA,
     commentCount: p.project_comments?.[0]?.count ?? 0,
     starCount: p.star_count,
+    ownerLinked: p.owner_id !== null,
     en,
     translated: translatedSide(
       p.original_lang,

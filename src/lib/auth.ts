@@ -5,7 +5,9 @@ import { cache } from "react";
 import {
   DEFAULT_DESIGN,
   lockedParts,
+  memberSeed,
   readDesign,
+  seededDesign,
   type CardDesign,
 } from "./card-design";
 import type {
@@ -391,22 +393,26 @@ type CardRow = {
   stickers: unknown;
 };
 
-/** The signed-in member's saved card design, or the default. Memoised per request. */
+/**
+ * The signed-in member's saved card design, or until they save one the design
+ * seeded from their number, which their projects show too. Memoised per request.
+ */
 export const getCardDesign = cache(async (): Promise<CardDesign> => {
   const session = await getSession();
   if (!session?.member) return DEFAULT_DESIGN;
+  const seeded = seededDesign(memberSeed(session.member.memberNo)).design;
   if (devMode()) {
     const card = (await readDev())?.card;
-    return card ? readDesign(card) : DEFAULT_DESIGN;
+    return card ? readDesign(card) : seeded;
   }
   const supabase = await getSupabaseAuth();
-  if (!supabase) return DEFAULT_DESIGN;
+  if (!supabase) return seeded;
   const { data } = await supabase
     .from("member_cards")
     .select("material, tint, pattern, tagline, stickers")
     .eq("user_id", session.member.id)
     .maybeSingle<CardRow>();
-  return data ? readDesign(data) : DEFAULT_DESIGN;
+  return data ? readDesign(data) : seeded;
 });
 
 const VERIFIED_ONLY =
