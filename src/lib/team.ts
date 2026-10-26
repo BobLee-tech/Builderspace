@@ -27,9 +27,20 @@ export const TEAM_DEPARTMENTS = CORE_TEAMS.map((key, i) => ({
 
 export type TeamPerson = {
   id: string;
-  /** What the enlarged card's address uses: the member's handle, else the row id. */
+  /**
+   * The profile page's address (/people/<slug>) when ops set one, else what the
+   * enlarged card's ?m= uses: the member's handle, else the row id.
+   */
   slug: string;
+  /** Set only when ops gave this person a profile page address. */
+  profileSlug: string | null;
   team: TeamKey;
+  /**
+   * The department this person's card sits in: the core team's own, or the one
+   * a founder also works in (null for a founder who isn't in one).
+   */
+  dept: CoreTeam | null;
+  /** Their position in that department. */
   position: VolunteerPosition | null;
   /** For founders, e.g. Co-President. */
   title: string | null;
@@ -57,6 +68,10 @@ export function teamLine(team: TeamKey) {
 /** One row of team_list(). */
 export type TeamRow = {
   id: string;
+  /** Missing until 20261027000000_team_slugs.sql has run. */
+  slug?: string | null;
+  /** A founder's department; missing until 20261027010000_team_founder_depts.sql. */
+  dept?: string | null;
   team: string;
   position: string | null;
   title: string | null;
@@ -85,6 +100,10 @@ export type TeamRow = {
 
 export const TEAM_PHOTO_BUCKET = "team-photos";
 
+/** A file in the public team-photos bucket, under the Supabase URL. */
+export const teamPhotoUrl = (photoBase: string, path: string) =>
+  `${photoBase}/storage/v1/object/public/${TEAM_PHOTO_BUCKET}/${path}`;
+
 const isTeam = (v: string): v is TeamKey =>
   v === "founder" || (CORE_TEAMS as readonly string[]).includes(v);
 const oneOf =
@@ -101,23 +120,27 @@ export function teamPersonOf(
   photoBase: string,
 ): TeamPerson | null {
   if (!isTeam(row.team)) return null;
-  const position =
+  const dept =
     row.team === "founder"
-      ? null
-      : (TEAM_DEPARTMENTS.find((d) => d.key === row.team)?.positions.find(
-          (p) => p === row.position,
-        ) ?? null);
-  if (row.team !== "founder" && !position) return null;
+      ? (CORE_TEAMS.find((d) => d === row.dept) ?? null)
+      : row.team;
+  const position = dept
+    ? (TEAM_DEPARTMENTS.find((d) => d.key === dept)?.positions.find(
+        (p) => p === row.position,
+      ) ?? null)
+    : null;
+  // Someone in a department needs a position that belongs to it.
+  if (dept && !position) return null;
   const photo = (path: string | null) =>
-    path
-      ? `${photoBase}/storage/v1/object/public/${TEAM_PHOTO_BUCKET}/${path}`
-      : null;
+    path ? teamPhotoUrl(photoBase, path) : null;
   const spark: Spark = oneOf(SPARKS)(row.spark) ? row.spark : "geo";
   const degree = row.school_degree ?? "";
   return {
     id: row.id,
-    slug: row.handle ?? row.id,
+    slug: row.slug ?? row.handle ?? row.id,
+    profileSlug: row.slug ?? null,
     team: row.team,
+    dept,
     position,
     title: row.title,
     bio: row.bio,
@@ -149,6 +172,16 @@ export function teamPersonOf(
       : DEFAULT_DESIGN,
   };
 }
+
+/**
+ * The core team is more than twenty people even before everyone is listed on
+ * the page, so its count never reads lower than "20+".
+ */
+export const CORE_TEAM_FLOOR = 20;
+
+/** 73 → "70+": a floor that stays true until the next ten. */
+export const roughly = (n: number) =>
+  n < 10 ? String(n) : `${Math.floor(n / 10) * 10}+`;
 
 /** Cards per page: the grid has six cells and the last one is the "join" card. */
 export const CARDS_PER_PAGE = 5;
