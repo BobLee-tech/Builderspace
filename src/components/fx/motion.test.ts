@@ -2,10 +2,37 @@ import { describe, expect, it } from "vitest";
 import {
   createFrameLoop,
   follow,
+  ringTarget,
   spring,
   tickerPeriod,
   wrapTickerPosition,
 } from "./motion";
+
+describe("ringTarget", () => {
+  it("is a circle on the pointer when nothing is hovered", () => {
+    expect(ringTarget(100, 50, 46, 12)).toEqual({
+      cx: 100,
+      cy: 50,
+      w: 46,
+      h: 46,
+      r: 23,
+    });
+  });
+  it("wraps a control with room to spare and leans toward the pointer", () => {
+    const rect = { left: 10, top: 20, width: 60, height: 36 };
+    const box = ringTarget(70, 38, 46, 12, { rect, radius: 999 });
+    expect(box.w).toBe(84);
+    expect(box.h).toBe(60);
+    // A pill stays a pill: the radius never exceeds half the height.
+    expect(box.r).toBe(30);
+    expect(box.cx).toBeCloseTo(40 + 30 * 0.08);
+    expect(box.cy).toBe(38);
+  });
+  it("keeps a card's corner radius, plus the padding", () => {
+    const rect = { left: 0, top: 0, width: 330, height: 200 };
+    expect(ringTarget(0, 0, 46, 12, { rect, radius: 20 }).r).toBe(32);
+  });
+});
 
 describe("spring", () => {
   it("settles exactly at its target for different frame rates", () => {
