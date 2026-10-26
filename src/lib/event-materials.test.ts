@@ -1,35 +1,65 @@
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { allEventMaterials, packFiles } from "./event-materials";
+import {
+  allEventMaterials,
+  fillUser,
+  PLACEHOLDER,
+  type EventMaterials,
+} from "./event-materials";
+
+/** Every template on a page, so each check covers them all. */
+function hrefs(m: EventMaterials) {
+  return [
+    ...m.kit.map((k) => k.href),
+    ...m.steps.flatMap((s) =>
+      (s.actions ?? []).flatMap((a) => (a.kind === "link" ? [a.href] : [])),
+    ),
+    ...m.stuck.flatMap((s) => (s.link ? [s.link.href] : [])),
+  ];
+}
 
 describe("event materials", () => {
   for (const [slug, m] of allEventMaterials()) {
-    it(`${slug}: the zip is in public/events/${slug}/`, () => {
-      expect(m.zip.startsWith(`/events/${slug}/`), m.zip).toBe(true);
-      expect(existsSync(join("public", m.zip)), m.zip).toBe(true);
-    });
-
-    // Stored uncompressed, so each file's text sits in the zip as is.
-    it(`${slug}: the zip matches the data (node scripts/pack-materials.mjs)`, () => {
-      const zip = readFileSync(join("public", m.zip));
-      for (const f of packFiles(m)) {
-        expect(zip.includes(Buffer.from(f.name)), f.name).toBe(true);
-        expect(zip.includes(Buffer.from(f.text)), f.name).toBe(true);
+    it(`${slug}: every link is https or on the site once a username is in`, () => {
+      for (const href of hrefs(m)) {
+        const url = fillUser(href, "alex-chen", "en");
+        expect(url, href).not.toContain("{u}");
+        if (url.startsWith("/")) continue;
+        expect(new URL(url).protocol, href).toBe("https:");
       }
     });
 
-    it(`${slug}: the deploy step exists and links are https or on the site`, () => {
-      expect(m.steps[m.deployStep]).toBeDefined();
-      for (const t of m.tools) {
-        if (t.href.startsWith("/")) continue;
-        expect(new URL(t.href).protocol, t.href).toBe("https:");
-      }
+    it(`${slug}: each path is listed once`, () => {
+      const ids = m.paths.map((p) => p.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      for (const s of m.steps)
+        for (const a of s.actions ?? [])
+          if (a.kind === "go") expect(ids).toContain(a.to);
     });
 
-    it(`${slug}: both deploy prompts keep the placeholders`, () => {
-      expect(m.deployPrompt.zh).toContain("<用户名>");
-      expect(m.deployPrompt.en).toContain("<username>");
+    it(`${slug}: prompts mark what to replace in both languages`, () => {
+      for (const c of m.changes) {
+        expect(PLACEHOLDER.test(c.prompt.zh), c.title.zh).toBe(
+          PLACEHOLDER.test(c.prompt.en),
+        );
+      }
+      expect(PLACEHOLDER.test(m.deployPrompt.zh)).toBe(true);
+      expect(PLACEHOLDER.test(m.deployPrompt.en)).toBe(true);
+    });
+
+    it(`${slug}: prompts that name the repo use the username`, () => {
+      for (const text of [m.handoff, m.deployPrompt]) {
+        expect(text.zh).toContain("{u}");
+        expect(text.en).toContain("{u}");
+      }
     });
   }
+
+  it("puts a stand-in where the username goes until one is typed", () => {
+    expect(fillUser("https://{u}.github.io", "", "zh")).toBe(
+      "https://用户名.github.io",
+    );
+    expect(fillUser("{u}/{u}.github.io", "mia", "en")).toBe(
+      "mia/mia.github.io",
+    );
+  });
 });

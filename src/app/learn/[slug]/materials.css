@@ -1,221 +1,774 @@
-/* Materials page (/learn/[slug]). Built on the event page's parts
-   (../../events/[slug]/event.css): the intro and a card on the right, then
-   the wall, the tools and the five steps full width. */
+/* Materials page (/learn/[slug]): a workbench. The path you pick runs down
+   the left; your kit (username in, links out) stays pinned on the right while
+   you work. Black / white / chrome; the mascots are the only colour. Type is
+   a notch larger and looser than the rest of the site: people read prompts
+   here and copy them. */
 
-/* ---------- the card: what's in the pack ---------- */
-/* Its top lines up with the title, under the tags. */
-@media (min-width: 961px) {
-  .mat .evp-side {
-    margin-top: 42px;
-  }
+.mat {
+  --soft: #c9c9c5;
+  --raise: #121214;
+  --lh-body: 1.8;
+  --lh-code: 1.95;
+  font-size: 16px;
+  line-height: var(--lh-body);
+  letter-spacing: 0.01em;
 }
-.mat-pack {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.02);
+.mat h1,
+.mat h2,
+.mat h3 {
+  /* Headings break at punctuation, never inside a phrase. */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
-.mat-pack li + li {
-  border-top: 1px solid var(--line);
-}
-.mat-pack a {
+
+.mat-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 13px 16px;
-  color: inherit;
-  text-decoration: none;
-  transition: background var(--dur-1);
+  gap: 16px;
+  margin-bottom: clamp(28px, 3.4vw, 48px);
 }
-.mat-pack a:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-.mat-pack svg {
+.mat-bar > .mute {
   flex: none;
-  color: var(--mute);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
 }
-.mat-pack b {
-  font-size: var(--fs-md);
+.mat-rule {
+  flex: 1;
+  height: 1px;
+  min-width: 24px;
+  background: linear-gradient(90deg, var(--line-2), transparent);
+}
+
+/* ---------- the bench ---------- */
+.mat-bench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-areas: "head kit" "work kit";
+  column-gap: clamp(32px, 5vw, 72px);
+  align-items: start;
+}
+.mat-head {
+  grid-area: head;
+  min-width: 0;
+}
+.mat-work {
+  grid-area: work;
+  min-width: 0;
+}
+.mat-kit-col {
+  grid-area: kit;
+  position: sticky;
+  top: 96px;
+}
+
+.mat-head .need {
+  margin-bottom: 18px;
+}
+.mat-title {
+  margin: 0;
+  font-weight: 900;
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.mat-en {
+  margin: 14px 0 0;
+  font-size: var(--fs-sm);
+  text-transform: none;
+}
+.mat-ask {
+  margin: 48px 0 0;
+  font-size: 19px;
   font-weight: 500;
 }
-.mat-pack .mono {
-  margin-left: auto;
-  font-size: var(--fs-xs);
-  white-space: nowrap;
-}
-.mat-download {
-  justify-content: space-between;
-}
-.mat-foot {
+
+/* Three paths, each led by a mascot: picked in colour, the rest grey. */
+.mat-paths {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  padding-top: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 20px;
   border-top: 1px solid var(--line);
-  font-size: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.mat-path {
+  position: relative;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 4px 16px;
+  align-items: center;
+  padding: 24px 16px 24px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.mat-path + .mat-path {
+  padding-left: 20px;
+  border-left: 1px solid var(--line);
+}
+.mat-path img {
+  grid-row: span 2;
+  width: 52px;
+  height: 52px;
+  filter: grayscale(1) brightness(0.75);
+  opacity: 0.55;
+  transition:
+    filter var(--dur-2),
+    opacity var(--dur-2),
+    transform var(--dur-2) var(--ease-out);
+}
+.mat-path b {
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--mute);
+  transition: color var(--dur-1);
+}
+.mat-path > span {
+  font-size: var(--fs-sm);
+  line-height: 1.5;
   color: var(--mute);
 }
-.mat-foot a {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  color: inherit;
-  text-decoration: none;
+.mat-path::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--paper);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-2) var(--ease-out);
 }
-.mat-foot .mono {
-  font-size: var(--fs-xs);
+.mat-path + .mat-path::after {
+  left: 20px;
+}
+.mat-path:hover img {
+  opacity: 0.9;
+}
+.mat-path[aria-selected="true"] img {
+  filter: none;
+  opacity: 1;
+  transform: translateY(-2px) rotate(-4deg);
+}
+.mat-path[aria-selected="true"] b {
   color: var(--paper);
 }
-.mat-foot a:hover .mono {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.mat-path[aria-selected="true"]::after {
+  transform: scaleX(1);
 }
 
-/* ---------- below the intro, full width ---------- */
-.mat .evp-results {
-  margin-top: clamp(56px, 7vw, 96px);
+/* ---------- the kit ---------- */
+.mat-kit {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
 }
-.mat .evp-sec {
-  margin-top: clamp(48px, 6vw, 72px);
-  scroll-margin-top: 96px;
+.mat-kit-h {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.04em;
 }
-.mat .mat-tools {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.mat-field {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  background: var(--ink);
+  transition: border-color var(--dur-1);
 }
-.mat .mat-tools li:last-child:nth-child(odd) {
-  grid-column: auto;
+.mat-field:focus-within {
+  border-color: var(--paper);
 }
-
-/* ---------- five steps ---------- */
-.mat-steps {
+.mat-field .mono {
+  padding-left: 14px;
+  font-size: var(--fs-sm);
+  color: var(--mute);
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.mat-field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 14px 0 2px;
+  border: 0;
+  background: none;
+  color: var(--paper);
+  outline: 0;
+  font-family: var(--f-mono);
+  font-size: 15px;
+}
+.mat-field input::placeholder {
+  color: var(--line-2);
+}
+.mat-hint {
+  margin: -6px 0 0;
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  color: var(--mute);
+}
+.mat-links {
   margin: 0;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  overflow: hidden;
 }
-.mat-steps > li + li {
+.mat-links li + li {
   border-top: 1px solid var(--line);
 }
-.mat-step {
+.mat-links a {
   display: grid;
-  grid-template-columns: 56px 180px minmax(0, 1fr) 24px;
-  gap: 16px;
-  align-items: baseline;
-  padding: 20px 22px;
-}
-.mat-step b {
-  font-size: 17px;
-  font-weight: 700;
-}
-.mat-step > .mute {
-  font-size: var(--fs-md);
-}
-.mat-n {
-  font-family: var(--f-display);
-  font-weight: 700;
-  font-size: 20px;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--mute);
-}
-.mat-steps summary {
-  list-style: none;
-  cursor: pointer;
-  transition: background var(--dur-1);
-}
-.mat-steps summary::-webkit-details-marker {
-  display: none;
-}
-.mat-steps summary:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
-.mat-plus {
-  align-self: center;
-  color: var(--mute);
-  transition: transform var(--dur-1);
-}
-.mat-steps details[open] .mat-plus {
-  transform: rotate(45deg);
-}
-.mat-deploy {
-  display: flex;
-  flex-direction: column;
+  grid-template-columns: 20px minmax(0, 1fr) 14px;
   gap: 12px;
-  padding: 0 22px 22px calc(22px + 56px + 16px);
+  align-items: center;
+  padding: 14px 2px;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
 }
-.mat-deploy > p {
-  margin: 0;
-  font-size: var(--fs-sm);
+.mat-links a > svg:first-child {
+  color: var(--mute);
+}
+.mat-links b {
+  display: block;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.mat-links small {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--mute);
+  text-overflow: ellipsis;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.mat-arr {
+  color: var(--mute);
+  transition:
+    transform var(--dur-1),
+    color var(--dur-1);
+}
+.mat-links a:hover .mat-arr {
+  color: var(--paper);
+  transform: translate(2px, -2px);
+}
+.mat-links.off a {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.mat-kit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.mat-kit-row .btn {
+  --h: 44px;
+  justify-content: center;
+  padding: 0 16px;
 }
 
-/* ---------- the deploy prompt ---------- */
-.mat-prompt-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-  font-size: var(--fs-xs);
-}
-.mat-copy {
+/* ---------- chips: copy, open, jump ---------- */
+.mat-chip {
   display: inline-flex;
   flex: none;
   align-items: center;
   gap: 6px;
-  height: 30px;
-  padding: 0 12px;
+  height: 34px;
+  padding: 0 14px;
   border: 1px solid var(--line-2);
   border-radius: 999px;
   background: none;
   color: var(--paper);
-  font-size: var(--fs-xs);
+  font: inherit;
+  font-size: var(--fs-sm);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
   cursor: pointer;
-  transition: border-color var(--dur-1);
+  transition:
+    border-color var(--dur-1),
+    background var(--dur-1),
+    color var(--dur-1);
 }
-.mat-copy:hover {
+.mat-chip:hover {
   border-color: var(--paper);
 }
-.mat-prompt pre {
+.mat-chip.solid,
+.mat-chip.done {
+  border-color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 600;
+}
+.mat-chip[aria-disabled="true"] {
+  opacity: 0.5;
+}
+
+/* ---------- the work area ---------- */
+.mat-panel {
+  padding-top: 64px;
+  scroll-margin-top: 96px;
+}
+.mat-panel-h {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.mat-panel-h h2 {
   margin: 0;
-  padding: 16px 18px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.mat-panel-h p {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--mute);
+}
+
+/* Change my site: one note, then prompt slips */
+.mat-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 32px;
+  padding: 22px 24px;
+  border-radius: 14px;
+  background: var(--raise);
+}
+.mat-note b {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.mat-note span {
+  font-size: var(--fs-sm);
+  color: var(--mute);
+}
+.mat-slips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 44px 32px;
+  margin-top: 44px;
+}
+.mat-slip {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.mat-slip-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mat-slip-top b {
+  font-weight: 600;
+}
+.mat-slip-top .mono {
+  font-size: var(--fs-xs);
+}
+.mat-slip pre {
+  flex: 1;
+  margin: 0;
+  padding: 20px 22px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--ink);
+  border-radius: 14px;
+  background: var(--panel);
   font-family: var(--f-mono);
-  font-size: 12.5px;
-  line-height: 1.75;
-  color: #d9d9d4;
+  font-size: 13.5px;
+  line-height: var(--lh-code);
+  letter-spacing: 0;
+  color: var(--soft);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.mat-slip mark {
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: rgba(244, 244, 242, 0.12);
+  color: var(--paper);
+}
 
-@media (max-width: 960px) {
-  .mat .mat-tools {
-    grid-template-columns: 1fr;
+/* Start from zero: five steps; the number turns into a tick */
+.mat-meter {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+}
+.mat-track {
+  flex: 1;
+  max-width: 280px;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--line);
+}
+.mat-track i {
+  display: block;
+  height: 100%;
+  background: var(--paper);
+  transition: width 0.5s var(--ease-out);
+}
+.mat-meter .mono {
+  font-size: var(--fs-xs);
+  color: var(--mute);
+  font-variant-numeric: tabular-nums;
+}
+.mat-steps {
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+.mat-steps > li {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 22px;
+  padding: 32px 0;
+  border-bottom: 1px solid var(--line);
+}
+.mat-tick {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  background: none;
+  color: var(--paper);
+  font: 600 var(--fs-sm) var(--f-mono);
+  cursor: pointer;
+  transition:
+    background var(--dur-1),
+    border-color var(--dur-1),
+    color var(--dur-1);
+}
+.mat-tick:hover {
+  border-color: var(--paper);
+}
+.mat-steps .done .mat-tick {
+  border-color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
+}
+.mat-step {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding-top: 4px;
+}
+.mat-step > b {
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.mat-steps .done .mat-step > b {
+  color: var(--mute);
+}
+.mat-step > p {
+  margin: 0;
+  color: var(--soft);
+}
+.mat-subs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: s;
+  font-size: var(--fs-sm);
+  color: var(--soft);
+}
+.mat-subs li {
+  display: flex;
+  gap: 10px;
+  counter-increment: s;
+}
+.mat-subs li::before {
+  content: counter(s, lower-alpha);
+  flex: none;
+  width: 14px;
+  font: var(--fs-xs) / 2.3 var(--f-mono);
+  color: var(--mute);
+}
+.mat-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* I'm stuck: problems; open one for the checks and what to tell the AI */
+.mat-faq {
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+.mat-faq > li {
+  border-bottom: 1px solid var(--line);
+}
+.mat-faq summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 26px 0;
+  list-style: none;
+  cursor: pointer;
+}
+.mat-faq summary::-webkit-details-marker {
+  display: none;
+}
+.mat-faq summary b {
+  flex: 1;
+  font-weight: 600;
+}
+.mat-faq summary:hover b {
+  text-decoration: underline;
+  text-decoration-color: var(--line-2);
+  text-underline-offset: 4px;
+}
+.mat-faq summary svg {
+  color: var(--mute);
+  transition: transform var(--dur-2) var(--ease-out);
+}
+.mat-faq details[open] summary svg {
+  color: var(--paper);
+  transform: rotate(45deg);
+}
+.mat-fix {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 36px;
+  padding-bottom: 32px;
+}
+.mat-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.mat-checks .mat-subs {
+  font-size: var(--fs-md);
+}
+
+/* ---------- the wall, led by the fifth mascot ---------- */
+.mat-wall {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-top: 104px;
+  padding: 32px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+}
+.mat-wall img {
+  width: 56px;
+  height: 56px;
+  transition: transform var(--dur-2) var(--ease-out);
+}
+.mat-wall:hover img {
+  transform: rotate(-6deg) translateY(-2px);
+}
+.mat-wall > span {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+.mat-wall b {
+  font-size: 19px;
+}
+.mat-wall .mute {
+  font-size: var(--fs-sm);
+}
+.mat-wall > svg {
+  color: var(--mute);
+  transition:
+    transform var(--dur-1),
+    color var(--dur-1);
+}
+.mat-wall:hover > svg {
+  color: var(--paper);
+  transform: translateX(4px);
+}
+
+/* ---------- save as image ---------- */
+.mat-poster {
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--paper);
+}
+.mat-poster::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.mat-poster-in {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+}
+.mat-poster-img {
+  display: grid;
+  place-items: center;
+  width: min(340px, 80vw, calc((100dvh - 140px) * 9 / 16));
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  border-radius: 22px;
+  background: var(--panel);
+}
+.mat-poster-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.mat-poster-row {
+  display: flex;
+  gap: 8px;
+}
+.mat-poster-row .btn {
+  --h: 44px;
+}
+
+.mat-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 16px);
+  transition:
+    opacity var(--dur-1),
+    transform var(--dur-2) var(--ease-out);
+}
+.mat-toast.on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---------- narrow ---------- */
+@media (max-width: 1040px) {
+  .mat-bench {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "head" "kit" "work";
+  }
+  .mat-kit-col {
+    position: static;
+    margin-top: 28px;
+  }
+  .mat-kit {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px 28px;
+  }
+  .mat-kit > :not(.mat-links) {
+    grid-column: 1;
+  }
+  .mat-kit .mat-links {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+  }
+  .mat-kit-row {
+    align-self: end;
+  }
+}
+/* The site's dock covers the bottom up to 900px; keep the toast above it. */
+@media (max-width: 900px) {
+  .mat-toast {
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   }
 }
 @media (max-width: 720px) {
-  .mat-step {
-    grid-template-columns: 32px minmax(0, 1fr) 20px;
-    gap: 6px 12px;
-    padding: 18px 16px;
+  .mat-paths {
+    grid-template-columns: 1fr;
+    border-bottom: 0;
   }
-  .mat-n {
-    grid-row: span 2;
-    font-size: 16px;
+  .mat-path,
+  .mat-path + .mat-path {
+    grid-template-columns: 44px minmax(0, 1fr);
+    padding: 18px 0;
+    border-left: 0;
+    border-bottom: 1px solid var(--line);
   }
-  .mat-step > .mute {
-    grid-column: 2;
+  .mat-path img {
+    width: 44px;
+    height: 44px;
   }
-  .mat-plus {
-    grid-column: 3;
-    grid-row: 1;
+  .mat-path + .mat-path::after {
+    left: 0;
   }
-  .mat-deploy {
-    padding: 0 16px 18px;
+  .mat-kit {
+    display: flex;
+    padding: 24px;
+  }
+  .mat-panel {
+    padding-top: 52px;
+  }
+  .mat-slips {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .mat-steps > li {
+    gap: 16px;
+    padding: 26px 0;
+  }
+  .mat-fix {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .mat-note {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .mat-bar > .mute {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mat-path img,
+  .mat-path::after,
+  .mat-track i,
+  .mat-wall img {
+    transition: none;
   }
 }
