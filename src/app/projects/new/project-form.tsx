@@ -89,6 +89,8 @@ function previewProject(
       "一句话说清楚：做的是什么，帮谁解决什么。· What it is, and who it helps.",
     problem: draft?.problem || null,
     owner: submitter.showsCard ? submitter.owner : null,
+    // Members are always tied to it, so a hidden card shows just the name.
+    ownerLinked: true,
     targetUser: draft?.targetUser || "—",
     status: "recruiting",
     neededRoles: draft?.neededRoles ?? [],

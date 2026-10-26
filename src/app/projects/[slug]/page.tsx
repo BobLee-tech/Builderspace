@@ -26,6 +26,7 @@ import { TimelineFx } from "@/components/fx/scroll-fx";
 import {
   Cover,
   OwnerChip,
+  ownerCardOf,
   StatusDot,
   coverSeed,
   pitchText,
@@ -130,6 +131,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
   if (!result) notFound();
   const { project, updates } = result;
   const { media } = project;
+  const owner = ownerCardOf(project);
   const name = projectText(project, "name");
   const hasMedia = Boolean(
     media.coverUrl || media.videoUrl || media.videoPosterUrl,
@@ -227,13 +229,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
             <dt className="mono mute">
               <T zh="发起人" en="Owner" />
             </dt>
-            <dd>
-              {project.owner ? (
-                <OwnerChip owner={project.owner} />
-              ) : (
-                project.ownerName
-              )}
-            </dd>
+            <dd>{owner ? <OwnerChip owner={owner} /> : project.ownerName}</dd>
           </div>
           <div>
             <dt className="mono mute">
@@ -393,23 +389,18 @@ async function ProjectDetail({ slug }: { slug: string }) {
           </div>
 
           <aside className="d-side">
-            <div
-              className={project.owner ? "box d-card d-owner" : "box d-card"}
-            >
-              {project.owner ? (
+            <div className={owner ? "box d-card d-owner" : "box d-card"}>
+              {owner ? (
                 <>
                   <span className="mono mute">
                     <T zh="发起人" en="Owner" />
                   </span>
-                  <MeCard
-                    card={project.owner.card}
-                    design={project.owner.design}
-                  />
+                  <MeCard card={owner.card} design={owner.design} />
                   <p className="d-owner-name">
-                    <b>{project.owner.card.nickname}</b>
-                    {project.owner.card.memberNo && (
+                    <b>{owner.card.nickname}</b>
+                    {owner.card.memberNo && (
                       <span className="mono mute">
-                        {memberCode(project.owner.card.memberNo)}
+                        {memberCode(owner.card.memberNo)}
                       </span>
                     )}
                   </p>

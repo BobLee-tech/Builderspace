@@ -1274,6 +1274,8 @@ html.fx .top {
   left: 8px;
   bottom: 4px;
 }
+.pgrid.as-list .cover .cstar,
+.pgrid.as-list .cover .cstar-note,
 .pgrid.as-list .cover .id,
 .pgrid.as-list .prob,
 .pgrid.as-list .need-k,
@@ -2081,6 +2083,9 @@ html[data-lang="en"] .d-title[data-size-en="sm"] {
 @media (prefers-reduced-motion: reduce) {
   .star-lbl svg {
     transition: none;
+  }
+  .cstar[aria-pressed="true"] svg {
+    animation: none;
   }
 }
 .d-cover {
@@ -3926,6 +3931,22 @@ html[data-lang="en"] .d-title[data-size-en="sm"] {
   flex: none;
   width: 44px;
 }
+/* On a project card the owner gets the foot's spare width, the date none. */
+.pcard-foot .owner-chip {
+  flex: 1 1 auto;
+}
+.pcard-foot .owner-mini {
+  width: 56px;
+}
+.pcard-foot > .mono {
+  flex: none;
+}
+.pcard-cc.list-only {
+  display: none;
+}
+.pgrid.as-list .pcard-cc.list-only {
+  display: inline-flex;
+}
 .owner-chip > span:last-child {
   display: grid;
   min-width: 0;
@@ -3934,8 +3955,12 @@ html[data-lang="en"] .d-title[data-size-en="sm"] {
 .owner-chip b {
   font-weight: 600;
   color: var(--paper);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .owner-chip small {
+  white-space: nowrap;
   font-size: var(--fs-xs);
   letter-spacing: 0.04em;
   color: var(--mute);
@@ -5470,7 +5495,7 @@ html.lenis body {
 .cover .id {
   pointer-events: none;
 }
-/* Uploads stay mono until hovered, so the plaza remains black / white / chrome. */
+/* Uploads show in their own colours: they are the authors' work. */
 .cv-media img,
 .cv-media video {
   position: absolute;
@@ -5479,10 +5504,8 @@ html.lenis body {
   height: 100%;
   object-fit: cover;
   display: block;
-  filter: grayscale(1) contrast(1.08) brightness(0.86);
   scale: 1.02;
   transition:
-    filter 0.45s var(--ease),
     scale 0.6s var(--ease),
     opacity 0.45s;
 }
@@ -5491,31 +5514,18 @@ html.lenis body {
 }
 .pcard:hover .cv-media :is(img, video),
 .d-cover:hover .cv-media :is(img, video) {
-  filter: none;
   scale: 1.06;
 }
 .cv-media.playing video {
   opacity: 1;
 }
+/* Just enough shade at the top for the badges to read on a bright cover. */
 .cv-dither {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background:
-    var(--mat-halftone) 0 0 / 4px 4px,
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.4),
-      transparent 35%,
-      transparent 60%,
-      rgba(0, 0, 0, 0.5)
-    );
-  transition: opacity 0.6s;
-}
-.pcard:hover .cv-dither,
-.d-cover:hover .cv-dither {
-  opacity: 0.35;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 30%);
 }
 .cv-badge {
   position: absolute;
@@ -5538,6 +5548,79 @@ html.lenis body {
   width: 9px;
   height: 9px;
   fill: currentColor;
+}
+/* The card's Star, top right of the cover where the #slug sat; above the
+   stretched link like the play button. */
+.pcard .cover .id {
+  display: none;
+}
+.cstar {
+  position: absolute;
+  z-index: 2;
+  right: 10px;
+  top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--paper);
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s,
+    scale 0.2s var(--ease);
+}
+span.cstar {
+  cursor: default;
+}
+button.cstar:hover {
+  background: rgba(0, 0, 0, 0.75);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+button.cstar:active {
+  scale: 0.94;
+}
+.cstar:focus-visible {
+  outline: 1px solid var(--paper);
+  outline-offset: 2px;
+}
+.cstar[aria-pressed="true"] {
+  background: var(--paper);
+  border-color: var(--paper);
+  color: var(--ink);
+}
+.cstar[aria-pressed="true"] svg {
+  animation: cstar-pop 0.45s var(--ease);
+}
+.cstar[aria-busy="true"] {
+  cursor: progress;
+}
+@keyframes cstar-pop {
+  40% {
+    scale: 1.4;
+    rotate: -12deg;
+  }
+}
+.cstar-note {
+  position: absolute;
+  z-index: 2;
+  right: 10px;
+  top: 42px;
+  max-width: calc(100% - 20px);
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: var(--fs-xs);
 }
 .cv-play {
   position: absolute;

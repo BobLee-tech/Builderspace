@@ -5,7 +5,9 @@ import {
   User,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { MemberCard } from "@/app/join/member-card";
+import { seededDesign } from "@/lib/card-design";
 import { formatShortDate } from "@/lib/format";
 import { memberCode } from "@/lib/members";
 import {
@@ -17,6 +19,7 @@ import {
   type ProjectEn,
   type ProjectMedia,
 } from "@/lib/types";
+import { CardStar } from "./card-star";
 import { CoverMedia } from "./project-media";
 import { T, TranslatedMark } from "./t";
 
@@ -34,6 +37,31 @@ export function projectText(
  */
 export function pitchText(project: Project) {
   return projectText(project, project.pitch ? "pitch" : "problem");
+}
+
+/**
+ * The card a project shows for its owner: their member card, or for a project
+ * not tied to an account yet a card seeded from the owner's name (the same on
+ * all their projects). Null when the member keeps their card off projects.
+ */
+export function ownerCardOf(project: Project): OwnerCard | null {
+  if (project.owner) return project.owner;
+  if (project.ownerLinked) return null;
+  const { design, spark } = seededDesign(`owner:${project.ownerName}`);
+  return {
+    card: {
+      nickname: project.ownerName,
+      schoolDegree: "",
+      major: "",
+      skills: [],
+      spark,
+      memberNo: null,
+      seal: null,
+      building: null,
+      lookingFor: [],
+    },
+    design,
+  };
 }
 
 /** The owner's member card in miniature, with their name and number. */
@@ -73,10 +101,13 @@ export function Cover({
   seed,
   label,
   media = NO_MEDIA,
+  children,
 }: {
   seed: string;
   label: string;
   media?: ProjectMedia;
+  /** Controls over the cover, like the card's Star. */
+  children?: ReactNode;
 }) {
   return (
     <div className="cover" data-v={coverSeed(seed) % 6}>
@@ -87,6 +118,7 @@ export function Cover({
       <span className="id" aria-hidden>
         #{seed}
       </span>
+      {children}
     </div>
   );
 }
@@ -105,9 +137,18 @@ export function ProjectCard({
   project: Project;
   preview?: boolean;
 }) {
+  const owner = ownerCardOf(project);
   return (
     <article className={`pcard ${project.status === "paused" ? "paused" : ""}`}>
-      <Cover seed={project.slug} label={project.name} media={project.media} />
+      <Cover seed={project.slug} label={project.name} media={project.media}>
+        {preview ? (
+          <span className="cstar">
+            <Star weight="light" size={14} aria-hidden />0
+          </span>
+        ) : (
+          <CardStar slug={project.slug} count={project.starCount} />
+        )}
+      </Cover>
       <div className="pcard-head">
         <div className="pcard-top">
           <span
@@ -148,8 +189,8 @@ export function ProjectCard({
         </div>
       )}
       <div className="pcard-foot">
-        {project.owner ? (
-          <OwnerChip owner={project.owner} />
+        {owner ? (
+          <OwnerChip owner={owner} />
         ) : (
           <span>
             <User weight="light" size={15} aria-hidden />
@@ -157,8 +198,9 @@ export function ProjectCard({
           </span>
         )}
         <span className="mono">
+          {/* The list layout's cover is too small for the Star pill. */}
           {project.starCount > 0 && (
-            <span className="pcard-cc">
+            <span className="pcard-cc list-only">
               <Star weight="light" size={15} aria-hidden />
               {project.starCount}
               <span className="sr-only">
