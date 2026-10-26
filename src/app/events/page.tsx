@@ -4,6 +4,7 @@ import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
 import { getEventSchedule, getEventSignups, getTutorials } from "@/lib/data";
+import { allEventMaterials } from "@/lib/event-materials";
 import { eventCopy, getEventPage } from "@/lib/event-pages";
 import { getEventResults, worksOnWall } from "@/lib/event-results";
 import { formatShortDate, formatTimeRange } from "@/lib/format";
@@ -29,7 +30,10 @@ export default async function EventsPage() {
     getTutorials(),
     getEventSignups(),
   ]);
-  const withMaterials = new Set(tutorials.map((t) => t.eventSlug));
+  const withMaterials = new Set([
+    ...tutorials.map((t) => t.eventSlug),
+    ...allEventMaterials().map(([slug]) => slug),
+  ]);
   const calendarUrl = `${siteUrl.replace(/^https?:/, "webcal:")}/events.ics`;
   const [next, ...later] = upcoming;
   // The next event has its own ticket up top; the list holds the rest.
@@ -205,7 +209,7 @@ function EventRow({
         )}
         {materials && (
           <span className="mono mute">
-            <T zh="讲义 · 示例仓库 · 录屏" en="Slides · repo · recording" />
+            <T zh="有资料包" en="Materials" />
           </span>
         )}
       </div>

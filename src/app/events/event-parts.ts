@@ -64,3 +64,14 @@ export function shownSeats(event: SiteEvent, signups: EventSignups) {
   const left = capacity === null ? null : Math.max(capacity - confirmed, 0);
   return { capacity, confirmed, left, groups };
 }
+
+/**
+ * Rough width of a title in ems (CJK one each, the rest about half), so the
+ * CSS can size it to fit its column on one line.
+ */
+export function titleEms(title: string) {
+  let ems = 0;
+  for (const c of title)
+    ems += /[\u3000-\u9fff\uff00-\uffef]/.test(c) ? 1 : 0.58;
+  return Math.max(ems, 4).toFixed(2);
+}

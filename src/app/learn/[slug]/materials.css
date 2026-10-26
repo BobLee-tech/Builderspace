@@ -1,0 +1,221 @@
+/* Materials page (/learn/[slug]). Built on the event page's parts
+   (../../events/[slug]/event.css): the intro and a card on the right, then
+   the wall, the tools and the five steps full width. */
+
+/* ---------- the card: what's in the pack ---------- */
+/* Its top lines up with the title, under the tags. */
+@media (min-width: 961px) {
+  .mat .evp-side {
+    margin-top: 42px;
+  }
+}
+.mat-pack {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.mat-pack li + li {
+  border-top: 1px solid var(--line);
+}
+.mat-pack a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  color: inherit;
+  text-decoration: none;
+  transition: background var(--dur-1);
+}
+.mat-pack a:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.mat-pack svg {
+  flex: none;
+  color: var(--mute);
+}
+.mat-pack b {
+  font-size: var(--fs-md);
+  font-weight: 500;
+}
+.mat-pack .mono {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+.mat-download {
+  justify-content: space-between;
+}
+.mat-foot {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--mute);
+}
+.mat-foot a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: inherit;
+  text-decoration: none;
+}
+.mat-foot .mono {
+  font-size: var(--fs-xs);
+  color: var(--paper);
+}
+.mat-foot a:hover .mono {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- below the intro, full width ---------- */
+.mat .evp-results {
+  margin-top: clamp(56px, 7vw, 96px);
+}
+.mat .evp-sec {
+  margin-top: clamp(48px, 6vw, 72px);
+  scroll-margin-top: 96px;
+}
+.mat .mat-tools {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.mat .mat-tools li:last-child:nth-child(odd) {
+  grid-column: auto;
+}
+
+/* ---------- five steps ---------- */
+.mat-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.mat-steps > li + li {
+  border-top: 1px solid var(--line);
+}
+.mat-step {
+  display: grid;
+  grid-template-columns: 56px 180px minmax(0, 1fr) 24px;
+  gap: 16px;
+  align-items: baseline;
+  padding: 20px 22px;
+}
+.mat-step b {
+  font-size: 17px;
+  font-weight: 700;
+}
+.mat-step > .mute {
+  font-size: var(--fs-md);
+}
+.mat-n {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--mute);
+}
+.mat-steps summary {
+  list-style: none;
+  cursor: pointer;
+  transition: background var(--dur-1);
+}
+.mat-steps summary::-webkit-details-marker {
+  display: none;
+}
+.mat-steps summary:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.mat-plus {
+  align-self: center;
+  color: var(--mute);
+  transition: transform var(--dur-1);
+}
+.mat-steps details[open] .mat-plus {
+  transform: rotate(45deg);
+}
+.mat-deploy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 22px 22px calc(22px + 56px + 16px);
+}
+.mat-deploy > p {
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+
+/* ---------- the deploy prompt ---------- */
+.mat-prompt-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: var(--fs-xs);
+}
+.mat-copy {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: none;
+  color: var(--paper);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition: border-color var(--dur-1);
+}
+.mat-copy:hover {
+  border-color: var(--paper);
+}
+.mat-prompt pre {
+  margin: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--ink);
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: #d9d9d4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 960px) {
+  .mat .mat-tools {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 720px) {
+  .mat-step {
+    grid-template-columns: 32px minmax(0, 1fr) 20px;
+    gap: 6px 12px;
+    padding: 18px 16px;
+  }
+  .mat-n {
+    grid-row: span 2;
+    font-size: 16px;
+  }
+  .mat-step > .mute {
+    grid-column: 2;
+  }
+  .mat-plus {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .mat-deploy {
+    padding: 0 16px 18px;
+  }
+}
