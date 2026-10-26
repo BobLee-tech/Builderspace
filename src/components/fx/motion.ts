@@ -87,6 +87,45 @@ export function spring(stiffness = 220, damping = 28) {
   };
 }
 
+/** The cursor ring as a rounded rectangle: centre, size, corner radius. */
+export type RingBox = {
+  cx: number;
+  cy: number;
+  w: number;
+  h: number;
+  r: number;
+};
+
+/**
+ * Where the cursor ring goes: a circle of `size` on the pointer, or, over a
+ * control, wrapped round it with `pad` to spare on every side and leaning a
+ * little toward the pointer so it still feels attached.
+ */
+export function ringTarget(
+  x: number,
+  y: number,
+  size: number,
+  pad: number,
+  wrap?: {
+    rect: Pick<DOMRect, "left" | "top" | "width" | "height">;
+    radius: number;
+  } | null,
+  lean = 0.08,
+): RingBox {
+  if (!wrap) return { cx: x, cy: y, w: size, h: size, r: size / 2 };
+  const { rect } = wrap;
+  const ex = rect.left + rect.width / 2,
+    ey = rect.top + rect.height / 2;
+  const h = rect.height + pad * 2;
+  return {
+    cx: ex + (x - ex) * lean,
+    cy: ey + (y - ey) * lean,
+    w: rect.width + pad * 2,
+    h,
+    r: Math.min(wrap.radius + pad, h / 2),
+  };
+}
+
 export type FrameJob = (dt: number, now: number) => boolean;
 
 /** One shared RAF. Returning false removes a job; the last job stops the clock. */

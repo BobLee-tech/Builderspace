@@ -22,10 +22,10 @@ import { StarButton } from "./star-button";
 import { UpdateForm } from "./update-form";
 import { Arr } from "@/components/fx/arr";
 import { CoverMaterial } from "@/components/fx/cover-material";
+import { OwnerChip } from "@/components/owner-chip";
 import { TimelineFx } from "@/components/fx/scroll-fx";
 import {
   Cover,
-  OwnerChip,
   ownerCardOf,
   StatusDot,
   coverSeed,

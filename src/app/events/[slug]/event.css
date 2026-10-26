@@ -404,6 +404,11 @@
   margin: 0;
   line-height: 1.7;
 }
+.evp-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 
 /* ---------- once it's over: results under the intro, full width ---------- */
 .evp-grid.has-results {
@@ -545,10 +550,6 @@
 }
 .evp-work:hover .evp-work-url svg {
   transform: translate(2px, -2px);
-}
-.evp-wall-note {
-  margin: 0;
-  font-size: var(--fs-sm);
 }
 
 /* ---------- narrow: a bar that jumps to the form ---------- */

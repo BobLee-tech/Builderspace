@@ -38,9 +38,29 @@ const putYourselfOnline: EventResults = {
   ],
   works: [
     {
+      name: "Yum I",
+      url: "https://5211baobei.github.io/Yuumi.github.io/",
+      shot: "/events/put-yourself-online/5211baobei.jpg",
+    },
+    {
+      name: "李一诺",
+      url: "https://16602738993-sys.github.io/Yinuo-Palace/",
+      shot: "/events/put-yourself-online/16602738993-sys.jpg",
+    },
+    {
+      name: "Leayain",
+      url: "https://wangxy-leayain.github.io/",
+      shot: "/events/put-yourself-online/wangxy-leayain.jpg",
+    },
+    {
       name: "庞博仁",
       url: "https://pbr2002.github.io/",
       shot: "/events/put-yourself-online/pbr2002.jpg",
+    },
+    {
+      name: "Sky T",
+      url: "https://sky-tian-manor-portfolio.perky-berry-1262.chatgpt.site/",
+      shot: "/events/put-yourself-online/sky-tian-manor.jpg",
     },
     {
       name: "XIANG TIAN",

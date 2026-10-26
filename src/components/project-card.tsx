@@ -6,10 +6,8 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { MemberCard } from "@/app/join/member-card";
 import { seededDesign } from "@/lib/card-design";
 import { formatShortDate } from "@/lib/format";
-import { memberCode } from "@/lib/members";
 import {
   NO_MEDIA,
   ROLE_LABEL,
@@ -20,6 +18,7 @@ import {
   type ProjectMedia,
 } from "@/lib/types";
 import { CardStar } from "./card-star";
+import { OwnerChip } from "./owner-chip";
 import { CoverMedia } from "./project-media";
 import { T, TranslatedMark } from "./t";
 
@@ -62,30 +61,6 @@ export function ownerCardOf(project: Project): OwnerCard | null {
     },
     design,
   };
-}
-
-/** The owner's member card in miniature, with their name and number. */
-export function OwnerChip({ owner }: { owner: OwnerCard }) {
-  const { card } = owner;
-  return (
-    <span className="owner-chip">
-      <span className="owner-mini" aria-hidden>
-        <MemberCard
-          card={card}
-          design={owner.design}
-          flipped={false}
-          still
-          className="mini"
-        />
-      </span>
-      <span>
-        <b>{card.nickname}</b>
-        {card.memberNo && (
-          <small className="mono">{memberCode(card.memberNo)}</small>
-        )}
-      </span>
-    </span>
-  );
 }
 
 /** Stable small hash so a project always gets the same generative cover. */
