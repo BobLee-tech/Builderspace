@@ -342,7 +342,7 @@ async function ownerCards(
 
 /**
  * Members who keep their card public, in join order (public_cards() in
- * 20261027010000_public_cards_and_email_change.sql): the wall on /people and
+ * 20261027020000_public_cards_and_email_change.sql): the wall on /people and
  * each /m/<handle>. Only what the card prints, plus their approved projects.
  * A failure shows an empty wall rather than taking the page down.
  */

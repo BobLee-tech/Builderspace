@@ -143,7 +143,7 @@ export function zidFromEmail(email: string): string | null {
  * The school seal once the sign-in email changes: a school address brings it
  * (or moves it to that school), any other address keeps what the member had.
  * Same rule as sync_member_email() in
- * 20261027010000_public_cards_and_email_change.sql.
+ * 20261027020000_public_cards_and_email_change.sql.
  */
 export function afterEmailChange(
   m: Pick<Member, "schoolDomain" | "verified">,
