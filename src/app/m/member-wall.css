@@ -1,0 +1,113 @@
+/* Public member cards: the wall on /people and a member's own /m/<handle>.
+   The card itself is .mc-* (motion.css); this only lays them out. */
+
+/* ---------- the wall ---------- */
+.mw {
+  margin-top: 56px;
+  scroll-margin-top: 96px;
+}
+.mw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 28px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mw-grid > li {
+  min-width: 0;
+  /* Off-screen cards skip layout and paint until scrolled to. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 340px;
+}
+.mw-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 14px;
+}
+.mw-tile:focus-visible {
+  outline: 1px solid var(--paper);
+  outline-offset: 4px;
+}
+.mw-tile .mc-col {
+  position: relative;
+  top: auto;
+  gap: 0;
+  align-items: stretch;
+}
+.mw-tile .mc-stage {
+  max-width: none;
+}
+.mw-tile .mc-shadow {
+  display: none;
+}
+.mw-tile .mc-tilt {
+  transition:
+    transform 0.9s var(--ease),
+    translate 0.5s var(--ease);
+}
+.mw-go {
+  align-self: flex-end;
+  color: var(--paper);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  opacity: 0;
+  translate: -4px 0;
+  transition:
+    opacity 0.3s,
+    translate 0.4s var(--ease);
+}
+.mw-tile:focus-visible .mw-go {
+  opacity: 1;
+  translate: 0 0;
+}
+@media (hover: hover) {
+  .mw-tile:hover .mc-tilt {
+    translate: 0 -5px;
+  }
+  .mw-tile:hover .mw-go {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+.mw-more {
+  display: flex;
+  margin: 28px auto 0;
+}
+@media (max-width: 520px) {
+  .mw-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 12px;
+  }
+}
+
+/* ---------- /m/<handle> ---------- */
+.mw-note {
+  margin: 0 0 8px;
+  padding: 10px 14px;
+  border: 1px dashed var(--line-2);
+  border-radius: 12px;
+  color: var(--mute);
+}
+.me-stars li > .mw-pitch {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mw-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px var(--pad);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+}
+.mw-cta p {
+  margin: 0;
+}

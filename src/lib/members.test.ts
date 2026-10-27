@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseMemberProfile, parseSurvey } from "./member-forms";
 import {
+  afterEmailChange,
   isUnsw,
   memberCode,
   mentionsUnsw,
@@ -230,5 +231,29 @@ describe("parseSurvey", () => {
     );
     expect(result.success).toBe(true);
     expect(result.data).toMatchObject({ zid: "z1234567" });
+  });
+});
+
+describe("afterEmailChange", () => {
+  const none = { schoolDomain: null, verified: false };
+  const unsw = { schoolDomain: "ad.unsw.edu.au", verified: true };
+
+  it("a school address brings the seal", () => {
+    expect(afterEmailChange(none, "amy@student.unsw.edu.au")).toEqual({
+      schoolDomain: "student.unsw.edu.au",
+      verified: true,
+    });
+  });
+
+  it("another school moves it", () => {
+    expect(afterEmailChange(unsw, "amy@uni.sydney.edu.au")).toEqual({
+      schoolDomain: "uni.sydney.edu.au",
+      verified: true,
+    });
+  });
+
+  it("any other address keeps what the member had", () => {
+    expect(afterEmailChange(unsw, "amy@gmail.com")).toEqual(unsw);
+    expect(afterEmailChange(none, "amy@gmail.com")).toEqual(none);
   });
 });

@@ -16,7 +16,9 @@ import type {
   SurveyInput,
 } from "./member-forms";
 import {
+  afterEmailChange,
   schoolDomain,
+  zidFromEmail,
   type LookingFor,
   type Member,
   type MemberSkill,
@@ -91,6 +93,8 @@ type DevSession = {
   survey: boolean;
   card?: CardDesign;
   zid?: string | null;
+  /** The new sign-in email a code was sent to, until it's confirmed. */
+  pendingEmail?: string;
 };
 
 async function readDev(): Promise<DevSession | null> {
@@ -192,9 +196,10 @@ export const getSession = cache(
     if (devMode()) {
       const dev = await readDev();
       if (!dev) return null;
-      // Cookies from before the switch existed: on, like the database default.
+      // Cookies from before the switches existed: on, like the database defaults.
       const member = dev.member && {
         ...dev.member,
+        isPublic: dev.member.isPublic ?? true,
         cardOnProjects: dev.member.cardOnProjects ?? true,
       };
       return { email: dev.email, member };
@@ -240,7 +245,7 @@ export async function createMember(
       lookingFor: input.lookingFor,
       schoolDomain: domain,
       verified: Boolean(domain),
-      isPublic: false,
+      isPublic: true,
       cardOnProjects: true,
       email: session.email,
     };
@@ -383,6 +388,89 @@ export async function saveMyZid(zid: string): Promise<Result<string>> {
   return ok(data);
 }
 
+/* ---------- sign-in email ---------- */
+
+const SAME_EMAIL = "这就是你现在的登录邮箱|That's already your sign-in email";
+
+/** Sends a 6-digit code to the new address; nothing changes until it's confirmed. */
+export async function requestEmailChange(email: string): Promise<Result> {
+  const session = await getSession();
+  if (!session?.member) return fail("先生成你的卡片|Make your card first");
+  if (email === session.email.toLowerCase()) return fail(SAME_EMAIL);
+  if (devMode()) {
+    const dev = await readDev();
+    if (dev) await writeDev({ ...dev, pendingEmail: email });
+    return ok(undefined);
+  }
+  const supabase = await getSupabaseAuth();
+  if (!supabase) return fail(CLOSED);
+  const { error } = await supabase.auth.updateUser({ email });
+  if (!error) return ok(undefined);
+  if (error.code === "email_exists") {
+    return fail(
+      "这个邮箱已经是另一位成员的登录邮箱|Another member already signs in with that email",
+    );
+  }
+  if (error.status === 429) {
+    return fail(
+      "发送太频繁了，请一分钟后再试|Too many codes sent, try again in a minute",
+    );
+  }
+  console.error("[auth] email change failed", {
+    status: error.status,
+    code: error.code,
+  });
+  return fail("验证码发送失败，请稍后再试|Couldn't send the code, try again");
+}
+
+/**
+ * The code from the new address makes it the sign-in email. A school address
+ * brings the verified seal; any other keeps it (sync_member_email() in the
+ * database does the same for the real profile).
+ */
+export async function confirmEmailChange(
+  email: string,
+  code: string,
+): Promise<Result<string>> {
+  const session = await getSession();
+  if (!session?.member) return fail("先生成你的卡片|Make your card first");
+  const wrong = fail(
+    "验证码不对或已过期，重新发一个试试|That code is wrong or expired, send a new one",
+  );
+  if (devMode()) {
+    const dev = await readDev();
+    if (!dev?.member || dev.pendingEmail !== email) return wrong;
+    // Stars are kept by email in development; they move with it.
+    const stars = await readDevStars(dev.email);
+    await writeDevStars({ ...stars, email });
+    await writeDev({
+      email,
+      member: { ...dev.member, ...afterEmailChange(dev.member, email), email },
+      survey: dev.survey,
+      card: dev.card,
+      zid: dev.zid ?? zidFromEmail(email),
+    });
+    return ok(email);
+  }
+  const supabase = await getSupabaseAuth();
+  if (!supabase) return fail(CLOSED);
+  const { data, error } = await supabase.auth.verifyOtp({
+    email,
+    token: code,
+    type: "email_change",
+  });
+  if (error) return wrong;
+  // With "Secure email change" still on in Supabase, the old address has to
+  // confirm too and the email stays as it was.
+  if (data.user?.email?.toLowerCase() !== email) {
+    console.error("[auth] email change still pending after the new code");
+    return fail(
+      "邮箱还没换好，请稍后再试|Your email hasn't changed yet, try again later",
+    );
+  }
+  return ok(email);
+}
+
 /* ---------- card studio ---------- */
 
 type CardRow = {
@@ -509,6 +597,33 @@ export async function memberWriter() {
   if (!session?.member) return null;
   const db = await getSupabaseAuth();
   return db ? { db, member: session.member } : null;
+}
+
+/** Shows or hides the member's card on /m/<handle> and the wall on /people. */
+export async function setPublicCard(on: boolean): Promise<Result> {
+  const session = await getSession();
+  if (!session?.member) return fail("先生成你的卡片|Make your card first");
+  if (devMode()) {
+    const dev = await readDev();
+    if (dev?.member) {
+      await writeDev({ ...dev, member: { ...dev.member, isPublic: on } });
+    }
+    return ok(undefined);
+  }
+  const supabase = await getSupabaseAuth();
+  if (!supabase) return fail(CLOSED);
+  const { error } = await supabase
+    .from("profiles")
+    .update({ is_public: on })
+    .eq("id", session.member.id);
+  if (error) {
+    console.error("[auth] public card failed", {
+      code: error.code,
+      message: error.message,
+    });
+    return fail("没存上，请稍后再试|Couldn't save that, try again");
+  }
+  return ok(undefined);
 }
 
 /** Shows or hides the member's card on the projects they own. */

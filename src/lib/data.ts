@@ -8,6 +8,7 @@ import { getSupabase } from "./supabase/client";
 import {
   samplePicks,
   sampleProjects,
+  samplePublicCards,
   sampleEvents,
   sampleTeam,
   sampleTutorials,
@@ -22,6 +23,7 @@ import {
   type Project,
   type ProjectComment,
   type ProjectUpdate,
+  type PublicCard,
   type SiteEvent,
   type Tutorial,
   type WeeklyPick,
@@ -277,8 +279,7 @@ async function signAll(
   );
 }
 
-type OwnerCardRow = {
-  slug: string;
+type CardRow = {
   nickname: string;
   member_no: number;
   spark: Spark;
@@ -294,6 +295,27 @@ type OwnerCardRow = {
   tagline: string | null;
   stickers: unknown;
 };
+
+/** What a card prints, from a public_cards() / project_owner_cards() row. */
+function cardOf(r: CardRow): OwnerCard {
+  return {
+    card: {
+      nickname: r.nickname,
+      schoolDegree: r.school_degree,
+      major: r.major,
+      skills: r.skills,
+      spark: r.spark,
+      memberNo: r.member_no,
+      seal: r.seal,
+      building: r.building,
+      lookingFor: r.looking_for,
+    },
+    // No member_cards row yet: the design their studio would start from.
+    design: r.material
+      ? readDesign(r)
+      : seededDesign(memberSeed(r.member_no)).design,
+  };
+}
 
 /**
  * Owners' member cards by project slug, through the one public door
@@ -314,27 +336,40 @@ async function ownerCards(
     return new Map();
   }
   return new Map(
-    (data as OwnerCardRow[]).map((r) => [
-      r.slug,
-      {
-        card: {
-          nickname: r.nickname,
-          schoolDegree: r.school_degree,
-          major: r.major,
-          skills: r.skills,
-          spark: r.spark,
-          memberNo: r.member_no,
-          seal: r.seal,
-          building: r.building,
-          lookingFor: r.looking_for,
-        },
-        // No member_cards row yet: the design their studio would start from.
-        design: r.material
-          ? readDesign(r)
-          : seededDesign(memberSeed(r.member_no)).design,
-      },
-    ]),
+    (data as (CardRow & { slug: string })[]).map((r) => [r.slug, cardOf(r)]),
   );
+}
+
+/**
+ * Members who keep their card public, in join order (public_cards() in
+ * 20261027010000_public_cards_and_email_change.sql): the wall on /people and
+ * each /m/<handle>. Only what the card prints, plus their approved projects.
+ * A failure shows an empty wall rather than taking the page down.
+ */
+export async function getPublicCards(): Promise<PublicCard[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("cards");
+
+  const db = getSupabase();
+  if (!db) return samplePublicCards;
+
+  const { data, error } = await db.rpc("public_cards");
+  if (error) {
+    console.error("[cards] public cards failed", error.message);
+    return [];
+  }
+  return (data as (CardRow & { handle: string; projects: string[] })[]).map(
+    (r) => ({ ...cardOf(r), handle: r.handle, projects: r.projects ?? [] }),
+  );
+}
+
+/** One public card by handle; null when it's private or there's none. */
+export async function getPublicCard(
+  handle: string,
+): Promise<PublicCard | null> {
+  const key = handle.toLowerCase();
+  return (await getPublicCards()).find((c) => c.handle === key) ?? null;
 }
 
 async function toProjects(

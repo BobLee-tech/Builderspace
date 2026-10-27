@@ -4,10 +4,12 @@ import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
-import { getMemberCount, getTeam } from "@/lib/data";
+import { getMemberCount, getPublicCards, getTeam } from "@/lib/data";
 import { DEPARTMENTS } from "@/lib/types";
+import { MemberWall } from "../m/member-wall";
 import { Team } from "./team";
 import "./people.css";
+import "../m/member-wall.css";
 
 export const metadata: Metadata = { title: "成员" };
 
@@ -19,7 +21,11 @@ const roughly = (n: number) =>
   n < 10 ? String(n) : `${Math.floor(n / 10) * 10}+`;
 
 export default async function PeoplePage() {
-  const [members, team] = await Promise.all([getMemberCount(), getTeam()]);
+  const [members, team, cards] = await Promise.all([
+    getMemberCount(),
+    getTeam(),
+    getPublicCards(),
+  ]);
   return (
     <section className="sec first">
       <div className="wrap">
@@ -66,6 +72,7 @@ export default async function PeoplePage() {
 
         <SampleNotice />
         <Team people={team} />
+        <MemberWall cards={cards} />
 
         <div className="box subscribe">
           <div>
