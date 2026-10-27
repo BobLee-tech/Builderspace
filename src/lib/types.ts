@@ -178,6 +178,13 @@ export type Project = {
 /** What a project shows of its owner (project_owner_cards in the database). */
 export type OwnerCard = { card: CardView; design: CardDesign };
 
+/** A card its member keeps public (public_cards() in the database). */
+export type PublicCard = OwnerCard & {
+  handle: string;
+  /** Slugs of their approved projects, oldest first. */
+  projects: string[];
+};
+
 /** A project the signed-in member starred, newest star first. */
 export type StarredProject = {
   slug: string;

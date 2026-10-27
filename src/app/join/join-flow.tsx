@@ -9,6 +9,7 @@ import {
 } from "react";
 import { Arr, Hud } from "@/components/fx/arr";
 import { errorId, FieldError, TextField } from "@/components/form-fields";
+import { OtpField, ResendCode } from "@/components/otp-field";
 import { SpamGuard } from "@/components/spam-guard";
 import { Msg, T } from "@/components/t";
 import { channelFromSearch, nextFromSearch } from "@/lib/forms";
@@ -237,36 +238,10 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
                 <T zh="换个邮箱" en="Use another email" />
               </button>
             </p>
-            <label className="field">
-              <span className="mono">
-                <T zh="6 位验证码" en="6-digit code" />
-              </span>
-              <input
-                className="otp"
-                type="text"
-                name="code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                pattern="\d{6}"
-                maxLength={6}
-                required
-                autoFocus
-                aria-invalid={checked.status === "error"}
-                aria-describedby={
-                  checked.status === "error" ? errorId("code") : undefined
-                }
-                onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, "").slice(0, 6);
-                  e.target.value = v;
-                  if (v.length === 6 && !checking)
-                    e.target.form?.requestSubmit();
-                }}
-              />
-              <FieldError
-                name="code"
-                error={checked.status === "error" ? checked.message : undefined}
-              />
-            </label>
+            <OtpField
+              error={checked.status === "error" ? checked.message : undefined}
+              pending={checking}
+            />
             <button
               type="submit"
               className="btn solid primary"
@@ -280,7 +255,7 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
               )}{" "}
               <Arr />
             </button>
-            <Resend email={email} />
+            <ResendCode email={email} action={requestCode} />
           </form>
         )}
 
@@ -351,48 +326,6 @@ function MailHint({ email }: { email: string }) {
         )}
       </span>
     </div>
-  );
-}
-
-/** Lets the member ask for a fresh code after 60 seconds. */
-function Resend({ email }: { email: string }) {
-  const [left, setLeft] = useState(60);
-  const [state, send, sending] = useActionState(requestCode, idle);
-  const started = useRef(0);
-  useEffect(() => {
-    started.current = Date.now();
-    const t = setInterval(() => {
-      setLeft(
-        Math.max(0, 60 - Math.round((Date.now() - started.current) / 1000)),
-      );
-    }, 1000);
-    return () => clearInterval(t);
-  }, [state]);
-  return (
-    <p className="mute small">
-      {left > 0 ? (
-        <T zh={`${left} 秒后可以重发`} en={`Resend in ${left}s`} />
-      ) : (
-        <button
-          type="button"
-          className="linkish"
-          disabled={sending}
-          onClick={() => {
-            const data = new FormData();
-            data.set("email", email);
-            send(data);
-          }}
-        >
-          <T zh="重新发送验证码" en="Send a new code" />
-        </button>
-      )}
-      {state.status === "error" && (
-        <span className="form-status err">
-          {" "}
-          <Msg s={state.message} />
-        </span>
-      )}
-    </p>
   );
 }
 

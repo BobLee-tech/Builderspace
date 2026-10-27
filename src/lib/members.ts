@@ -139,6 +139,22 @@ export function zidFromEmail(email: string): string | null {
   return isUnsw(domain) && /^z\d{7}$/.test(local) ? local : null;
 }
 
+/**
+ * The school seal once the sign-in email changes: a school address brings it
+ * (or moves it to that school), any other address keeps what the member had.
+ * Same rule as sync_member_email() in
+ * 20261027020000_public_cards_and_email_change.sql.
+ */
+export function afterEmailChange(
+  m: Pick<Member, "schoolDomain" | "verified">,
+  email: string,
+): Pick<Member, "schoolDomain" | "verified"> {
+  const domain = schoolDomain(email);
+  return domain
+    ? { schoolDomain: domain, verified: true }
+    : { schoolDomain: m.schoolDomain, verified: m.verified };
+}
+
 /** Free-text school says UNSW: only ever a hint, never proof. */
 export const mentionsUnsw = (school: string) =>
   /\bunsw\b|新南威尔士/i.test(school);

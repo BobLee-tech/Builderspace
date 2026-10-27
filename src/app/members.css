@@ -483,7 +483,6 @@
   }
 }
 
-/* /me: show my card on my projects */
 .me-stars h2 {
   margin: 0 0 10px;
   font-weight: 400;
@@ -510,17 +509,62 @@
 .me-stars li > .mono {
   flex: none;
 }
-.me-public {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px var(--pad);
+/* /me settings: public card, card on projects, sign-in email — one panel,
+   one row each */
+.me-settings {
   border: 1px solid var(--line-2);
   border-radius: var(--radius);
   background-color: var(--panel);
 }
-.me-public p {
+.me-set {
+  padding: 16px var(--pad);
+}
+.me-set + .me-set {
+  border-top: 1px solid var(--line);
+}
+.me-set-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.me-set-row > div {
+  min-width: 0;
+}
+.me-set-row > .btn {
+  flex: none;
+  margin-left: auto;
+}
+.me-set p {
   margin: 4px 0 0;
+}
+.me-set .addr {
+  overflow-wrap: anywhere;
+}
+.me-link {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  min-width: 0;
+}
+.me-link a {
+  overflow-wrap: anywhere;
+  font: 12px var(--f-mono);
+  text-decoration: none;
+}
+.me-link a:hover {
+  color: var(--paper);
+}
+.me-email-step {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--line);
+}
+.me-email-step .mail-hint {
+  margin: 0;
 }
 .switch {
   position: relative;

@@ -4,11 +4,13 @@ import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
-import { getMemberCount, getTeam } from "@/lib/data";
+import { getMemberCount, getPublicCards, getTeam } from "@/lib/data";
 import { CORE_TEAM_FLOOR, roughly } from "@/lib/team";
 import { DEPARTMENTS } from "@/lib/types";
+import { MemberWall } from "../m/member-wall";
 import { Team } from "./team";
 import "./people.css";
+import "../m/member-wall.css";
 
 export const metadata: Metadata = { title: "成员" };
 
@@ -16,7 +18,11 @@ export const metadata: Metadata = { title: "成员" };
 // on the site (team_members.consent_at); see docs/team.md.
 
 export default async function PeoplePage() {
-  const [members, team] = await Promise.all([getMemberCount(), getTeam()]);
+  const [members, team, cards] = await Promise.all([
+    getMemberCount(),
+    getTeam(),
+    getPublicCards(),
+  ]);
   const core = roughly(
     Math.max(team.filter((p) => p.team !== "founder").length, CORE_TEAM_FLOOR),
   );
@@ -64,6 +70,7 @@ export default async function PeoplePage() {
 
         <SampleNotice />
         <Team people={team} />
+        <MemberWall cards={cards} />
 
         <div className="box subscribe">
           <div>
