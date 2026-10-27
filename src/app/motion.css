@@ -3927,11 +3927,44 @@ html[data-lang="en"] .d-title[data-size-en="sm"] {
 .mc-col.mini .mc-back {
   display: none;
 }
+/* A button that opens the owner's card large (owner-chip.tsx); above the
+   card's stretched link, like the Star. */
 .owner-chip {
+  position: relative;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: zoom-in;
+}
+.owner-chip:focus-visible {
+  outline: 1px solid var(--paper);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.owner-chip .owner-mini {
+  transition:
+    rotate 0.3s var(--ease),
+    translate 0.3s var(--ease);
+}
+.owner-chip:hover .owner-mini {
+  rotate: -4deg;
+  translate: 0 -1px;
+}
+/* While its card is out, the slot is empty and flat, so it lands where it
+   left. */
+.owner-chip.lifted .owner-mini {
+  visibility: hidden;
+  rotate: none;
+  translate: none;
+  transition: none;
 }
 .owner-mini {
   flex: none;
@@ -6767,5 +6800,114 @@ button.cstar:active {
     animation-duration: 1ms !important;
     animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+/* ---------- an owner's card, enlarged (owner-chip.tsx) ---------- */
+/* The scrollbar's space stays, so the page doesn't shift under the card. */
+html:has(.oz[open]) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+.oz {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+}
+.oz::backdrop {
+  background: transparent;
+}
+/* Hidden until the animation has its starting frame, so nothing flashes. */
+.oz:not(.ready) :is(.oz-bg, .oz-card, .oz-info) {
+  opacity: 0;
+}
+.oz-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 5, 0.8);
+  -webkit-backdrop-filter: blur(12px) saturate(0.8);
+  backdrop-filter: blur(12px) saturate(0.8);
+}
+.oz-x {
+  position: fixed;
+  z-index: 3;
+  top: max(16px, env(safe-area-inset-top, 0px));
+  right: max(16px, env(safe-area-inset-right, 0px));
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: var(--paper);
+  font-size: 18px;
+  cursor: pointer;
+}
+.oz-x:hover {
+  border-color: var(--paper);
+}
+.oz-in {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(240px, 1fr);
+  align-items: center;
+  gap: 28px 56px;
+  min-height: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: max(28px, env(safe-area-inset-top, 0px)) var(--gut)
+    max(28px, env(safe-area-inset-bottom, 0px));
+  perspective: 1400px;
+}
+.oz-card .mc-stage {
+  max-width: 600px;
+}
+.oz-info {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.oz-name {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(26px, 3.4vw, 38px);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+}
+.oz-info p {
+  margin: 0;
+}
+.oz-note {
+  max-width: 36ch;
+  font-size: var(--fs-sm);
+}
+.oz-act {
+  display: flex;
+  gap: 10px;
+}
+.oz-hint {
+  font-size: var(--fs-xs);
+  color: var(--mute);
+}
+@media (max-width: 760px) {
+  .oz-in {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+  }
+}
+@media (hover: none) {
+  .oz-hint {
+    display: none;
   }
 }

@@ -5,6 +5,7 @@ import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { getMemberCount, getPublicCards, getTeam } from "@/lib/data";
+import { CORE_TEAM_FLOOR, roughly } from "@/lib/team";
 import { DEPARTMENTS } from "@/lib/types";
 import { MemberWall } from "../m/member-wall";
 import { Team } from "./team";
@@ -16,18 +17,17 @@ export const metadata: Metadata = { title: "成员" };
 // People appear only with the name they chose to show and after agreeing to be
 // on the site (team_members.consent_at); see docs/team.md.
 
-/** 73 → "70+": a floor that stays true until the next ten. */
-const roughly = (n: number) =>
-  n < 10 ? String(n) : `${Math.floor(n / 10) * 10}+`;
-
 export default async function PeoplePage() {
   const [members, team, cards] = await Promise.all([
     getMemberCount(),
     getTeam(),
     getPublicCards(),
   ]);
+  const core = roughly(
+    Math.max(team.filter((p) => p.team !== "founder").length, CORE_TEAM_FLOOR),
+  );
   return (
-    <section className="sec first">
+    <section className="sec first tm-page">
       <div className="wrap">
         <PageHead
           path="people"
@@ -43,17 +43,15 @@ export default async function PeoplePage() {
                   },
                 ]),
             {
-              k: { zh: "核心团队", en: "Core team" },
-              v: team.length
-                ? { zh: `${team.length} 人`, en: `${team.length}` }
-                : {
-                    zh: `${DEPARTMENTS.length} 个部门`,
-                    en: `${DEPARTMENTS.length} departments`,
-                  },
+              k: { zh: "核心成员", en: "Core team" },
+              v: { zh: `${core} 人`, en: core },
             },
             {
-              k: { zh: "费用", en: "Cost" },
-              v: { zh: "免费", en: "Free" },
+              k: { zh: "部门", en: "Departments" },
+              v: {
+                zh: `${DEPARTMENTS.length} 个`,
+                en: `${DEPARTMENTS.length}`,
+              },
             },
           ]}
         />

@@ -4,8 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
+  ViewTransition,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { prefersReducedMotion } from "@/components/fx/motion";
@@ -16,11 +18,18 @@ import {
   shownDesign,
   TINT_INFO,
 } from "@/lib/card-design";
+import {
+  FOUNDER_PROFILES,
+  FROM_PEOPLE,
+  founderTransition,
+} from "@/lib/founder-profiles";
 import { memberCode, type Spark } from "@/lib/members";
 import {
+  CORE_TEAM_FLOOR,
   pageCount,
   pageRange,
   pageSlots,
+  roughly,
   TEAM_DEPARTMENTS,
   type CoreTeam,
   type TeamPerson,
@@ -74,7 +83,12 @@ type Open = (p: TeamPerson, from: Element | null | undefined) => void;
  */
 export function Team({ people }: { people: TeamPerson[] }) {
   const founders = people.filter((p) => p.team === "founder");
-  const core = people.filter((p) => p.team !== "founder");
+  // Everyone with a card in a department: the core team, and founders who also
+  // work in one (they come first in it).
+  const core = [
+    ...founders.filter((p) => p.dept),
+    ...people.filter((p) => p.team !== "founder"),
+  ];
   const [zoom, setZoom] = useState<{
     list: TeamPerson[];
     i: number;
@@ -83,7 +97,7 @@ export function Team({ people }: { people: TeamPerson[] }) {
   const opener = useRef<HTMLElement | null>(null);
 
   const listFor = (p: TeamPerson) =>
-    p.team === "founder" ? founders : core.filter((x) => x.team === p.team);
+    p.dept ? core.filter((x) => x.dept === p.dept) : founders;
 
   const open: Open = (p, from) => {
     const list = listFor(p);
@@ -101,10 +115,13 @@ export function Team({ people }: { people: TeamPerson[] }) {
     const slug = new URLSearchParams(location.search).get("m");
     const p = slug ? people.find((x) => x.slug === slug) : undefined;
     if (!p) return;
-    const list =
-      p.team === "founder"
-        ? people.filter((x) => x.team === "founder")
-        : people.filter((x) => x.team === p.team);
+    const inDept = [
+      ...people.filter((x) => x.team === "founder" && x.dept),
+      ...people.filter((x) => x.team !== "founder"),
+    ];
+    const list = p.dept
+      ? inDept.filter((x) => x.dept === p.dept)
+      : people.filter((x) => x.team === "founder");
     // Opening from the address is a one-off on load, after hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setZoom({ list, i: list.indexOf(p), from: null });
@@ -128,11 +145,7 @@ export function Team({ people }: { people: TeamPerson[] }) {
             )}
             <span className="tm-n">{pad2(founders.length)}</span>
           </div>
-          <div className="tm-fd-grid">
-            {founders.map((p, i) => (
-              <Founder key={p.id} person={p} first={i === 0} onOpen={open} />
-            ))}
-          </div>
+          <Founders people={founders} />
         </>
       )}
 
@@ -141,11 +154,13 @@ export function Team({ people }: { people: TeamPerson[] }) {
           <T zh="核心成员" en="Core team" />
         </h2>
         <span className="tm-rule" aria-hidden />
-        <span className="tm-n">{pad2(core.length)}</span>
+        <span className="tm-n">
+          {roughly(Math.max(core.length, CORE_TEAM_FLOOR))}
+        </span>
       </div>
       <div className="tm-depts">
         {TEAM_DEPARTMENTS.map((d) => {
-          const team = core.filter((p) => p.team === d.key);
+          const team = core.filter((p) => p.dept === d.key);
           return (
             <section
               className="tm-dept"
@@ -208,63 +223,141 @@ export function Team({ people }: { people: TeamPerson[] }) {
   );
 }
 
+/**
+ * The founders in one row; on a phone a swipe row that opens on the middle
+ * one, with dashes under it. Each card links to that founder's profile.
+ */
+function Founders({ people }: { people: TeamPerson[] }) {
+  const middle = Math.floor((people.length - 1) / 2);
+  const row = useRef<HTMLDivElement>(null);
+  const [at, setAt] = useState(middle);
+  // scrollLeft that puts card k in the middle of the row
+  const centre = (k: number) => {
+    const el = row.current;
+    const card = el?.children[k];
+    if (!el || !card) return 0;
+    const r = card.getBoundingClientRect();
+    const box = el.getBoundingClientRect();
+    return r.left - box.left + el.scrollLeft - (el.clientWidth - r.width) / 2;
+  };
+  // Before paint, so a phone never shows the row jump from the first card.
+  useLayoutEffect(() => {
+    const el = row.current;
+    if (el && el.scrollWidth > el.clientWidth + 1)
+      el.scrollLeft = centre(middle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on mount
+  }, []);
+  return (
+    <>
+      <div
+        className="tm-fd-grid"
+        ref={row}
+        onScroll={() => {
+          const el = row.current;
+          if (!el || people.length < 2) return;
+          const span = centre(1) - centre(0);
+          setAt(Math.round((el.scrollLeft - centre(0)) / span));
+        }}
+      >
+        {people.map((p, i) => (
+          <Founder key={p.id} person={p} priority={i === middle} />
+        ))}
+      </div>
+      {people.length > 1 && (
+        <div className="tm-fd-dots">
+          {people.map((p, k) => (
+            <button
+              key={p.id}
+              type="button"
+              aria-label={p.card.nickname}
+              aria-current={k === at}
+              onClick={() =>
+                row.current?.scrollTo({
+                  left: centre(k),
+                  behavior: prefersReducedMotion() ? "auto" : "smooth",
+                })
+              }
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 function Founder({
   person: p,
-  first,
-  onOpen,
+  priority,
 }: {
   person: TeamPerson;
-  first: boolean;
-  onOpen: Open;
+  priority: boolean;
 }) {
+  const profile = p.profileSlug ? FOUNDER_PROFILES[p.profileSlug] : undefined;
   const photo = p.portrait ?? p.avatar;
   const name = p.card.nickname;
-  return (
-    <article className="tm-fd tm-lift">
-      <div className="tm-media">
-        {photo ? (
-          <Image
-            className="tm-photo"
-            src={photo}
-            alt={p.title ? `${name}, ${p.title}` : name}
-            fill
-            sizes="(max-width: 640px) 78vw, (max-width: 1240px) 32vw, 400px"
-            priority={first}
-          />
-        ) : (
-          <Mascot spark={p.card.spark} />
-        )}
-        <i className="tm-dots" aria-hidden />
-        {p.card.memberNo !== null && (
-          <span className="tm-no mono">{memberCode(p.card.memberNo)}</span>
-        )}
-        <div className="tm-cap">
-          {p.title && <p className="mono tm-role">{p.title}</p>}
-          <h3 className={name.length > 9 ? "tm-name long" : "tm-name"}>
-            {name}
-          </h3>
+  const body = (
+    <>
+      <ViewTransition
+        name={founderTransition(p.profileSlug ?? p.id)}
+        share="morph"
+        default="none"
+      >
+        <div className="tm-media">
+          {photo ? (
+            <Image
+              className="tm-photo"
+              src={photo}
+              alt={p.title ? `${name}, ${p.title}` : name}
+              fill
+              sizes="(max-width: 640px) 80vw, (max-width: 1240px) 32vw, 400px"
+              priority={priority}
+            />
+          ) : (
+            <Mascot spark={p.card.spark} />
+          )}
+          <i className="tm-fade" aria-hidden />
+          <div className="tm-cap">
+            {p.title && <p className="mono tm-role">{p.title}</p>}
+            <h3 className={name.length > 9 ? "tm-name long" : "tm-name"}>
+              {name}
+            </h3>
+          </div>
         </div>
-      </div>
-      {p.bio && (
-        <p className="tm-bio">
-          <T zh={p.bio} en={p.bioEn ?? p.bio} />
-        </p>
-      )}
-      <p className="tm-links mono">
-        {p.link && (
-          <a href={p.link} target="_blank" rel="noopener noreferrer">
-            {linkLabel(p.link)} ↗
-          </a>
+      </ViewTransition>
+      <div className="tm-below">
+        {profile ? (
+          <p className="tm-focus">
+            <T {...profile.focus} />
+          </p>
+        ) : (
+          p.bio && (
+            <p className="tm-focus tm-bio">
+              <T zh={p.bio} en={p.bioEn ?? p.bio} />
+            </p>
+          )
         )}
-        <button
-          type="button"
-          className="tm-cardlink"
-          onClick={(e) => onOpen(p, e.currentTarget)}
-        >
-          <T zh="成员卡" en="Member card" /> ↗
-        </button>
-      </p>
-    </article>
+        {profile && (
+          <span className="tm-more mono" aria-hidden>
+            <T zh="看介绍" en="Profile" /> <span>→</span>
+          </span>
+        )}
+      </div>
+    </>
+  );
+  return profile ? (
+    <Link
+      href={`/people/${p.profileSlug}`}
+      className="tm-fd tm-lift"
+      onClick={() => {
+        try {
+          sessionStorage.setItem(FROM_PEOPLE, "1");
+        } catch {}
+      }}
+    >
+      {body}
+    </Link>
+  ) : (
+    <article className="tm-fd tm-lift">{body}</article>
   );
 }
 
@@ -911,10 +1004,9 @@ function Zoom({
       PATTERN_LABEL[design.pattern][lang],
     ].join(" · ");
   const n = design.stickers.length;
-  const dept =
-    p.team === "founder"
-      ? { zh: "创始团队", en: "Founding team" }
-      : TEAM_DEPARTMENTS.find((d) => d.key === p.team)!.name;
+  const dept = p.dept
+    ? TEAM_DEPARTMENTS.find((d) => d.key === p.dept)!.name
+    : { zh: "创始团队", en: "Founding team" };
   const role = p.position
     ? POSITION_LABEL[p.position]
     : p.title
@@ -987,7 +1079,7 @@ function Zoom({
               ) : (
                 <Mascot spark={p.card.spark} />
               )}
-              <i className="tm-dots" aria-hidden />
+              <i className="tm-fade" aria-hidden />
             </div>
             <div>
               <h2 className="tm-zname" id="tm-zname">
