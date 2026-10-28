@@ -1,9 +1,15 @@
-import { DEFAULT_DESIGN, type CardDesign } from "./card-design";
-import type { Spark } from "./members";
-import { teamLine, type TeamKey, type TeamPerson } from "./team";
+import {
+  DEFAULT_DESIGN,
+  memberSeed,
+  seededDesign,
+  type CardDesign,
+} from "./card-design";
+import type { LookingFor, MemberSkill, Spark } from "./members";
+import { teamLine, type CoreTeam, type TeamKey, type TeamPerson } from "./team";
 import {
   NO_MEDIA,
   type Project,
+  type PublicCard,
   type SiteEvent,
   type Tutorial,
   type VolunteerPosition,
@@ -64,20 +70,26 @@ export const sampleProjects: Project[] = [
 export const sampleTutorials: Tutorial[] = [];
 export const samplePicks: WeeklyPick[] = [];
 
-// Placeholders that lay out /people, not people: every name says what it is,
-// there are no photos, and <SampleNotice /> sits above them. Ops has enough
-// to page, so paging can be checked locally.
+// The three founders are the real ones (their profile pages live in
+// founder-profiles.ts); the core team are placeholders whose names say what
+// they are. No photos, and <SampleNotice /> sits above them. Ops has enough to
+// page, so paging can be checked locally.
 function placeholder(
   name: string,
   team: TeamKey,
   position: VolunteerPosition | null,
   spark: Spark,
   design: Partial<CardDesign> = {},
+  profileSlug: string | null = null,
+  dept: CoreTeam | null = team === "founder" ? null : team,
+  memberNo: number | null = null,
 ): TeamPerson {
   return {
     id: `sample-${name.toLowerCase().replace(/\W+/g, "-")}`,
-    slug: `sample-${name.toLowerCase().replace(/\W+/g, "-")}`,
+    slug: profileSlug ?? `sample-${name.toLowerCase().replace(/\W+/g, "-")}`,
+    profileSlug,
     team,
+    dept,
     position,
     title: team === "founder" ? "Co-President" : null,
     bio: null,
@@ -91,7 +103,7 @@ function placeholder(
       major: teamLine(team),
       skills: [],
       spark,
-      memberNo: null,
+      memberNo,
       seal: null,
       building: null,
       lookingFor: [],
@@ -101,9 +113,28 @@ function placeholder(
 }
 
 export const sampleTeam: TeamPerson[] = [
-  placeholder("Founder A", "founder", null, "vivi"),
-  placeholder("Founder B", "founder", null, "lumi", { tint: "lumi" }),
-  placeholder("Founder C", "founder", null, "geo", { material: "chrome" }),
+  // Founders also hold a card in one department, numbered by when they joined.
+  placeholder("Xin He", "founder", "content", "vivi", {}, "xin", "ops", 55),
+  placeholder(
+    "Evan Jia",
+    "founder",
+    "partnerships",
+    "lumi",
+    { tint: "lumi" },
+    "evan",
+    "events",
+    1,
+  ),
+  placeholder(
+    "Bob Lee",
+    "founder",
+    "web_tools",
+    "geo",
+    { material: "chrome" },
+    "bob",
+    "tech",
+    11,
+  ),
   placeholder("Ops 1", "ops", "content", "momo", {
     tint: "momo",
     pattern: "topo",
@@ -141,4 +172,38 @@ export const sampleTeam: TeamPerson[] = [
   placeholder("Events 2", "events", "partnerships", "lumi", {
     pattern: "topo",
   }),
+];
+
+// Placeholder members for the wall on /people and /m/<handle>: same rule as
+// the team above, every name says what it is.
+const sampleMember = (
+  no: number,
+  spark: Spark,
+  skills: MemberSkill[],
+  lookingFor: LookingFor[],
+  seal: string | null = null,
+): PublicCard => ({
+  handle: `builder-${no}`,
+  card: {
+    nickname: `Builder ${no}`,
+    schoolDegree: seal ? "UNSW" : "",
+    major: "",
+    skills,
+    spark,
+    memberNo: no,
+    seal,
+    building: no === 1 ? "CourseMate" : null,
+    lookingFor,
+  },
+  design: seededDesign(memberSeed(no)).design,
+  projects: no === 1 ? ["coursemate"] : [],
+});
+
+export const samplePublicCards: PublicCard[] = [
+  sampleMember(1, "vivi", ["web", "ai"], ["design"], "UNSW"),
+  sampleMember(2, "lumi", ["uiux", "visual"], ["dev"]),
+  sampleMember(3, "geo", ["backend"], ["product", "team"], "UNSW"),
+  sampleMember(4, "momo", ["growth", "content"], ["friends"]),
+  sampleMember(5, "kiko", ["hw"], ["learn"], "STUDENT"),
+  sampleMember(6, "lumi", ["newbie"], ["learn", "friends"]),
 ];

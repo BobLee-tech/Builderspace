@@ -13,6 +13,7 @@ import {
   surveyDone,
 } from "@/lib/auth";
 import { formatShortDate } from "@/lib/format";
+import { siteUrl } from "@/lib/site-url";
 import {
   cardViewOf,
   isUnsw,
@@ -25,7 +26,9 @@ import {
   type Member,
 } from "@/lib/members";
 import type { StarredProject } from "@/lib/types";
-import { logOut, toggleCardOnProjects } from "./actions";
+import { logOut, toggleCardOnProjects, togglePublicCard } from "./actions";
+import { CopyLink } from "./copy-link";
+import { EmailChange } from "./email-change";
 import { MeCard } from "./me-card";
 import { SurveyForm } from "./survey-form";
 import { ZidForm } from "./zid-form";
@@ -104,7 +107,11 @@ async function Me() {
             </Link>
           </div>
           <Details m={m} zid={zid} />
-          <CardOnProjects on={m.cardOnProjects} />
+          <section className="me-settings" aria-label="设置 / Settings">
+            <PublicCard on={m.isPublic} handle={m.handle} />
+            <CardOnProjects on={m.cardOnProjects} />
+            <EmailChange email={m.email} verified={m.verified} />
+          </section>
           <MyStars stars={stars} />
           {askZid && <ZidForm unswEmail={unswEmail} />}
           {!done && <SurveyForm zid={zid} />}
@@ -157,7 +164,6 @@ function Details({ m, zid }: { m: Member; zid: string | null }) {
           ))
         : "—",
     ],
-    [<T key="k" zh="登录邮箱" en="Email" />, m.email],
     ...(zid
       ? [
           [
@@ -176,8 +182,8 @@ function Details({ m, zid }: { m: Member; zid: string | null }) {
         </span>
       ) : (
         <T
-          zh="未认证 · 用学校邮箱登录的成员是认证成员"
-          en="Not verified · members who sign in with a school email are verified"
+          zh="未认证 · 换成学校邮箱就能认证"
+          en="Not verified · switch to a school email to verify"
         />
       ),
     ],
@@ -193,29 +199,62 @@ function Details({ m, zid }: { m: Member; zid: string | null }) {
         ))}
       </dl>
       <p className="mute small">
-        <T
-          zh="拼图徽章和公开卡片页下一步上线。"
-          en="Puzzle badges and public card pages come next."
-        />
+        <T zh="拼图徽章下一步上线。" en="Puzzle badges come next." />
       </p>
     </div>
+  );
+}
+
+/** Your card at /m/<handle> and on the wall in /people, unless you turn it off. */
+function PublicCard({ on, handle }: { on: boolean; handle: string }) {
+  const path = `/m/${handle}`;
+  return (
+    <form action={togglePublicCard} className="me-set me-set-row">
+      <input type="hidden" name="on" value={on ? "0" : "1"} />
+      <div>
+        <b>
+          <T zh="公开我的卡片" en="Make my card public" />
+        </b>
+        <p className="mute small">
+          {on ? (
+            <CopyLink path={path} label={`${new URL(siteUrl).host}${path}`} />
+          ) : (
+            <T zh="关着：只有你能看到" en="Off: only you can see it" />
+          )}
+        </p>
+      </div>
+      <button
+        type="submit"
+        role="switch"
+        aria-checked={on}
+        className="switch"
+        aria-label="公开我的卡片 / Make my card public"
+      />
+    </form>
   );
 }
 
 /** Projects you own show your card unless you turn it off here. */
 function CardOnProjects({ on }: { on: boolean }) {
   return (
-    <form action={toggleCardOnProjects} className="me-public">
+    <form action={toggleCardOnProjects} className="me-set me-set-row">
       <input type="hidden" name="on" value={on ? "0" : "1"} />
       <div>
         <b>
           <T zh="在项目页展示我的卡片" en="Show my card on my projects" />
         </b>
         <p className="mute small">
-          <T
-            zh="默认打开。展示的是卡片正反面印着的内容，邮箱不会出现。关掉后，项目页只显示昵称。"
-            en="On by default. Projects show what your card prints, front and back; never your email. Turned off, they show your nickname only."
-          />
+          {on ? (
+            <T
+              zh="只印卡面内容，不含邮箱"
+              en="Only what the card prints, never your email"
+            />
+          ) : (
+            <T
+              zh="关着：项目页只显示昵称"
+              en="Off: projects show your nickname only"
+            />
+          )}
         </p>
       </div>
       <button

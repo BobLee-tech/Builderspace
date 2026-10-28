@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getEvents, getProjects } from "@/lib/data";
+import { allEventMaterials } from "@/lib/event-materials";
 import { siteUrl } from "@/lib/site-url";
 
 const PAGES = [
@@ -17,6 +18,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...PAGES.map((p) => ({ url: `${siteUrl}${p}` })),
     ...events.map((e) => ({ url: `${siteUrl}/events/${e.slug}` })),
+    ...allEventMaterials()
+      .filter(([slug]) => events.some((e) => e.slug === slug))
+      .map(([slug]) => ({ url: `${siteUrl}/learn/${slug}` })),
     ...projects.map((p) => ({ url: `${siteUrl}/projects/${p.slug}` })),
   ];
 }
