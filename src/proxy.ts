@@ -2,9 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Keeps a member's Supabase session fresh on the pages that read it. This is
- * not an access check: /me, /welcome and every Server Action look up the
- * member again themselves.
+ * Keeps a member's Supabase session fresh. This is not an access check: /me,
+ * /welcome and every Server Action look up the member again themselves.
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -35,6 +34,12 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
+// Every page, since the header reads the session on all of them: a page that
+// refreshed the token without this couldn't save the new cookies, and reusing
+// the old refresh token later signs the member out. Build output, public/
+// files, sitemap/robots/calendar and the live pages' polling APIs skip it.
 export const config = {
-  matcher: ["/join/:path*", "/me/:path*", "/welcome"],
+  matcher: [
+    "/((?!_next/static|_next/image|.*/api/|.*\\.(?:svg|png|jpg|jpeg|webp|gif|ico|hdr|json|html|txt|xml|ics)$).*)",
+  ],
 };
