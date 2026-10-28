@@ -183,6 +183,17 @@ export const CORE_TEAM_FLOOR = 20;
 export const roughly = (n: number) =>
   n < 10 ? String(n) : `${Math.floor(n / 10) * 10}+`;
 
+/**
+ * The club counts members beyond the site's sign-ups (the group chats), so the
+ * member count reads "近 200" until sign-ups alone pass it.
+ */
+export const MEMBERS_NEAR = 200;
+
+export const memberCount = (n: number) =>
+  n >= MEMBERS_NEAR
+    ? { zh: roughly(n), en: roughly(n) }
+    : { zh: `近 ${MEMBERS_NEAR}`, en: `Nearly ${MEMBERS_NEAR}` };
+
 /** Cards per page: the grid has six cells and the last one is the "join" card. */
 export const CARDS_PER_PAGE = 5;
 
