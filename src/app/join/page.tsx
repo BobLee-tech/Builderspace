@@ -69,13 +69,22 @@ export default function JoinPage({ searchParams }: PageProps<"/join">) {
   );
 }
 
-/** Members who already have a card go straight to it, or back where they came from. */
+/**
+ * Members who already have a card go straight to it, or back where they came
+ * from. `?mode=login` (and /login) opens on sign-in.
+ */
 async function JoinGate({
   searchParams,
 }: {
   searchParams: PageProps<"/join">["searchParams"];
 }) {
   const session = await getSession();
-  if (session?.member) redirect(localPath((await searchParams).next) ?? "/me");
-  return <JoinFlow signedInEmail={session?.email ?? null} />;
+  const params = await searchParams;
+  if (session?.member) redirect(localPath(params.next) ?? "/me");
+  return (
+    <JoinFlow
+      signedInEmail={session?.email ?? null}
+      mode={params.mode === "login" ? "login" : "join"}
+    />
+  );
 }
