@@ -26,9 +26,11 @@ const nextConfig: NextConfig = {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
   // The core-team form used to live at /volunteer; keep shared links working.
+  // /login is the join page opened on sign-in (query values pass through).
   async redirects() {
     return [
       { source: "/volunteer", destination: "/core-team", permanent: true },
+      { source: "/login", destination: "/join?mode=login", permanent: false },
     ];
   },
   // The workshop prompt page is a static file in public/prompt/.

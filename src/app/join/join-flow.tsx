@@ -35,13 +35,17 @@ import { submitWithoutReset } from "@/lib/submit-without-reset";
 import { confirmCode, makeCard, requestCode, type StepState } from "./actions";
 import { MemberCard, type CardView } from "./member-card";
 
-type Step = "email" | "code" | "profile" | "spark";
+type Mode = "join" | "login";
+/** `nocard`: signed in to sign in, but this email has no card yet. */
+type Step = "email" | "code" | "profile" | "spark" | "nocard";
 const STEPS: [Step, { zh: string; en: string }][] = [
   ["email", { zh: "邮箱", en: "Email" }],
   ["code", { zh: "验证码", en: "Code" }],
   ["profile", { zh: "资料", en: "Profile" }],
   ["spark", { zh: "拼块", en: "Your piece" }],
 ];
+// Signing in is the same email and code, without making a card.
+const LOGIN_STEPS = STEPS.slice(0, 2);
 const idle: StepState = { status: "idle" };
 
 function readCard(form: HTMLFormElement): CardView {
@@ -74,9 +78,20 @@ function capChecks(form: HTMLFormElement, name: string, max: number) {
  * Joining is signing up: email → 6-digit code → profile → pick your piece.
  * The card on the side fills in as you type and turns over to the builder
  * profile on the last step. Members who already have a card are sent to /me.
+ * Sign-in mode is the same code with sign-in copy; an email with no card
+ * stays signed in and can carry on to the profile without a new code.
  */
-export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
-  const [step, setStep] = useState<Step>(signedInEmail ? "profile" : "email");
+export function JoinFlow({
+  signedInEmail,
+  mode: initialMode,
+}: {
+  signedInEmail: string | null;
+  mode: Mode;
+}) {
+  const [mode, setModeState] = useState<Mode>(initialMode);
+  const [step, setStep] = useState<Step>(
+    !signedInEmail ? "email" : initialMode === "login" ? "nocard" : "profile",
+  );
   const [email, setEmail] = useState(signedInEmail ?? "");
   const [typed, setTyped] = useState("");
   const domain = schoolDomain(email);
@@ -111,7 +126,7 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
       checked.status === "ok" &&
       !checked.hasCard
     ) {
-      setStep("profile");
+      setStep(mode === "login" ? "nocard" : "profile");
     }
   }
 
@@ -123,7 +138,18 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
     }
   }, [checked]);
 
-  const at = STEPS.findIndex(([s]) => s === step);
+  // The address bar keeps the mode, so a reload or a shared link opens on it.
+  const setMode = (m: Mode) => {
+    setModeState(m);
+    const url = new URL(window.location.href);
+    if (m === "login") url.searchParams.set("mode", "login");
+    else url.searchParams.delete("mode");
+    window.history.replaceState(window.history.state, "", url);
+  };
+
+  const steps = mode === "login" ? LOGIN_STEPS : STEPS;
+  const at =
+    step === "nocard" ? steps.length : steps.findIndex(([s]) => s === step);
   const toProfile = useCallback(() => setStep("profile"), []);
   const toSpark = useCallback(() => setStep("spark"), []);
   const toEmail = useCallback(() => setStep("email"), []);
@@ -139,6 +165,11 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
               zh="卡片背面 · 你的 builder 档案"
               en="The back · your builder profile"
             />
+          ) : mode === "login" ? (
+            <T
+              zh="登录后直接回到你的卡片"
+              en="Sign in and you're back at your card"
+            />
           ) : (
             <T
               zh="你的成员卡 · 跟着表单实时更新"
@@ -149,7 +180,7 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
       />
       <div className="join-steps">
         <ol className="steps" aria-label="Steps">
-          {STEPS.map(([s, label], i) => (
+          {steps.map(([s, label], i) => (
             <li key={s} className={i === at ? "on" : i < at ? "done" : ""}>
               <i />
               <T {...label} />
@@ -165,12 +196,43 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
           >
             <Hud />
             <SpamGuard />
+            <div
+              className="seg"
+              role="group"
+              aria-label="加入或登录 / Join or sign in"
+              style={{ alignSelf: "start" }}
+            >
+              <button
+                type="button"
+                aria-pressed={mode === "join"}
+                onClick={() => setMode("join")}
+              >
+                <T zh="加入" en="Join" />
+              </button>
+              <button
+                type="button"
+                aria-pressed={mode === "login"}
+                onClick={() => setMode("login")}
+              >
+                <T zh="登录" en="Sign in" />
+              </button>
+            </div>
+            {mode === "login" && (
+              <p className="mute">
+                <T
+                  zh="输入加入时用的邮箱，我们发一个 6 位验证码"
+                  en="Enter the email you joined with. We'll send a 6-digit code."
+                />
+              </p>
+            )}
             <label className="field">
               <span className="mono field-row">
                 <T zh="邮箱" en="Email" />
-                <em className="pill-ok">
-                  <T zh="推荐学校邮箱" en="School email recommended" />
-                </em>
+                {mode === "join" && (
+                  <em className="pill-ok">
+                    <T zh="推荐学校邮箱" en="School email recommended" />
+                  </em>
+                )}
               </span>
               <input
                 type="email"
@@ -192,7 +254,7 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
                 error={sent.status === "error" ? sent.message : undefined}
               />
             </label>
-            <MailHint email={typed} />
+            {mode === "join" && <MailHint email={typed} />}
             <button
               type="submit"
               className="btn solid primary"
@@ -201,16 +263,25 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
             >
               {sending ? (
                 <T zh="发送中…" en="Sending…" />
+              ) : mode === "login" ? (
+                <T zh="发送验证码" en="Send code" />
               ) : (
                 <T zh="发送 6 位验证码" en="Send me a 6-digit code" />
               )}{" "}
               <Arr />
             </button>
             <p className="mute small">
-              <T
-                zh="不用设密码。每次登录，我们往这个邮箱发一个 6 位验证码。"
-                en="No password. Each time you sign in we email you a 6-digit code."
-              />
+              {mode === "login" ? (
+                <T
+                  zh="还没有成员卡？验证完可以直接加入。"
+                  en="No card yet? You can join right after the code."
+                />
+              ) : (
+                <T
+                  zh="不用设密码。每次登录，我们往这个邮箱发一个 6 位验证码。"
+                  en="No password. Each time you sign in we email you a 6-digit code."
+                />
+              )}
             </p>
           </form>
         )}
@@ -257,6 +328,48 @@ export function JoinFlow({ signedInEmail }: { signedInEmail: string | null }) {
             </button>
             <ResendCode email={email} action={requestCode} />
           </form>
+        )}
+
+        {step === "nocard" && (
+          <div className="form hud">
+            <Hud />
+            <p>
+              <b className="paper">
+                <T
+                  zh="这个邮箱还没有成员卡"
+                  en="This email has no member card yet"
+                />
+              </b>
+            </p>
+            <p className="mute">
+              <b className="paper">{email}</b> ·{" "}
+              <button
+                type="button"
+                className="linkish"
+                onClick={() => setStep("email")}
+              >
+                <T zh="换个邮箱" en="Use another email" />
+              </button>
+            </p>
+            <button
+              type="button"
+              className="btn solid primary"
+              style={{ alignSelf: "start" }}
+              onClick={() => {
+                setMode("join");
+                setStep("profile");
+              }}
+            >
+              <T zh="现在加入" en="Join now" /> <Arr />
+            </button>
+            <p className="mute small">
+              <T
+                zh="账号上线前就加入过？写信给我们，认领原来的编号："
+                en="Joined before accounts? Write to us to claim your number:"
+              />{" "}
+              <a href="mailto:hello@builderspace.dev">hello@builderspace.dev</a>
+            </p>
+          </div>
         )}
 
         {(step === "profile" || step === "spark") && (
