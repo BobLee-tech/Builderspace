@@ -206,7 +206,7 @@ export async function getEventDetail(slug: string): Promise<{
 const PROJECT_COLUMNS =
   "slug,name,pitch,problem,target_user,status,needed_roles,next_step,contact,owner_name,repo_url,demo_url,updated_at," +
   "cover_path,cover_focus_x,cover_focus_y,video_path,video_poster_path,video_seconds," +
-  "name_en,pitch_en,problem_en,target_user_en,next_step_en,original_lang,star_count,owner_id";
+  "name_en,pitch_en,problem_en,target_user_en,next_step_en,original_lang,star_count,owner_linked";
 
 /**
  * The side ops translated, which gets a small "Translated" mark: the other
@@ -247,7 +247,7 @@ type ProjectRow = {
   next_step_en: string | null;
   original_lang: Lang | null;
   star_count: number;
-  owner_id: string | null;
+  owner_linked: boolean;
   /** Only the plaza asks for it: `project_comments(count)`. */
   project_comments?: { count: number }[];
 };
@@ -432,7 +432,7 @@ function toProject(p: ProjectRow): Project {
     media: NO_MEDIA,
     commentCount: p.project_comments?.[0]?.count ?? 0,
     starCount: p.star_count,
-    ownerLinked: p.owner_id !== null,
+    ownerLinked: p.owner_linked,
     en,
     translated: translatedSide(
       p.original_lang,
