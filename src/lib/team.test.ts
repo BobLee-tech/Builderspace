@@ -4,6 +4,7 @@ import { FOUNDER_PROFILES } from "./founder-profiles";
 import {
   CARDS_PER_PAGE,
   CORE_TEAM_FLOOR,
+  memberCount,
   pageCount,
   pageRange,
   pageSlots,
@@ -169,6 +170,11 @@ describe("profile slugs", () => {
   it("never reads the core team as fewer than 20", () => {
     expect(roughly(Math.max(0, CORE_TEAM_FLOOR))).toBe("20+");
     expect(roughly(Math.max(34, CORE_TEAM_FLOOR))).toBe("30+");
+  });
+
+  it("reads members as nearly 200 until sign-ups pass it", () => {
+    expect(memberCount(73)).toEqual({ zh: "近 200", en: "Nearly 200" });
+    expect(memberCount(214)).toEqual({ zh: "210+", en: "210+" });
   });
 
   it("only points profiles at files the bucket accepts", () => {

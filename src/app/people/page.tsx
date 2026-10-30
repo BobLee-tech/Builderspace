@@ -5,7 +5,7 @@ import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { getMemberCount, getPublicCards, getTeam } from "@/lib/data";
-import { CORE_TEAM_FLOOR, roughly } from "@/lib/team";
+import { CORE_TEAM_FLOOR, memberCount, roughly } from "@/lib/team";
 import { DEPARTMENTS } from "@/lib/types";
 import { MemberWall } from "../m/member-wall";
 import { Team } from "./team";
@@ -23,6 +23,7 @@ export default async function PeoplePage() {
     getTeam(),
     getPublicCards(),
   ]);
+  const count = members === null ? null : memberCount(members);
   const core = roughly(
     Math.max(team.filter((p) => p.team !== "founder").length, CORE_TEAM_FLOOR),
   );
@@ -34,14 +35,9 @@ export default async function PeoplePage() {
           eyebrow={{ zh: "成员 / People", en: "People" }}
           title={["Meet the", "builders."]}
           aside={[
-            ...(members === null
+            ...(count === null
               ? []
-              : [
-                  {
-                    k: { zh: "成员", en: "Members" },
-                    v: { zh: roughly(members), en: roughly(members) },
-                  },
-                ]),
+              : [{ k: { zh: "成员", en: "Members" }, v: count }]),
             {
               k: { zh: "核心成员", en: "Core team" },
               v: { zh: `${core} 人`, en: core },
@@ -56,10 +52,10 @@ export default async function PeoplePage() {
           ]}
         />
         <p className="lede tm-lede" style={{ marginBottom: 40 }}>
-          {members !== null && (
+          {count !== null && (
             <T
-              zh={`已经有 ${roughly(members)} 位同学加入。`}
-              en={`${roughly(members)} builders have joined. `}
+              zh={`已经有${/^\d/.test(count.zh) ? " " : ""}${count.zh} 位同学加入。`}
+              en={`${count.en} builders have joined. `}
             />
           )}
           <T
