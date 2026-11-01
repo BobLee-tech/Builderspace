@@ -12,12 +12,14 @@ import {
 } from "react";
 import { MemberCard } from "@/app/join/member-card";
 import { ProjectCard } from "@/components/project-card";
+import { NotifyChoices } from "@/components/notify-choices";
 import { SpamGuard } from "@/components/spam-guard";
 import { useRevealResult } from "@/components/use-reveal-result";
 import { Msg, T } from "@/components/t";
 import type { FormState } from "@/lib/forms";
 import { COVER_BUCKET, posterPath } from "@/lib/media";
 import { memberCode } from "@/lib/members";
+import { DEFAULT_NOTIFY } from "@/lib/notify";
 import { displayLength, PITCH_MAX } from "@/lib/text-length";
 import {
   ROLES,
@@ -462,6 +464,19 @@ function Form({
             </span>
           )}
         </label>
+      </div>
+
+      <div className="notify-box">
+        <p className="mono">
+          <T zh="邮件提醒" en="Email me" />
+        </p>
+        <NotifyChoices initial={DEFAULT_NOTIFY} />
+        <p className="mute small">
+          <T
+            zh="发到你的登录邮箱。审核结果总会告诉你；之后在「我的卡片」里随时改。"
+            en="Sent to your sign-in email. You always hear the review result; change these on My card any time."
+          />
+        </p>
       </div>
 
       <div className="owner-line">

@@ -24,10 +24,16 @@ import {
   type MemberSkill,
   type Spark,
 } from "./members";
+import {
+  DEFAULT_NOTIFY,
+  type NotifyComments,
+  type NotifyPrefs,
+  type NotifyStars,
+} from "./notify";
 import { sampleProjects } from "./sample-data";
 import { isSupabaseConfigured } from "./supabase/client";
 import { getSupabaseAuth } from "./supabase/server";
-import type { StarredProject } from "./types";
+import type { MyProject, StarredProject } from "./types";
 
 // Every member read and write goes through here. With Supabase configured the
 // session lives in Supabase's cookies and the database functions in
@@ -762,4 +768,101 @@ export async function setStar(
     return fail("没点上，请再试一次|That didn't go through, try again");
   }
   return ok(data);
+}
+
+/* ---------- my projects and their email settings ---------- */
+
+// Development has no owners: a sample project counts as yours when its owner
+// name is your nickname, and the settings live in a cookie like the stars.
+const DEV_NOTIFY_COOKIE = "bs_dev_notify";
+type DevNotify = { email: string; prefs: Record<string, NotifyPrefs> };
+
+async function readDevNotify(email: string): Promise<DevNotify> {
+  const raw = (await cookies()).get(DEV_NOTIFY_COOKIE)?.value;
+  try {
+    const dev = raw
+      ? (JSON.parse(Buffer.from(raw, "base64url").toString()) as DevNotify)
+      : null;
+    if (dev?.email === email) return dev;
+  } catch {}
+  return { email, prefs: {} };
+}
+
+/** Every project the signed-in member owns, pending ones too. Memoised per request. */
+export const getMyProjects = cache(async (): Promise<MyProject[]> => {
+  const session = await getSession();
+  if (!session?.member) return [];
+  if (devMode()) {
+    const { prefs } = await readDevNotify(session.email);
+    const nickname = session.member.nickname;
+    return sampleProjects
+      .filter((p) => p.ownerName === nickname)
+      .map((p) => ({
+        slug: p.slug,
+        name: p.name,
+        reviewStatus: "approved",
+        starCount: p.starCount,
+        notify: prefs[p.slug] ?? DEFAULT_NOTIFY,
+      }));
+  }
+  const supabase = await getSupabaseAuth();
+  if (!supabase) return [];
+  const { data, error } = await supabase.rpc("my_projects");
+  if (error) {
+    console.error("[auth] my projects failed", { code: error.code });
+    return [];
+  }
+  return (
+    data as {
+      slug: string;
+      name: string;
+      review_status: MyProject["reviewStatus"];
+      star_count: number;
+      comments: NotifyComments;
+      stars: NotifyStars;
+    }[]
+  ).map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    reviewStatus: p.review_status,
+    starCount: p.star_count,
+    notify: { comments: p.comments, stars: p.stars },
+  }));
+});
+
+/** Sets both email settings of a project the member owns. */
+export async function setProjectNotify(
+  slug: string,
+  prefs: NotifyPrefs,
+): Promise<Result> {
+  const session = await getSession();
+  if (!session?.member) return fail("先生成你的卡片|Make your card first");
+  if (devMode()) {
+    const dev = await readDevNotify(session.email);
+    dev.prefs[slug] = prefs;
+    (await cookies()).set(
+      DEV_NOTIFY_COOKIE,
+      Buffer.from(JSON.stringify(dev)).toString("base64url"),
+      { httpOnly: true, sameSite: "lax", path: "/" },
+    );
+    return ok(undefined);
+  }
+  const supabase = await getSupabaseAuth();
+  if (!supabase) return fail(CLOSED);
+  const { error } = await supabase.rpc("set_project_notify", {
+    p_slug: slug,
+    p_comments: prefs.comments,
+    p_stars: prefs.stars,
+  });
+  if (error) {
+    if (error.code === "P0002") {
+      return fail("找不到这个项目|Project not found");
+    }
+    console.error("[auth] project notify failed", {
+      code: error.code,
+      message: error.message,
+    });
+    return fail("没存上，请稍后再试|Couldn't save that, try again");
+  }
+  return ok(undefined);
 }
