@@ -9,9 +9,11 @@ import {
   saveMyZid,
   saveSurvey,
   setCardOnProjects,
+  setProjectNotify,
   setPublicCard,
   signOut,
 } from "@/lib/auth";
+import { readNotify } from "@/lib/notify";
 import { fieldErrors, type FormState } from "@/lib/forms";
 import {
   codeSchema,
@@ -73,6 +75,21 @@ export async function togglePublicCard(form: FormData) {
   const saved = await setPublicCard(form.get("on") === "1");
   if (saved.ok) updateTag("cards");
   refresh();
+}
+
+export type NotifySaved =
+  { status: "idle" | "ok" } | { status: "error"; message: string };
+
+/** One project's email settings, saved as the owner picks them on /me. */
+export async function saveProjectNotify(
+  _prev: NotifySaved,
+  form: FormData,
+): Promise<NotifySaved> {
+  const slug = String(form.get("slug") ?? "");
+  const saved = await setProjectNotify(slug, readNotify(form));
+  return saved.ok
+    ? { status: "ok" }
+    : { status: "error", message: saved.message };
 }
 
 export type EmailStep =

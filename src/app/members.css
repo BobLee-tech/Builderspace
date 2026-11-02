@@ -509,6 +509,26 @@
 .me-stars li > .mono {
   flex: none;
 }
+.me-projects li {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+.me-project-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.me-project-head > a,
+.me-project-head > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-underline-offset: 3px;
+}
+.me-project-head > .mono {
+  flex: none;
+}
 /* /me settings: public card, card on projects, sign-in email — one panel,
    one row each */
 .me-settings {

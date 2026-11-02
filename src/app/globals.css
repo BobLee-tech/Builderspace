@@ -861,6 +861,28 @@ main {
   color: var(--paper);
   font-weight: 600;
 }
+/* The owner's email settings: on the submit form and per project on /me */
+.notify-box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border: 1px dashed var(--line-2);
+  border-radius: 14px;
+}
+.notify-box > p {
+  margin: 0;
+}
+.notify-row {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.notify-row > legend {
+  padding: 0;
+  margin-bottom: 8px;
+}
 .row2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
