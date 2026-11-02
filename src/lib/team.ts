@@ -1,8 +1,14 @@
 // The people on /people: the founders and the core team. Rows come from
 // team_list() (supabase/migrations/20261026020000_team_members.sql); a member
-// linked to an account shows the card they designed, everyone else the
-// default card. Ops add and remove people in Supabase, see docs/team.md.
-import { DEFAULT_DESIGN, readDesign, type CardDesign } from "./card-design";
+// linked to an account shows the card they designed, everyone else a card
+// seeded from their member number or row. Ops add and remove people in
+// Supabase, see docs/team.md.
+import {
+  memberSeed,
+  readDesign,
+  seededDesign,
+  type CardDesign,
+} from "./card-design";
 import {
   LOOKING_FOR,
   MEMBER_SKILLS,
@@ -169,7 +175,11 @@ export function teamPersonOf(
           tagline: row.tagline,
           stickers: row.stickers,
         })
-      : DEFAULT_DESIGN,
+      : // Not designed yet: the card their studio starts from when they have a
+        // number, else one of its own, so no two cards on the page match.
+        seededDesign(
+          row.member_no ? memberSeed(row.member_no) : `team:${row.id}`,
+        ).design,
   };
 }
 
