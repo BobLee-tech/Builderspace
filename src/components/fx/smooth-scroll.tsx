@@ -4,10 +4,14 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import type Lenis from "lenis";
 import { setSmoothScroller } from "@/lib/smooth-scroll";
-import { hasFinePointer } from "./motion";
+import { hasFinePointer, hasWholePixels, onPixelRatioChange } from "./motion";
 import { useScrollAnimations } from "./use-scroll-animations";
 
-/** One layout-level Lenis, driven by GSAP's ticker; touch/reduced motion use native scroll. */
+/**
+ * One layout-level Lenis, driven by GSAP's ticker. Touch, reduced motion and
+ * fractional pixel ratios (Windows at 125% / 150%, where every eased frame
+ * shimmered a pixel) use native scroll.
+ */
 export function SmoothScroll() {
   const pathname = usePathname();
   useScrollAnimations(pathname);
@@ -21,7 +25,13 @@ export function SmoothScroll() {
       const run = ++version;
       dispose();
       dispose = () => {};
-      if (reduce.matches || !desktop.matches || !hasFinePointer()) return;
+      if (
+        reduce.matches ||
+        !desktop.matches ||
+        !hasFinePointer() ||
+        !hasWholePixels()
+      )
+        return;
       const [{ default: Lenis }, { gsap }] = await Promise.all([
         import("lenis"),
         import("gsap"),
@@ -57,12 +67,19 @@ export function SmoothScroll() {
     };
     desktop.addEventListener("change", setup);
     reduce.addEventListener("change", setup);
+    let whole = hasWholePixels();
+    const stopRatio = onPixelRatioChange(() => {
+      if (whole === hasWholePixels()) return;
+      whole = !whole;
+      void setup();
+    });
     void setup();
     return () => {
       cancelled = true;
       version++;
       desktop.removeEventListener("change", setup);
       reduce.removeEventListener("change", setup);
+      stopRatio();
       dispose();
     };
   }, []);

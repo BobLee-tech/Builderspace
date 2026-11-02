@@ -44,6 +44,20 @@ export function BgShader() {
       mount.setSpeed(pause ? 0 : 0.18);
       el.dataset.paused = String(Boolean(pause));
     });
+    // Dither cells land on whole canvas pixels: 3 CSS px is 3.75 at 125%,
+    // which drew uneven 3 / 4 px cells that crawled as the texture flowed.
+    // Re-snapped whenever the mount resizes its canvas (zoom, another screen).
+    let pxSize = 0;
+    const snapCells = () => {
+      const width = Math.round(el.getBoundingClientRect().width);
+      if (!mount || !width) return;
+      const scale = mount.canvasElement.width / width;
+      const next = Math.max(1, Math.round(3 * scale)) / scale;
+      if (next === pxSize) return;
+      pxSize = next;
+      mount.setUniforms({ u_pxSize: next });
+    };
+    const cells = new MutationObserver(snapCells);
     const onLost = () => {
       lost = true;
       mount?.setSpeed(0);
@@ -86,6 +100,8 @@ export function BgShader() {
           1920 * 1080,
         );
         mount.canvasElement.addEventListener("webglcontextlost", onLost);
+        cells.observe(mount.canvasElement, { attributeFilter: ["width"] });
+        snapCells();
         el.classList.add("on");
         update();
       } catch {
@@ -111,6 +127,7 @@ export function BgShader() {
       cancelled = true;
       cancelAnimationFrame(raf);
       mo.disconnect();
+      cells.disconnect();
       update.cancel();
       removeEventListener("scroll", update);
       removeEventListener("resize", update);

@@ -120,6 +120,12 @@ export function HeroHeadline({
       const start = performance.now(),
         id = ++decodeId;
       cancelAnimationFrame(decodeRaf);
+      // Each letter keeps its own width while it scrambles: the stand-in
+      // glyphs differ a lot in width, and the line reflowed every frame.
+      // A decode clicked mid-way keeps the widths the first one locked.
+      chars.forEach((c) => {
+        if (!c.style.width) c.style.width = getComputedStyle(c).width;
+      });
       const tick = (now: number) => {
         if (cancelled || id !== decodeId) return;
         const p = Math.min(1, (now - start) / 1000);
@@ -130,7 +136,10 @@ export function HeroHeadline({
         });
         if (p < 1) decodeRaf = requestAnimationFrame(tick);
         else {
-          chars.forEach((c, i) => (c.textContent = finals[i]));
+          chars.forEach((c, i) => {
+            c.textContent = finals[i];
+            c.style.removeProperty("width");
+          });
           measure();
         }
       };
@@ -302,6 +311,7 @@ export function HeroHeadline({
         c.textContent = finals[i];
         c.style.removeProperty("--w");
         c.style.removeProperty("--lift");
+        c.style.removeProperty("width");
         c.classList.remove("scr");
       });
       h1.style.transform = "";

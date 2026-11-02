@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
-import { NAV_LINKS, isActive } from "./nav-links";
+import { NAV_LINKS, cleanPath, isActive } from "./nav-links";
 import { NavIcon } from "./nav-icon";
 import { T } from "./t";
 
@@ -20,7 +20,7 @@ export function NavItems({ withIcons = false }: { withIcons?: boolean }) {
 }
 
 function ActiveItems({ withIcons }: { withIcons: boolean }) {
-  return <Items pathname={usePathname()} withIcons={withIcons} />;
+  return <Items pathname={cleanPath(usePathname())} withIcons={withIcons} />;
 }
 
 function Items({
