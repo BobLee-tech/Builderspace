@@ -7,6 +7,26 @@ builderspace.dev 的邮件全部走 Resend（账号 lb15058460816，区域 Tokyo
 - **notify@builderspace.dev**：只发不收。会员登录的 6 位验证码（Supabase Auth 通过 Resend SMTP `smtp.resend.com:465` 发）、运营通知邮件（迁移 `20261015040000_ops_email.sql`，Vault 里的 `resend_api_key`、`ops_email_to`、`ops_email_from`）和发起人的项目提醒（见下面）都从这里发。
 - **hello@builderspace.dev**：社团对外邮箱，能收信。信在 Resend 后台的 Inboxes 里看和回：<https://resend.com/inboxes/hello@builderspace.dev>。
 
+## 转发给 president
+
+收到的信会自动复制一份，从 hello@ 发给几位 president。原件仍留在 Resend 收件箱。
+
+- 流程：Resend 的 webhook（事件 `email.received`）调用 `/api/inbound-email`，再由 `src/lib/inbound-email.ts` 取信、发出副本。
+- 副本标题前加 `[hello@]`，Reply-To 设成原发件人。直接回复会发给对方，但从你自己的邮箱发出。
+- 想用 hello@ 的身份回信，还是要去 Resend 收件箱。
+- 每封信占 1 封额度（收），每份副本按收件人数再占几封（发），和登录验证码共用免费版的每天 100 封。
+- 所以 24 小时内只转发前 15 封（`HELLO_FORWARD_DAILY_CAP`），超出的只留在 Resend 收件箱。
+- 不转发：发件人是 `@builderspace.dev` 的信，以及带 `X-BuilderSpace-Forwarded` 头、被转回来的副本。
+
+设置（Vercel 环境变量填好后要重新部署）：
+
+1. Resend → API Keys：新建一个 Full access 的 key（读收件要用），填到 Vercel 的 `RESEND_INBOUND_API_KEY`。
+2. Resend → Webhooks：Add endpoint `https://www.builderspace.dev/api/inbound-email`，只勾 `email.received`。复制 Signing secret（`whsec_` 开头），填到 `RESEND_INBOUND_WEBHOOK_SECRET`。地址要带 www，根域名会 308 跳转。
+3. Vercel：`HELLO_FORWARD_TO` 填 president 的邮箱，用逗号分隔。
+4. 从 Gmail 给 hello@ 发一封测试信。几秒内应该收到 `[hello@]` 副本，Resend 的 webhook 页面能看到 200。
+
+改收件人只需要改 `HELLO_FORWARD_TO`，然后重新部署。三个变量少一个，接口就回 503，信只留在收件箱里。
+
 ## 发起人的项目提醒
 
 迁移 `20261101000000_owner_notify.sql`。项目有人评论、有人 Star、审核通过或退回时，写信给发起人的登录邮箱：
@@ -23,6 +43,7 @@ Resend 是免费套餐：每天 100 封、每月 3000 封，验证码、运营�
 
 - 提醒信 24 小时内全站最多 40 封，给验证码留余量。改上限：`select vault.create_secret('60', 'owner_email_daily_cap');`
 - 每人 24 小时内最多 6 封。
+- 转发给 president 的副本 24 小时内最多 15 封，每封按收件人数算（见上面）。
 - 超了不丢，下一轮再发。
 - 活动当天报名和验证码多，平时一天个位数。量起来以后升级 Resend Pro（每月 5 万封、没有每日上限）就不用卡这个数。
 
