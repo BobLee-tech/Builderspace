@@ -132,7 +132,9 @@ export async function getMemberCount(): Promise<number | null> {
 export async function getTeam(): Promise<TeamPerson[]> {
   "use cache";
   cacheLife("minutes");
-  cacheTag("team");
+  // A linked member's card is their own: when they save it on /me/card,
+  // "cards" brings the change here right away.
+  cacheTag("team", "cards");
 
   const db = getSupabase();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
