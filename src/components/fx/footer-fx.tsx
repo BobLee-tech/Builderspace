@@ -68,7 +68,9 @@ const pageIndex = (path: string) =>
 
 /** Full-width band at the end of each page that links to the next one. */
 export function FootNext() {
-  const pathname = usePathname();
+  // The home page's prerender on Vercel doesn't see "/" (it rendered "→ 02"
+  // where the browser renders "01 → 02", a hydration error on every visit).
+  const pathname = usePathname().replace(/\/index$/, "") || "/";
   const section = NAV_LINKS.map((l) => l.href)
     .filter((h) => h !== "/")
     .find((h) => pathname.startsWith(h));

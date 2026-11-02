@@ -73,8 +73,11 @@
   white-space: nowrap;
   border: 0;
 }
+/* Classic scrollbars (Windows, a Mac with a mouse) keep their space when a
+   sheet or card locks the scroll, and on short pages, so nothing shifts sideways. */
 html {
   scrollbar-color: #2a2a2d transparent;
+  scrollbar-gutter: stable;
 }
 @media (prefers-reduced-motion: no-preference) {
   html {

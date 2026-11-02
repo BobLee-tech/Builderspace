@@ -5109,6 +5109,10 @@ html.fx:not(.booted) .top {
   translate: 0 var(--lift, 0);
 }
 .h1x .char.scr {
+  /* Centred in the letter's locked width (hero-headline.tsx), even when the
+     stand-in glyph is wider. */
+  display: inline-flex;
+  justify-content: center;
   color: var(--mute);
 }
 /* L2: outline, filled by a light under the pointer */
@@ -6804,10 +6808,10 @@ button.cstar:active {
 }
 
 /* ---------- an owner's card, enlarged (owner-chip.tsx) ---------- */
-/* The scrollbar's space stays, so the page doesn't shift under the card. */
+/* The scrollbar's space stays (html's scrollbar-gutter), so the page doesn't
+   shift under the card. */
 html:has(.oz[open]) {
   overflow: hidden;
-  scrollbar-gutter: stable;
 }
 .oz {
   position: fixed;

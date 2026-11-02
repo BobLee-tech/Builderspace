@@ -6,6 +6,36 @@ export const prefersReducedMotion = () =>
 /** Mouse / trackpad (not touch): the pointer-following effects only run here. */
 export const hasFinePointer = () => matchMedia("(pointer: fine)").matches;
 
+/**
+ * Whether a CSS pixel is a whole number of screen pixels. Windows at 125% /
+ * 150% (or a browser zoom) isn't, and there script-driven scrolling shimmers.
+ */
+export const hasWholePixels = () => Number.isInteger(devicePixelRatio);
+
+/** Calls `fn` whenever devicePixelRatio changes (browser zoom, another screen). */
+export function onPixelRatioChange(fn: () => void) {
+  let ratio = devicePixelRatio,
+    mq: MediaQueryList | null = null;
+  const check = () => {
+    if (devicePixelRatio === ratio) return;
+    ratio = devicePixelRatio;
+    listen();
+    fn();
+  };
+  const listen = () => {
+    mq?.removeEventListener("change", check);
+    mq = matchMedia(`(resolution: ${ratio}dppx)`);
+    mq.addEventListener("change", check);
+  };
+  listen();
+  // A zoom also resizes the window, and the media query alone can miss it.
+  addEventListener("resize", check);
+  return () => {
+    mq?.removeEventListener("change", check);
+    removeEventListener("resize", check);
+  };
+}
+
 export const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 export const easeOutCubic = (k: number) => 1 - Math.pow(1 - k, 3);
