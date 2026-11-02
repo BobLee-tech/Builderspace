@@ -7,6 +7,7 @@ import { PageHead } from "@/components/page-head";
 import { T } from "@/components/t";
 import {
   getCardDesign,
+  getMyProjects,
   getMyStars,
   getMyZid,
   getSession,
@@ -25,11 +26,12 @@ import {
   SPARK_INFO,
   type Member,
 } from "@/lib/members";
-import type { StarredProject } from "@/lib/types";
+import type { MyProject, StarredProject } from "@/lib/types";
 import { logOut, toggleCardOnProjects, togglePublicCard } from "./actions";
 import { CopyLink } from "./copy-link";
 import { EmailChange } from "./email-change";
 import { MeCard } from "./me-card";
+import { ProjectNotify } from "./project-notify";
 import { SurveyForm } from "./survey-form";
 import { ZidForm } from "./zid-form";
 import "../members.css";
@@ -55,11 +57,12 @@ async function Me() {
   const session = await getSession();
   if (!session?.member) redirect("/join");
   const m = session.member;
-  const [done, design, zid, stars] = await Promise.all([
+  const [done, design, zid, stars, projects] = await Promise.all([
     surveyDone(),
     getCardDesign(),
     getMyZid(),
     getMyStars(),
+    getMyProjects(),
   ]);
   const spark = SPARK_INFO[m.spark];
   // Joined before the zID was asked for: a UNSW email, or a school that says
@@ -112,6 +115,7 @@ async function Me() {
             <CardOnProjects on={m.cardOnProjects} />
             <EmailChange email={m.email} verified={m.verified} />
           </section>
+          <MyProjects projects={projects} />
           <MyStars stars={stars} />
           {askZid && <ZidForm unswEmail={unswEmail} />}
           {!done && <SurveyForm zid={zid} />}
@@ -265,6 +269,55 @@ function CardOnProjects({ on }: { on: boolean }) {
         aria-label="在项目页展示我的卡片 / Show my card on my projects"
       />
     </form>
+  );
+}
+
+const REVIEW_LABEL: Record<
+  MyProject["reviewStatus"],
+  { zh: string; en: string }
+> = {
+  pending: { zh: "审核中", en: "In review" },
+  approved: { zh: "已上线", en: "Live" },
+  rejected: { zh: "未通过", en: "Not approved" },
+};
+
+/** Projects this member owns, each with its email settings. */
+function MyProjects({ projects }: { projects: MyProject[] }) {
+  return (
+    <section className="hud me-details me-stars me-projects">
+      <h2 className="mono mute">
+        <T zh="我的项目 · 邮件提醒" en="My projects · email" />
+      </h2>
+      {projects.length === 0 ? (
+        <p className="mute small">
+          <T
+            zh="提交的项目卡会在这里，有人评论或 Star 时写信告诉你。"
+            en="Projects you submit show up here, and we email you about comments and stars."
+          />{" "}
+          <Link href="/projects/new" className="linkish">
+            <T zh="提交项目卡" en="Submit a project" /> →
+          </Link>
+        </p>
+      ) : (
+        <ul>
+          {projects.map((p) => (
+            <li key={p.slug}>
+              <div className="me-project-head">
+                {p.reviewStatus === "approved" ? (
+                  <Link href={`/projects/${p.slug}`}>{p.name}</Link>
+                ) : (
+                  <span>{p.name}</span>
+                )}
+                <span className="mono mute">
+                  <T {...REVIEW_LABEL[p.reviewStatus]} /> · ★ {p.starCount}
+                </span>
+              </div>
+              <ProjectNotify slug={p.slug} initial={p.notify} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

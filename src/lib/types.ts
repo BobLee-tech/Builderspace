@@ -1,6 +1,7 @@
 // Domain types mirror supabase/migrations/20261012000000_init.sql.
 import type { CardDesign } from "./card-design";
 import type { CardView } from "./members";
+import type { NotifyPrefs } from "./notify";
 
 export type EventKind =
   "workshop" | "build_night" | "demo_night" | "online" | "other";
@@ -191,6 +192,15 @@ export type StarredProject = {
   name: string;
   ownerName: string;
   starredAt: string;
+};
+
+/** A project the signed-in member owns, with its email settings (/me). */
+export type MyProject = {
+  slug: string;
+  name: string;
+  reviewStatus: "pending" | "approved" | "rejected";
+  starCount: number;
+  notify: NotifyPrefs;
 };
 
 /** Signed, short-lived URLs for an approved project's uploads. */

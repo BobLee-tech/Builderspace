@@ -1,8 +1,9 @@
 "use server";
 
-import { getSession, memberWriter } from "@/lib/auth";
+import { getSession, memberWriter, setProjectNotify } from "@/lib/auth";
 import { parseProjectForm, projectSlug, type FormState } from "@/lib/forms";
 import { invalidForm, submitFailed, withoutDatabase } from "@/lib/form-actions";
+import { DEFAULT_NOTIFY, readNotify } from "@/lib/notify";
 import { looksAutomated } from "@/lib/spam";
 import { getSupabase } from "@/lib/supabase/client";
 
@@ -35,9 +36,10 @@ export async function submitProject(
   // The member's own client: owner_id must be auth.uid() (RLS).
   const member = await memberWriter();
   if (!member) return { status: "error", message: JOIN_FIRST };
+  const slug = projectSlug(v.name, crypto.randomUUID().slice(0, 6));
   // Inserted as pending; RLS rejects anything else and hides it until approved.
   const { error } = await member.db.from("projects").insert({
-    slug: projectSlug(v.name, crypto.randomUUID().slice(0, 6)),
+    slug,
     name: v.name,
     pitch: v.pitch,
     problem: v.problem,
@@ -58,5 +60,15 @@ export async function submitProject(
     review_status: "pending",
   });
   if (error) return submitFailed("project", error);
+
+  // The email settings picked on the form. Without a row the defaults apply,
+  // so a failure here only means the owner changes them on /me later.
+  const notify = readNotify(form);
+  if (
+    notify.comments !== DEFAULT_NOTIFY.comments ||
+    notify.stars !== DEFAULT_NOTIFY.stars
+  ) {
+    await setProjectNotify(slug, notify);
+  }
   return { status: "ok" };
 }
