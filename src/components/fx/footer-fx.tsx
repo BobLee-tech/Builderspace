@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { scrollToTop } from "@/lib/smooth-scroll";
-import { NAV_LINKS, isActive } from "../nav-links";
+import { NAV_LINKS, cleanPath, isActive } from "../nav-links";
 import { T } from "../t";
 import { hasFinePointer, prefersReducedMotion, rafThrottle } from "./motion";
 
@@ -68,9 +68,7 @@ const pageIndex = (path: string) =>
 
 /** Full-width band at the end of each page that links to the next one. */
 export function FootNext() {
-  // The home page's prerender on Vercel doesn't see "/" (it rendered "→ 02"
-  // where the browser renders "01 → 02", a hydration error on every visit).
-  const pathname = usePathname().replace(/\/index$/, "") || "/";
+  const pathname = cleanPath(usePathname());
   const section = NAV_LINKS.map((l) => l.href)
     .filter((h) => h !== "/")
     .find((h) => pathname.startsWith(h));
@@ -161,7 +159,12 @@ export function FootNext() {
           <span>
             <T zh="下一页 / Next" en="Next page" />
           </span>
-          <span>{a >= 0 ? `${pad(a)} → ${pad(b)}` : `→ ${pad(b)}`}</span>
+          <span>
+            {[a, b]
+              .map((n) => (n >= 0 ? pad(n) : ""))
+              .join(" → ")
+              .trim()}
+          </span>
         </div>
         <div className="fn-row">
           <span className="fn-title" ref={titleRef}>
