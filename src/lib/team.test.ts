@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_DESIGN } from "./card-design";
+import { memberSeed, seededDesign } from "./card-design";
 import { FOUNDER_PROFILES } from "./founder-profiles";
 import {
   CARDS_PER_PAGE,
@@ -58,9 +58,14 @@ describe("TEAM_DEPARTMENTS", () => {
 });
 
 describe("teamPersonOf", () => {
-  it("gives someone without an account the default card", () => {
+  it("gives someone without an account a card seeded from their row", () => {
     const p = teamPersonOf(row(), BASE)!;
-    expect(p.design).toEqual(DEFAULT_DESIGN);
+    expect(p.design).toEqual(seededDesign(`team:${row().id}`).design);
+    const other = teamPersonOf(
+      row({ id: "8b0c1e3a-0000-4000-8000-000000000002" }),
+      BASE,
+    )!;
+    expect(other.design).not.toEqual(p.design);
     expect(p.card).toMatchObject({
       nickname: "Kai",
       major: "BuilderSpace · Operations",
@@ -68,6 +73,11 @@ describe("teamPersonOf", () => {
       seal: null,
     });
     expect(p.slug).toBe(row().id);
+  });
+
+  it("gives a numbered member who hasn't designed a card their seeded one", () => {
+    const p = teamPersonOf(row({ member_no: 25 }), BASE)!;
+    expect(p.design).toEqual(seededDesign(memberSeed(25)).design);
   });
 
   it("uses the linked member's card, number, handle and seal", () => {
