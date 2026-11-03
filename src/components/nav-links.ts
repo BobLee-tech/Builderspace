@@ -6,6 +6,12 @@ export const NAV_LINKS = [
   { href: "/people", zh: "成员", en: "People", ico: "people" },
 ] as const;
 
+/** The footer's site column: the nav, then pages that aren't in it. */
+export const SITE_LINKS = [
+  ...NAV_LINKS,
+  { href: "/about", zh: "关于", en: "About" },
+] as const;
+
 /**
  * The home page's prerender on Vercel doesn't see "/" from usePathname(), so
  * Home wasn't highlighted and the footer counter differed from the browser's
