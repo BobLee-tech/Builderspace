@@ -16,6 +16,8 @@ import { getEventDetail, getEvents } from "@/lib/data";
 import { getEventMaterials } from "@/lib/event-materials";
 import { eventCopy, getEventPage, type EventTool } from "@/lib/event-pages";
 import { getEventResults } from "@/lib/event-results";
+import { JsonLd } from "@/components/json-ld";
+import { bi, biText, breadcrumbLd, eventLd, pageMeta } from "@/lib/seo";
 import {
   formatDate,
   formatShortDate,
@@ -62,11 +64,11 @@ export async function generateMetadata({
 }: PageProps<"/events/[slug]">): Promise<Metadata> {
   const detail = await getEventDetail((await params).slug);
   if (!detail) return {};
-  const { event } = detail;
-  return {
-    title: event.title,
-    description: event.summary ?? undefined,
-  };
+  const { title, summary } = eventCopy(detail.event);
+  return pageMeta(`/events/${detail.event.slug}`, {
+    title: bi(title.zh, title.en),
+    description: summary ? biText(summary.zh, summary.en) : undefined,
+  });
 }
 
 export default async function EventPageRoute({
@@ -98,6 +100,26 @@ async function EventDetail({ slug }: { slug: string }) {
 
   return (
     <section className="sec first evp">
+      <JsonLd
+        data={eventLd({
+          path: `/events/${event.slug}`,
+          name: bi(title.zh, title.en),
+          description: summary && biText(summary.zh, summary.en),
+          startsAt: event.startsAt,
+          endsAt: event.endsAt,
+          location: event.location,
+          free: page?.free ?? false,
+          phase,
+          full,
+          signupUrl: event.signupUrl,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbLd([
+          { name: "活动 Events", path: "/events" },
+          { name: title.zh, path: `/events/${event.slug}` },
+        ])}
+      />
       <div className="wrap">
         <div className="evp-bar mono">
           <Crumb />

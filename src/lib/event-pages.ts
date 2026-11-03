@@ -45,6 +45,8 @@ export type EventPage = {
   summaryEn: string;
   /** What it costs, shown with the time and place. */
   cost: Bi;
+  /** No charge to attend; the event's search data says so. */
+  free: boolean;
   costNote?: Bi;
   /** One or two words each, shown as tags beside the cost. */
   highlights: Bi[];
@@ -71,6 +73,7 @@ const putYourselfOnline: EventPage = {
   summaryEn:
     "Bring a laptop, build a personal website with AI and publish it on GitHub Pages.",
   cost: { zh: "免费", en: "Free" },
+  free: true,
   costNote: { zh: "有零食和水，不含午饭", en: "Snacks and water; no lunch" },
   highlights: [{ zh: "零基础", en: "No experience needed" }],
   hosts: {

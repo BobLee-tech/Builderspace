@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { biText, pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
@@ -22,7 +23,13 @@ import { shownSeats } from "./event-parts";
 import { NextUp } from "./next-up";
 import "./events.css";
 
-export const metadata: Metadata = { title: "活动" };
+export const metadata: Metadata = pageMeta("/events", {
+  title: "活动 Events",
+  description: biText(
+    "工作坊、Build Night 和 Demo Night 的时间、地点和报名，都在悉尼线下。",
+    "Workshops, build nights and demo nights in Sydney: dates, places and sign-up.",
+  ),
+});
 
 export default async function EventsPage() {
   const [{ upcoming, past }, tutorials, signups] = await Promise.all([

@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
+import { biText, pageMeta } from "@/lib/seo";
 import { PageHead } from "@/components/page-head";
 import { DEPARTMENTS, VOLUNTEER_POSITIONS } from "@/lib/types";
 import { VolunteerForm } from "./volunteer-form";
 
-export const metadata: Metadata = { title: "核心成员申请" };
+export const metadata: Metadata = pageMeta("/core-team", {
+  title: "核心成员申请 Core team",
+  description: biText(
+    "申请加入 BuilderSpace 核心团队，一起办活动、做官网、运营社团。",
+    "Apply to the BuilderSpace core team: run events, build the site and grow the club.",
+  ),
+});
 
 export default function VolunteerPage() {
   return (

@@ -8,11 +8,13 @@ import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { getTeam } from "@/lib/data";
 import {
-  FOUNDER_PROFILES,
   founderTransition,
+  foundersWithProfiles,
   type FounderProfile,
 } from "@/lib/founder-profiles";
 import { teamPhotoUrl, type TeamPerson } from "@/lib/team";
+import { JsonLd } from "@/components/json-ld";
+import { biText, breadcrumbLd, pageMeta, personLd } from "@/lib/seo";
 import { BackLink, ProfileKeys } from "./keys";
 import "../people.css";
 
@@ -23,14 +25,8 @@ const serif = Noto_Serif_SC({
   preload: false,
 });
 
-/** The founders that have a profile, in the order /people shows them. */
 async function getFounders() {
-  const team = await getTeam();
-  return team.flatMap((p) => {
-    const profile =
-      p.team === "founder" && p.profileSlug && FOUNDER_PROFILES[p.profileSlug];
-    return profile ? [{ person: p, slug: p.profileSlug!, profile }] : [];
-  });
+  return foundersWithProfiles(await getTeam());
 }
 
 // Prerendered whole, like the event pages. Cache Components needs at least
@@ -48,10 +44,19 @@ export async function generateMetadata({
   const { slug } = await params;
   const found = (await getFounders()).find((f) => f.slug === slug);
   if (!found) return {};
-  return {
+  return pageMeta(`/people/${slug}`, {
     title: found.person.card.nickname,
-    description: found.profile.headline.map((l) => l.zh).join("，"),
-  };
+    description: headlineText(found.profile),
+  });
+}
+
+/** The headline lines joined into one sentence per language. */
+function headlineText(profile: FounderProfile) {
+  const en = profile.headline.map((l) => l.en.trim().replace(/\.$/, ""));
+  return biText(
+    profile.headline.map((l) => l.zh).join("，"),
+    `${en.join(". ")}.`,
+  );
 }
 
 export default async function ProfilePage({
@@ -67,6 +72,22 @@ export default async function ProfilePage({
   const next = `/people/${founders[(i + 1) % n].slug}`;
   return (
     <section className={`sec first tm-pf-page ${serif.variable}`}>
+      <JsonLd
+        data={personLd({
+          path: `/people/${slug}`,
+          name: person.card.nickname,
+          description: headlineText(profile),
+          sameAs: profile.links
+            .map((l) => l.href)
+            .filter((h) => h.startsWith("https://")),
+        })}
+      />
+      <JsonLd
+        data={breadcrumbLd([
+          { name: "成员 People", path: "/people" },
+          { name: person.card.nickname, path: `/people/${slug}` },
+        ])}
+      />
       <div className="wrap">
         <ProfileKeys prev={prev} next={next} />
         <div className="tm-pf-bar">

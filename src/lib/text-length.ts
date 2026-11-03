@@ -14,3 +14,16 @@ export function displayLength(text: string): number {
   for (const ch of text) n += WIDE.test(ch) ? 1 : 0.5;
   return Math.ceil(n);
 }
+
+/** The text cut to at most `max` display length, ending in "…" when cut. */
+export function clip(text: string, max: number): string {
+  if (displayLength(text) <= max) return text;
+  let n = 0.5; // the "…"
+  let out = "";
+  for (const ch of text) {
+    n += WIDE.test(ch) ? 1 : 0.5;
+    if (n > max) break;
+    out += ch;
+  }
+  return `${out.trimEnd()}…`;
+}

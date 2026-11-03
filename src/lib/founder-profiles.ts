@@ -6,6 +6,8 @@
 // Every point is one line: a fact's first line carries it, the lines after
 // qualify it, so nothing wraps halfway through a thought on a wide screen.
 
+import type { TeamPerson } from "./team";
+
 /** Names the founder's photo on a card and on the profile, so it morphs between them. */
 export const founderTransition = (slug: string) => `founder-${slug}`;
 
@@ -283,3 +285,12 @@ export const FOUNDER_PROFILES: Record<string, FounderProfile> = {
     },
   },
 };
+
+/** The founders that have a profile page, in the order /people shows them. */
+export function foundersWithProfiles(team: TeamPerson[]) {
+  return team.flatMap((p) => {
+    const profile =
+      p.team === "founder" && p.profileSlug && FOUNDER_PROFILES[p.profileSlug];
+    return profile ? [{ person: p, slug: p.profileSlug!, profile }] : [];
+  });
+}

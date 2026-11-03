@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
-import { getEvents, getProjects } from "@/lib/data";
+import { getEvents, getProjects, getTeam } from "@/lib/data";
 import { allEventMaterials } from "@/lib/event-materials";
+import { foundersWithProfiles } from "@/lib/founder-profiles";
 import { siteUrl } from "@/lib/site-url";
 
 const PAGES = [
@@ -14,13 +15,24 @@ const PAGES = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [projects, events] = await Promise.all([getProjects(), getEvents()]);
+  const [projects, events, team] = await Promise.all([
+    getProjects(),
+    getEvents(),
+    getTeam(),
+  ]);
   return [
     ...PAGES.map((p) => ({ url: `${siteUrl}${p}` })),
     ...events.map((e) => ({ url: `${siteUrl}/events/${e.slug}` })),
     ...allEventMaterials()
       .filter(([slug]) => events.some((e) => e.slug === slug))
       .map(([slug]) => ({ url: `${siteUrl}/learn/${slug}` })),
-    ...projects.map((p) => ({ url: `${siteUrl}/projects/${p.slug}` })),
+    ...projects.map((p) => ({
+      url: `${siteUrl}/projects/${p.slug}`,
+      lastModified: p.updatedAt,
+    })),
+    // Founders with a profile page (the rest of /people has none).
+    ...foundersWithProfiles(team).map((f) => ({
+      url: `${siteUrl}/people/${f.slug}`,
+    })),
   ];
 }

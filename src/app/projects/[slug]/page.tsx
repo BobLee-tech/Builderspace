@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getMyStars, getSession } from "@/lib/auth";
-import { getProject, getProjectComments } from "@/lib/data";
+import { getProject, getProjectComments, getProjects } from "@/lib/data";
 import { dateStamp, formatDate, formatShortDate } from "@/lib/format";
 import {
   COMMENT_KINDS,
@@ -11,9 +11,10 @@ import {
   ROLE_LABEL,
   STATUS_LABEL,
   UPDATE_KIND_LABEL,
+  type Project,
 } from "@/lib/types";
 import { countKind } from "@/lib/comments";
-import { displayLength, PITCH_MAX } from "@/lib/text-length";
+import { clip, displayLength, PITCH_MAX } from "@/lib/text-length";
 import { memberCode } from "@/lib/members";
 import { MeCard } from "@/app/me/me-card";
 import { AskToJoin, Comments } from "./comments";
@@ -32,41 +33,57 @@ import {
   pitchText,
   projectText,
 } from "@/components/project-card";
+import { JsonLd } from "@/components/json-ld";
 import { T, TranslatedMark } from "@/components/t";
+import { bi, biText, breadcrumbLd, pageMeta, projectLd } from "@/lib/seo";
 import "../../members.css";
+
+// Prerendered whole, like the event pages, so the HTML carries the project
+// itself rather than a "Loading…" shell; crawlers that don't run scripts read
+// only that HTML. Only the star button reads the session, inside <Suspense>.
+// A project approved after a deploy renders on its first visit. Cache
+// Components needs at least one param, hence the stand-in, which renders the
+// 404.
+export async function generateStaticParams() {
+  const projects = await getProjects();
+  return projects.length
+    ? projects.map(({ slug }) => ({ slug }))
+    : [{ slug: "__none__" }];
+}
 
 export async function generateMetadata({
   params,
 }: PageProps<"/projects/[slug]">): Promise<Metadata> {
   const result = await getProject((await params).slug);
-  return result
-    ? {
-        title: result.project.name,
-        description:
-          result.project.pitch ?? result.project.problem ?? undefined,
-      }
-    : {};
+  if (!result) return {};
+  const { project } = result;
+  const { name, description } = projectSeo(project);
+  return pageMeta(`/projects/${project.slug}`, {
+    title: name,
+    description: description ?? undefined,
+  });
 }
 
-export default function ProjectPage({ params }: PageProps<"/projects/[slug]">) {
-  return (
-    <Suspense
-      fallback={
-        <section className="sec first">
-          <div className="wrap">
-            <Crumb />
-            <p className="mute" style={{ marginTop: 32 }}>
-              <T zh="加载中…" en="Loading…" />
-            </p>
-          </div>
-        </section>
-      }
-    >
-      {params.then(({ slug }) => (
-        <ProjectDetail slug={slug} />
-      ))}
-    </Suspense>
-  );
+/**
+ * Name and description for search results and JSON-LD, both languages. A
+ * project from before pitches has its whole intro as the line, so it's cut
+ * to about two pitches a side.
+ */
+function projectSeo(project: Project) {
+  const line = pitchText(project);
+  const max = PITCH_MAX * 2;
+  return {
+    name: bi(project.name, project.en?.name),
+    description: line.zh
+      ? biText(clip(line.zh, max), line.en && clip(line.en, max))
+      : null,
+  };
+}
+
+export default async function ProjectPage({
+  params,
+}: PageProps<"/projects/[slug]">) {
+  return <ProjectDetail slug={(await params).slug} />;
 }
 
 function Crumb() {
@@ -143,8 +160,24 @@ async function ProjectDetail({ slug }: { slug: string }) {
     (Boolean(project.pitch) ||
       displayLength(project.problem ?? "") > PITCH_MAX);
 
+  const path = `/projects/${project.slug}`;
   return (
     <section className="sec first d-page">
+      <JsonLd
+        data={projectLd({
+          path,
+          ...projectSeo(project),
+          owner: project.ownerName,
+          repoUrl: project.repoUrl,
+          updatedAt: project.updatedAt,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbLd([
+          { name: "项目广场 Projects", path: "/projects" },
+          { name: project.name, path },
+        ])}
+      />
       <div className="wrap">
         <div className="d-top">
           <Crumb />

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { biText, pageMeta } from "@/lib/seo";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { PageHead } from "@/components/page-head";
@@ -8,7 +9,13 @@ import { localPath } from "@/lib/forms";
 import { JoinFlow } from "./join-flow";
 import "../members.css";
 
-export const metadata: Metadata = { title: "加入" };
+export const metadata: Metadata = pageMeta("/join", {
+  title: "加入 Join",
+  description: biText(
+    "免费加入 BuilderSpace，约 1 分钟，领一张自己的成员卡。",
+    "Join BuilderSpace free in about a minute and get your own member card.",
+  ),
+});
 
 export default function JoinPage({ searchParams }: PageProps<"/join">) {
   return (

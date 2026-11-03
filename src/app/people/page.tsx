@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { biText, pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import { Arr } from "@/components/fx/arr";
 import { PageHead } from "@/components/page-head";
@@ -12,7 +13,13 @@ import { Team } from "./team";
 import "./people.css";
 import "../m/member-wall.css";
 
-export const metadata: Metadata = { title: "成员" };
+export const metadata: Metadata = pageMeta("/people", {
+  title: "成员 People",
+  description: biText(
+    "认识 BuilderSpace 的成员和学生自己运营的核心团队。",
+    "Meet the members of BuilderSpace and the student-run core team.",
+  ),
+});
 
 // People appear only with the name they chose to show and after agreeing to be
 // on the site (team_members.consent_at); see docs/team.md.
