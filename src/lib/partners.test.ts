@@ -12,9 +12,9 @@ describe("partners", () => {
   });
 
   for (const p of partners) {
-    it(`${p.name}: logo is an SVG in public/partners/`, () => {
+    it(`${p.name}: logo is an SVG or PNG in public/partners/`, () => {
       expect(p.logo.startsWith("/partners/"), p.logo).toBe(true);
-      expect(p.logo.endsWith(".svg"), p.logo).toBe(true);
+      expect(p.logo, p.logo).toMatch(/\.(svg|png)$/);
       expect(existsSync(join("public", p.logo)), p.logo).toBe(true);
     });
 

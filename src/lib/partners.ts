@@ -3,8 +3,9 @@
 // they helped with. docs/partners.md is the checklist for adding one.
 //
 // Only partners who confirmed go here, never "in talks". Logos are the
-// partner's own colour SVG for dark backgrounds, in public/partners/, never
-// recoloured or stretched; `tint` is their brand colour, used for the glow.
+// partner's own colour version for dark backgrounds (SVG, or a transparent
+// PNG), in public/partners/, never recoloured or stretched; `tint` is their
+// brand colour, used for the glow.
 
 type Bi = { zh: string; en: string };
 
@@ -30,7 +31,7 @@ export type Partner = {
   name: string;
   /** Their site, https. */
   url?: string;
-  /** Colour SVG for dark backgrounds, under public/partners/. */
+  /** Colour logo for dark backgrounds, under public/partners/. */
   logo: string;
   /** Brand colour as #rrggbb, for the glow behind the logo. */
   tint: string;
@@ -44,7 +45,18 @@ export type Partner = {
 };
 
 /** In the order they joined. */
-const PARTNERS: Partner[] = [];
+const PARTNERS: Partner[] = [
+  {
+    // White wordmark from their kit, with its navy background cut out.
+    name: "ViberSpace (USYD)",
+    logo: "/partners/viberspace.png",
+    tint: "#7946fc",
+    role: "cohost",
+    since: "T3 2026",
+    events: ["put-yourself-online"],
+    home: true,
+  },
+];
 
 export const homePartners = () => PARTNERS.filter((p) => p.home);
 

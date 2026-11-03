@@ -77,8 +77,8 @@ const putYourselfOnline: EventPage = {
   costNote: { zh: "有零食和水，不含午饭", en: "Snacks and water; no lunch" },
   highlights: [{ zh: "零基础", en: "No experience needed" }],
   hosts: {
-    zh: "主办 BuilderSpace（UNSW）· 协办 悉大合作社团",
-    en: "Hosted by BuilderSpace (UNSW) with a University of Sydney partner society",
+    zh: "主办 BuilderSpace（UNSW）· 协办 ViberSpace（USYD）",
+    en: "Hosted by BuilderSpace (UNSW) with ViberSpace (USYD)",
   },
   handles: ["yuki", "alex-chen", "mia-design", "your-name"],
   points: [

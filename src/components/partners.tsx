@@ -60,8 +60,8 @@ const WAYS = [
 export function PartnersSection() {
   const list = homePartners();
   const n = list.length;
-  // Four across (two on phones); open seats only fill out the last row, and
-  // phones drop the ones a row of two doesn't need.
+  // Four across (two on phones); one open seat stretches over the rest of
+  // the last row, and phones drop it when their row of two is full.
   const open = n ? (4 - (n % 4)) % 4 : 0;
   const nn = String(n).padStart(2, "0");
   return (
@@ -121,8 +121,11 @@ export function PartnersSection() {
                 <PartnerTile partner={p} />
               </li>
             ))}
-            {Array.from({ length: open }, (_, i) => (
-              <li key={`open-${i}`} className={i >= n % 2 ? "wide" : undefined}>
+            {open > 0 && (
+              <li
+                className={n % 2 ? "pt-open" : "pt-open wide"}
+                style={{ "--span": open } as CSSProperties}
+              >
                 <a href="#pt-contact" className="pt-tile open">
                   <svg className="pt-dash" aria-hidden>
                     <rect width="100%" height="100%" rx="16" />
@@ -140,7 +143,7 @@ export function PartnersSection() {
                   </span>
                 </a>
               </li>
-            ))}
+            )}
           </ul>
         ) : (
           <Invite />
