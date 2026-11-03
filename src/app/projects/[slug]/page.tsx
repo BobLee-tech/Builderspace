@@ -11,9 +11,10 @@ import {
   ROLE_LABEL,
   STATUS_LABEL,
   UPDATE_KIND_LABEL,
+  type Project,
 } from "@/lib/types";
 import { countKind } from "@/lib/comments";
-import { displayLength, PITCH_MAX } from "@/lib/text-length";
+import { clip, displayLength, PITCH_MAX } from "@/lib/text-length";
 import { memberCode } from "@/lib/members";
 import { MeCard } from "@/app/me/me-card";
 import { AskToJoin, Comments } from "./comments";
@@ -56,11 +57,27 @@ export async function generateMetadata({
   const result = await getProject((await params).slug);
   if (!result) return {};
   const { project } = result;
-  const line = pitchText(project);
+  const { name, description } = projectSeo(project);
   return pageMeta(`/projects/${project.slug}`, {
-    title: bi(project.name, project.en?.name),
-    description: line.zh ? biText(line.zh, line.en) : undefined,
+    title: name,
+    description: description ?? undefined,
   });
+}
+
+/**
+ * Name and description for search results and JSON-LD, both languages. A
+ * project from before pitches has its whole intro as the line, so it's cut
+ * to about two pitches a side.
+ */
+function projectSeo(project: Project) {
+  const line = pitchText(project);
+  const max = PITCH_MAX * 2;
+  return {
+    name: bi(project.name, project.en?.name),
+    description: line.zh
+      ? biText(clip(line.zh, max), line.en && clip(line.en, max))
+      : null,
+  };
 }
 
 export default async function ProjectPage({
@@ -144,14 +161,12 @@ async function ProjectDetail({ slug }: { slug: string }) {
       displayLength(project.problem ?? "") > PITCH_MAX);
 
   const path = `/projects/${project.slug}`;
-  const line = pitchText(project);
   return (
     <section className="sec first d-page">
       <JsonLd
         data={projectLd({
           path,
-          name: bi(project.name, project.en?.name),
-          description: line.zh && biText(line.zh, line.en),
+          ...projectSeo(project),
           owner: project.ownerName,
           repoUrl: project.repoUrl,
           updatedAt: project.updatedAt,

@@ -108,8 +108,10 @@ async function EventDetail({ slug }: { slug: string }) {
           startsAt: event.startsAt,
           endsAt: event.endsAt,
           location: event.location,
-          free: page?.cost.en === "Free",
+          free: page?.free ?? false,
+          phase,
           full,
+          signupUrl: event.signupUrl,
         })}
       />
       <JsonLd

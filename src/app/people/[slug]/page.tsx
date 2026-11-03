@@ -8,8 +8,8 @@ import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { getTeam } from "@/lib/data";
 import {
-  FOUNDER_PROFILES,
   founderTransition,
+  foundersWithProfiles,
   type FounderProfile,
 } from "@/lib/founder-profiles";
 import { teamPhotoUrl, type TeamPerson } from "@/lib/team";
@@ -25,14 +25,8 @@ const serif = Noto_Serif_SC({
   preload: false,
 });
 
-/** The founders that have a profile, in the order /people shows them. */
 async function getFounders() {
-  const team = await getTeam();
-  return team.flatMap((p) => {
-    const profile =
-      p.team === "founder" && p.profileSlug && FOUNDER_PROFILES[p.profileSlug];
-    return profile ? [{ person: p, slug: p.profileSlug!, profile }] : [];
-  });
+  return foundersWithProfiles(await getTeam());
 }
 
 // Prerendered whole, like the event pages. Cache Components needs at least
@@ -56,10 +50,12 @@ export async function generateMetadata({
   });
 }
 
+/** The headline lines joined into one sentence per language. */
 function headlineText(profile: FounderProfile) {
+  const en = profile.headline.map((l) => l.en.trim().replace(/\.$/, ""));
   return biText(
     profile.headline.map((l) => l.zh).join("，"),
-    profile.headline.map((l) => l.en).join(". "),
+    `${en.join(". ")}.`,
   );
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { displayLength, PITCH_MAX } from "./text-length";
+import { clip, displayLength, PITCH_MAX } from "./text-length";
 
 describe("displayLength", () => {
   it("counts a Chinese character as 1 and a Latin one as half", () => {
@@ -19,5 +19,20 @@ describe("displayLength", () => {
   it("fits about 72 English letters in a pitch", () => {
     expect(displayLength("a".repeat(72))).toBe(PITCH_MAX);
     expect(displayLength("a".repeat(73))).toBeGreaterThan(PITCH_MAX);
+  });
+});
+
+describe("clip", () => {
+  it("leaves text that fits alone", () => {
+    expect(clip("选课前，先看看。", 8)).toBe("选课前，先看看。");
+    expect(clip("abcd", 2)).toBe("abcd");
+  });
+  it("cuts to the limit, the … included", () => {
+    expect(clip("出门前就知道图书馆哪层还有空位", 5)).toBe("出门前就…");
+    expect(clip("a".repeat(20), 5)).toBe("aaaaaaaaa…");
+    expect(displayLength(clip("给 Windows 每块屏幕单独设壁纸", 8))).toBe(8);
+  });
+  it("drops a space before the …", () => {
+    expect(clip("ab cdefgh", 2)).toBe("ab…");
   });
 });

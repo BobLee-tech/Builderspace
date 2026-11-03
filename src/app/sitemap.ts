@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getEvents, getProjects, getTeam } from "@/lib/data";
 import { allEventMaterials } from "@/lib/event-materials";
-import { FOUNDER_PROFILES } from "@/lib/founder-profiles";
+import { foundersWithProfiles } from "@/lib/founder-profiles";
 import { siteUrl } from "@/lib/site-url";
 
 const PAGES = [
@@ -31,13 +31,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: p.updatedAt,
     })),
     // Founders with a profile page (the rest of /people has none).
-    ...team
-      .filter(
-        (p) =>
-          p.team === "founder" &&
-          p.profileSlug &&
-          FOUNDER_PROFILES[p.profileSlug],
-      )
-      .map((p) => ({ url: `${siteUrl}/people/${p.profileSlug}` })),
+    ...foundersWithProfiles(team).map((f) => ({
+      url: `${siteUrl}/people/${f.slug}`,
+    })),
   ];
 }

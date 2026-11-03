@@ -37,14 +37,17 @@ export function pageMeta(
 
 /** "中文 · English", or one of them when the two are the same. */
 export function bi(zh: string, en: string | null | undefined) {
+  const z = zh.trim();
   const e = en?.trim().replace(/[.。]$/, "");
-  return !e || e === zh ? zh : `${zh} · ${e}`;
+  return !e || e === z ? z : `${z} · ${e}`;
 }
 
-/** Chinese then English, for descriptions. */
+/** Chinese then English, for descriptions; the Chinese side ends in a stop. */
 export function biText(zh: string, en: string | null | undefined) {
-  if (!en || en === zh) return zh;
-  return `${/[。！？.!?]$/.test(zh) ? zh : `${zh}。`} ${en}`;
+  const z = zh.trim();
+  const e = en?.trim();
+  if (!e || e === z) return z;
+  return `${/[。！？.!?…]$/.test(z) ? z : `${z}。`} ${e}`;
 }
 
 const ORG_ID = `${siteUrl}/#org`;
@@ -111,9 +114,24 @@ export function eventLd(e: {
   endsAt: string;
   location: string;
   free: boolean;
+  /** getEventDetail's phase: whether and where people can still sign up. */
+  phase: "open" | "closed" | "past" | "external";
   full: boolean;
+  signupUrl: string | null;
 }) {
   const url = `${siteUrl}${e.path}`;
+  // A past event offers nothing; a closed or full one is sold out; one that
+  // signs up elsewhere points the offer there.
+  const offer = e.phase !== "past" && {
+    "@type": "Offer",
+    price: 0,
+    priceCurrency: "AUD",
+    url: (e.phase === "external" && e.signupUrl) || url,
+    availability:
+      e.phase === "closed" || (e.phase === "open" && e.full)
+        ? "https://schema.org/SoldOut"
+        : "https://schema.org/InStock",
+  };
   return {
     "@context": "https://schema.org",
     "@type": "Event",
@@ -133,18 +151,8 @@ export function eventLd(e: {
       url: siteUrl,
     },
     inLanguage: ["zh-CN", "en"],
-    ...(e.free && {
-      isAccessibleForFree: true,
-      offers: {
-        "@type": "Offer",
-        price: 0,
-        priceCurrency: "AUD",
-        url,
-        availability: e.full
-          ? "https://schema.org/SoldOut"
-          : "https://schema.org/InStock",
-      },
-    }),
+    ...(e.free && { isAccessibleForFree: true }),
+    ...(e.free && offer && { offers: offer }),
   };
 }
 
