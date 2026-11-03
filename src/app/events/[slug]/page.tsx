@@ -10,6 +10,7 @@ import {
   UsersThree,
 } from "@phosphor-icons/react/dist/ssr";
 import { Arr } from "@/components/fx/arr";
+import { EventSupport } from "@/components/partners";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { getEventDetail, getEvents } from "@/lib/data";
@@ -340,6 +341,7 @@ async function EventDetail({ slug }: { slug: string }) {
           {results && <EventResultsSection results={results} />}
 
           <div className="evp-more">
+            <EventSupport slug={event.slug} />
             {/* After the event the day's pages make way for the results. */}
             {results && page?.tools?.length ? (
               <Tools tools={page.tools} />

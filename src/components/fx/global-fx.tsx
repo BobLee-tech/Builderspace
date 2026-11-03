@@ -11,7 +11,7 @@ import {
   spring,
 } from "./motion";
 
-const SPOT = ".pcard, .box, .lcard, .form, .pillars, .surf, .ccard";
+const SPOT = ".pcard, .box, .lcard, .form, .pillars, .surf, .ccard, .pt-tile";
 // The ring wraps only button-like controls; other links and clickable cards
 // keep a round ring that grows a little. It steps aside while you type.
 const CLICKABLE = "a, button, label.chip, summary";
