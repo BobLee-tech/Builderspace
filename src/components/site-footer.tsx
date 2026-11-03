@@ -8,7 +8,7 @@ import {
 import { CYCLE } from "@/lib/cycle";
 import { AsciiTorus, ToTop } from "./fx/footer-fx";
 import { Clock } from "./fx/text-fx";
-import { NAV_LINKS } from "./nav-links";
+import { SITE_LINKS } from "./nav-links";
 import { T } from "./t";
 
 export function SiteFooter() {
@@ -59,18 +59,13 @@ export function SiteFooter() {
               <span className="mono idx">01</span>
             </div>
             <ul className="f-links">
-              {NAV_LINKS.map((link) => (
+              {SITE_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href}>
                     <T zh={link.zh} en={link.en} />
                   </Link>
                 </li>
               ))}
-              <li>
-                <Link href="/about">
-                  <T zh="关于" en="About" />
-                </Link>
-              </li>
             </ul>
           </nav>
           <nav className="f-col" aria-label="Take part / 参与">

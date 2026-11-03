@@ -3,6 +3,7 @@
 // URL, so titles and descriptions carry both too: Chinese first, then English.
 
 import type { Metadata } from "next";
+import { NOT_BUILDSPACE } from "./faq";
 import { siteUrl } from "./site-url";
 
 export const SITE_NAME = "BuilderSpace";
@@ -21,6 +22,37 @@ export const OPEN_GRAPH: NonNullable<Metadata["openGraph"]> = {
   locale: "zh_CN",
   alternateLocale: ["en_AU"],
 };
+
+/** Public pages besides home, for the sitemap and /llms.txt. */
+export const PUBLIC_PAGES = [
+  {
+    path: "/about",
+    name: "关于 About",
+    note: "Questions people ask about the club",
+  },
+  {
+    path: "/events",
+    name: "活动 Events",
+    note: "Workshops, build nights and demo nights",
+  },
+  {
+    path: "/projects",
+    name: "项目广场 Projects",
+    note: "What members are building",
+  },
+  {
+    path: "/learn",
+    name: "资源 Resources",
+    note: "Workshop kits and tutorials",
+  },
+  { path: "/people", name: "成员 People", note: "Members and the core team" },
+  { path: "/join", name: "加入 Join", note: "Join free in about a minute" },
+  {
+    path: "/core-team",
+    name: "核心成员申请 Core team",
+    note: "Help run the club",
+  },
+];
 
 /** Title, description, canonical address and og:url for a public page. */
 export function pageMeta(
@@ -74,9 +106,7 @@ export function siteLd() {
         logo: `${siteUrl}/mark-240.png`,
         email: "hello@builderspace.dev",
         description: SITE_DESCRIPTION,
-        // Search results and AI answers mix the name up with these two.
-        disambiguatingDescription:
-          "A student-run bilingual (English and Chinese) builders club in Sydney that started at UNSW. Not related to buildspace (buildspace.so) or Builder.io.",
+        disambiguatingDescription: `A student-run bilingual (English and Chinese) builders club in Sydney that started at UNSW. ${NOT_BUILDSPACE.en}`,
         address: SYDNEY,
         knowsLanguage: ["zh-CN", "en"],
       },

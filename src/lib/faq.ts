@@ -4,6 +4,12 @@
 
 type Bi = { zh: string; en: string };
 
+/** Search results and AI answers mix the club up with these two. */
+export const NOT_BUILDSPACE: Bi = {
+  zh: "BuilderSpace 和 buildspace（buildspace.so）、Builder.io 都无关。",
+  en: "BuilderSpace isn't related to buildspace (buildspace.so) or Builder.io.",
+};
+
 export const FAQ: { q: Bi; a: Bi[] }[] = [
   {
     q: { zh: "BuilderSpace 是什么？", en: "What is BuilderSpace?" },
@@ -71,8 +77,8 @@ export const FAQ: { q: Bi; a: Bi[] }[] = [
     q: { zh: "怎么加入？", en: "How do I join?" },
     a: [
       {
-        zh: "在 /join 填写，大约 1 分钟。",
-        en: "Fill in /join. It takes about a minute.",
+        zh: "在 builderspace.dev/join 填写，大约 1 分钟。",
+        en: "Fill in builderspace.dev/join. It takes about a minute.",
       },
       {
         zh: "用邮箱验证码登录，领一张成员卡。",
@@ -94,8 +100,8 @@ export const FAQ: { q: Bi; a: Bi[] }[] = [
     q: { zh: "怎么参与运营？", en: "How can I help run it?" },
     a: [
       {
-        zh: "在 /core-team 申请核心成员。",
-        en: "Apply to the core team at /core-team.",
+        zh: "在 builderspace.dev/core-team 申请核心成员。",
+        en: "Apply to the core team at builderspace.dev/core-team.",
       },
       {
         zh: "运营、技术、活动三个部门，学生自己运营，无薪。",
@@ -113,10 +119,7 @@ export const FAQ: { q: Bi; a: Bi[] }[] = [
         zh: "没有关系。",
         en: "No.",
       },
-      {
-        zh: "BuilderSpace 和 buildspace（buildspace.so）、Builder.io 都无关。",
-        en: "BuilderSpace isn't related to buildspace (buildspace.so) or Builder.io.",
-      },
+      NOT_BUILDSPACE,
     ],
   },
   {

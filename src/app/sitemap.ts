@@ -2,18 +2,10 @@ import type { MetadataRoute } from "next";
 import { getEvents, getProjects, getTeam } from "@/lib/data";
 import { allEventMaterials } from "@/lib/event-materials";
 import { foundersWithProfiles } from "@/lib/founder-profiles";
+import { PUBLIC_PAGES } from "@/lib/seo";
 import { siteUrl } from "@/lib/site-url";
 
-const PAGES = [
-  "",
-  "/about",
-  "/events",
-  "/projects",
-  "/learn",
-  "/people",
-  "/join",
-  "/core-team",
-];
+const PAGES = ["", ...PUBLIC_PAGES.map((p) => p.path)];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [projects, events, team] = await Promise.all([
