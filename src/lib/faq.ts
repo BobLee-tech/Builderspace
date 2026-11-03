@@ -15,8 +15,8 @@ export const FAQ: { q: Bi; a: Bi[] }[] = [
     q: { zh: "BuilderSpace 是什么？", en: "What is BuilderSpace?" },
     a: [
       {
-        zh: "从 UNSW 起步的中英双语创客社。",
-        en: "A bilingual builders club that started at UNSW.",
+        zh: "UNSW Arc 注册的中英双语创客社。",
+        en: "A bilingual builders club at UNSW, affiliated with Arc.",
       },
       {
         zh: "找队友，一起把项目做上线。",

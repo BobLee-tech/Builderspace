@@ -1,31 +1,67 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/site-url";
 
-// Search and AI crawlers are named so the policy is explicit: the club wants
-// to be found and cited. Pages kept out of results (/me, /live, /m/…) carry
-// noindex instead of a Disallow, since a crawler has to fetch a page to see it.
-const AI_CRAWLERS = [
+// Three groups of crawlers. Pages kept out of results (/me, /live, /m/…) carry
+// noindex for search engines, which have to fetch a page to see it, so those
+// get no Disallow there.
+
+/** Search and answer bots that fetch a page to cite it: same rules as search. */
+const SEARCH_BOTS = [
   "OAI-SearchBot",
   "ChatGPT-User",
-  "GPTBot",
   "Claude-SearchBot",
   "Claude-User",
-  "ClaudeBot",
   "PerplexityBot",
   "Perplexity-User",
+];
+
+/**
+ * Training crawlers that publish their rules and honour robots.txt. They may
+ * learn the club's own pages, so models know what BuilderSpace is, but not
+ * members' work, cards or comments, which members never agreed to.
+ */
+const TRAINING_BOTS = [
+  "GPTBot",
+  "ClaudeBot",
   "Google-Extended",
   "Applebot-Extended",
-  "Bytespider",
+  "meta-externalagent",
   "CCBot",
 ];
 
+/** Crawlers that resell data or crawl hard: nothing. */
+const BLOCKED_BOTS = [
+  "Bytespider",
+  "Diffbot",
+  "ImagesiftBot",
+  "omgili",
+  "omgilibot",
+  "Timpibot",
+];
+
+const PRIVATE = ["/admin", "/api/"];
+
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: {
-      userAgent: ["*", ...AI_CRAWLERS],
-      allow: "/",
-      disallow: ["/admin", "/api/"],
-    },
+    rules: [
+      { userAgent: ["*", ...SEARCH_BOTS], allow: "/", disallow: PRIVATE },
+      {
+        userAgent: TRAINING_BOTS,
+        allow: "/",
+        disallow: [
+          ...PRIVATE,
+          "/projects",
+          "/people",
+          "/m/",
+          "/me",
+          "/live",
+          "/intent",
+          "/welcome",
+          "/unsubscribe",
+        ],
+      },
+      { userAgent: BLOCKED_BOTS, disallow: "/" },
+    ],
     sitemap: `${siteUrl}/sitemap.xml`,
   };
 }

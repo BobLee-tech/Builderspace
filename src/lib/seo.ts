@@ -82,6 +82,9 @@ export function biText(zh: string, en: string | null | undefined) {
   return `${/[。！？.!?…]$/.test(z) ? z : `${z}。`} ${e}`;
 }
 
+/** The club's own accounts elsewhere (Instagram, 小红书, LinkedIn…), for sameAs. */
+const CLUB_PROFILES: string[] = [];
+
 const ORG_ID = `${siteUrl}/#org`;
 export const orgRef = { "@id": ORG_ID };
 
@@ -106,9 +109,21 @@ export function siteLd() {
         logo: `${siteUrl}/mark-240.png`,
         email: "hello@builderspace.dev",
         description: SITE_DESCRIPTION,
-        disambiguatingDescription: `A student-run bilingual (English and Chinese) builders club in Sydney that started at UNSW. ${NOT_BUILDSPACE.en}`,
+        disambiguatingDescription: `A student-run bilingual (English and Chinese) builders club in Sydney, affiliated with Arc at UNSW. ${NOT_BUILDSPACE.en}`,
         address: SYDNEY,
+        location: {
+          "@type": "Place",
+          name: "UNSW Kensington campus",
+          address: SYDNEY,
+        },
+        memberOf: {
+          "@type": "Organization",
+          name: "Arc @ UNSW",
+          description: "UNSW's student organisation, which runs its clubs",
+          url: "https://www.arc.unsw.edu.au",
+        },
         knowsLanguage: ["zh-CN", "en"],
+        ...(CLUB_PROFILES.length && { sameAs: CLUB_PROFILES }),
       },
       {
         "@type": "WebSite",
