@@ -9,6 +9,7 @@ import { allEventMaterials, getEventMaterials } from "@/lib/event-materials";
 import { eventCopy, getEventPage } from "@/lib/event-pages";
 import { getEventResults, worksOnWall } from "@/lib/event-results";
 import { formatShortDate } from "@/lib/format";
+import { bi, biText, pageMeta } from "@/lib/seo";
 import { EVENT_KIND_LABEL } from "@/lib/types";
 import { titleEms } from "../../events/event-parts";
 import { Workbench } from "./workbench";
@@ -25,7 +26,11 @@ export async function generateMetadata({
   const event = (await getEvents()).find((e) => e.slug === slug);
   const m = getEventMaterials(slug);
   if (!event || !m) return {};
-  return { title: `${event.title} · 资料包`, description: m.lede.zh };
+  const { title } = eventCopy(event);
+  return pageMeta(`/learn/${slug}`, {
+    title: `${bi(title.zh, title.en)} · 资料包 Materials`,
+    description: biText(m.lede.zh, m.lede.en),
+  });
 }
 
 export default async function MaterialsRoute({

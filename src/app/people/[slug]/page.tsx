@@ -13,6 +13,8 @@ import {
   type FounderProfile,
 } from "@/lib/founder-profiles";
 import { teamPhotoUrl, type TeamPerson } from "@/lib/team";
+import { JsonLd } from "@/components/json-ld";
+import { biText, breadcrumbLd, pageMeta, personLd } from "@/lib/seo";
 import { BackLink, ProfileKeys } from "./keys";
 import "../people.css";
 
@@ -48,10 +50,17 @@ export async function generateMetadata({
   const { slug } = await params;
   const found = (await getFounders()).find((f) => f.slug === slug);
   if (!found) return {};
-  return {
+  return pageMeta(`/people/${slug}`, {
     title: found.person.card.nickname,
-    description: found.profile.headline.map((l) => l.zh).join("，"),
-  };
+    description: headlineText(found.profile),
+  });
+}
+
+function headlineText(profile: FounderProfile) {
+  return biText(
+    profile.headline.map((l) => l.zh).join("，"),
+    profile.headline.map((l) => l.en).join(". "),
+  );
 }
 
 export default async function ProfilePage({
@@ -67,6 +76,22 @@ export default async function ProfilePage({
   const next = `/people/${founders[(i + 1) % n].slug}`;
   return (
     <section className={`sec first tm-pf-page ${serif.variable}`}>
+      <JsonLd
+        data={personLd({
+          path: `/people/${slug}`,
+          name: person.card.nickname,
+          description: headlineText(profile),
+          sameAs: profile.links
+            .map((l) => l.href)
+            .filter((h) => h.startsWith("https://")),
+        })}
+      />
+      <JsonLd
+        data={breadcrumbLd([
+          { name: "成员 People", path: "/people" },
+          { name: person.card.nickname, path: `/people/${slug}` },
+        ])}
+      />
       <div className="wrap">
         <ProfileKeys prev={prev} next={next} />
         <div className="tm-pf-bar">

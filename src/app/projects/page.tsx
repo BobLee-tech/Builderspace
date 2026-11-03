@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { biText, pageMeta } from "@/lib/seo";
 import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
 import { SpecRow } from "@/components/spec-row";
@@ -6,7 +7,13 @@ import { getProjects } from "@/lib/data";
 import { ROLE_LABEL, type Role } from "@/lib/types";
 import { Plaza } from "./plaza";
 
-export const metadata: Metadata = { title: "项目广场" };
+export const metadata: Metadata = pageMeta("/projects", {
+  title: "项目广场 Projects",
+  description: biText(
+    "成员正在做的项目：看进度，找队友，一起做。",
+    "Projects members are building: see where they are, find teammates, join in.",
+  ),
+});
 
 export default async function ProjectsPage() {
   const projects = await getProjects();

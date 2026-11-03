@@ -11,6 +11,8 @@ import { ScrollRail } from "@/components/fx/scroll-rail";
 import { SmoothScroll } from "@/components/fx/smooth-scroll";
 import { GlobalFx } from "@/components/fx/global-fx";
 import { langBootScript } from "@/components/t";
+import { JsonLd } from "@/components/json-ld";
+import { OPEN_GRAPH, SITE_DESCRIPTION, siteLd } from "@/lib/seo";
 import { siteUrl } from "@/lib/site-url";
 import { Suspense } from "react";
 import "./globals.css";
@@ -35,16 +37,12 @@ const notoSc = Noto_Sans_SC({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "BuilderSpace · Bring an idea. Make it work.",
+    default: "BuilderSpace · 中英双语创客社 · Bilingual builders club at UNSW",
     template: "%s · BuilderSpace",
   },
-  description: "从 UNSW 起步的中英双语创客社：找队友，一起把项目做上线。",
+  description: SITE_DESCRIPTION,
   icons: { icon: "/favicon.png", apple: "/apple-touch-icon.png" },
-  openGraph: {
-    type: "website",
-    siteName: "BuilderSpace",
-    images: ["/og.jpg"],
-  },
+  openGraph: OPEN_GRAPH,
 };
 
 export const viewport: Viewport = {
@@ -71,6 +69,7 @@ export default function RootLayout({ children, sheet }: LayoutProps<"/">) {
         />
       </head>
       <body>
+        <JsonLd data={siteLd()} />
         <Boot />
         <BgShader />
         <ScrollRail />

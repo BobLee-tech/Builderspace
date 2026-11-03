@@ -4,6 +4,7 @@ import {
   Coin,
   GitBranch,
 } from "@phosphor-icons/react/dist/ssr";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Arr } from "@/components/fx/arr";
 import { TickerFx } from "@/components/fx/scroll-fx";
@@ -15,7 +16,10 @@ import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { CYCLE } from "@/lib/cycle";
 import { getProjects } from "@/lib/data";
+import { pageMeta } from "@/lib/seo";
 import { Plaza } from "./projects/plaza";
+
+export const metadata: Metadata = pageMeta("/");
 
 // The whole page is three beats: who we are, what members are building, the mascot.
 export default function Home() {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { biText, pageMeta } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import { PageHead } from "@/components/page-head";
@@ -11,7 +12,13 @@ import { formatDate, formatShortDate } from "@/lib/format";
 import { T } from "@/components/t";
 import { Typewriter } from "./terminal";
 
-export const metadata: Metadata = { title: "资源" };
+export const metadata: Metadata = pageMeta("/learn", {
+  title: "资源 Resources",
+  description: biText(
+    "工作坊资料包、教程和每周推荐，零基础也能跟着做。",
+    "Workshop kits, tutorials and weekly picks. Beginners welcome.",
+  ),
+});
 
 const PATH = [
   { zh: "需求拆解", en: "Break it down" },
