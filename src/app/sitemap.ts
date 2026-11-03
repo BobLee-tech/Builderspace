@@ -6,6 +6,7 @@ import { siteUrl } from "@/lib/site-url";
 
 const PAGES = [
   "",
+  "/about",
   "/events",
   "/projects",
   "/learn",

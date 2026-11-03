@@ -66,6 +66,11 @@ export function SiteFooter() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href="/about">
+                  <T zh="关于" en="About" />
+                </Link>
+              </li>
             </ul>
           </nav>
           <nav className="f-col" aria-label="Take part / 参与">
