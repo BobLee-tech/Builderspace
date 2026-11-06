@@ -745,6 +745,12 @@ main {
   letter-spacing: -0.04em;
   line-height: 1;
 }
+.ev-date.tbc {
+  font-family: var(--f-body);
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: 0;
+}
 .ev-date small {
   display: block;
   font-family: var(--f-mono);
@@ -1089,6 +1095,9 @@ main {
   }
   .ev-date {
     font-size: 24px;
+  }
+  .ev-date.tbc {
+    font-size: 17px;
   }
   .ev-where {
     grid-column: 2;

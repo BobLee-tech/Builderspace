@@ -17,9 +17,10 @@ import {
 } from "./types";
 
 // Used only when Supabase is not configured (local dev, preview builds).
-// No invented events or projects: the first workshop (the same row as
-// 20261018000000_event_registrations.sql) and CourseMate, the club's own
-// product, are the only entries. Everything else comes from Supabase.
+// No invented events or projects: the real events (the same rows as
+// 20261018000000_event_registrations.sql and 20261106000000_november_events.sql)
+// and CourseMate, the club's own product, are the only entries. Everything
+// else comes from Supabase.
 
 export const sampleEvents: SiteEvent[] = [
   {
@@ -34,6 +35,49 @@ export const sampleEvents: SiteEvent[] = [
     capacity: 52,
     registrationClosesAt: "2026-10-21T23:59:59+11:00",
     seatQuotas: { unsw: 42, external: 10 },
+    dateTbc: false,
+  },
+  {
+    slug: "ai-study-career-talk",
+    title: "AI 复习分享会 × 求职经验分享",
+    kind: "workshop",
+    startsAt: "2026-11-12T14:15:00+11:00",
+    endsAt: "2026-11-12T16:15:00+11:00",
+    location: "USYD CreateSpace, Room 417",
+    summary: "一线工程师拆解校招，再现场用 AI 把一学期压成一页 Cheatsheet。",
+    signupUrl: "https://events.humanitix.com/ai-study-session-and-career-talk",
+    capacity: 40,
+    registrationClosesAt: null,
+    seatQuotas: { unsw: 10, usyd: 30 },
+    dateTbc: false,
+  },
+  {
+    slug: "beyond-chatgpt",
+    title: "Beyond ChatGPT",
+    kind: "workshop",
+    startsAt: "2026-11-15T10:00:00+11:00",
+    endsAt: "2026-11-15T13:00:00+11:00",
+    location: "待定",
+    summary: "有想做的东西，不知道怎么开始？看 AI 能帮你推进到哪一步。",
+    signupUrl: null,
+    capacity: null,
+    registrationClosesAt: null,
+    seatQuotas: null,
+    dateTbc: true,
+  },
+  {
+    slug: "the-collectors",
+    title: "一起造机器人",
+    kind: "workshop",
+    startsAt: "2026-11-16T10:00:00+11:00",
+    endsAt: "2026-11-16T17:00:00+11:00",
+    location: "UNSW Makerspace",
+    summary: "跟机器人艺术家 Josh Whitkin，把一件装置的机器人亲手装起来。",
+    signupUrl: null,
+    capacity: 20,
+    registrationClosesAt: null,
+    seatQuotas: null,
+    dateTbc: true,
   },
 ];
 

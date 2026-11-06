@@ -81,6 +81,12 @@ export type CommentKind = (typeof COMMENT_KINDS)[number];
 export const EVENT_INTEREST = ["yes", "maybe", "no"] as const;
 export type EventInterest = (typeof EVENT_INTEREST)[number];
 
+/**
+ * Where an event page stands: signing up here (open / closed), signing up
+ * elsewhere (external), over (past), or not dated yet (tbc).
+ */
+export type EventPhase = "open" | "closed" | "past" | "external" | "tbc";
+
 export type SiteEvent = {
   slug: string;
   title: string;
@@ -95,6 +101,17 @@ export type SiteEvent = {
   registrationClosesAt: string | null;
   /** Seats per group, e.g. { unsw: 30, usyd: 10 }; groups left out aren't open. */
   seatQuotas: Partial<Record<SeatGroup, number>> | null;
+  /**
+   * The date isn't set yet: startsAt / endsAt only place it (sorting, the
+   * week on the strip). The site shows the page's "TBC" wording instead, with
+   * no countdown, and leaves it out of the calendar feed and search data.
+   */
+  dateTbc: boolean;
+  /**
+   * Set by getEvents(): the date is still TBC but the placeholder has passed,
+   * so the page's own wording ("下周", "11 月中") may be stale.
+   */
+  tbcLapsed?: boolean;
 };
 
 // Who a sign-up seat is for (event_registrations.seat_group). The form first

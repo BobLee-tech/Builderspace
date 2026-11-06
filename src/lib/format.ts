@@ -60,3 +60,10 @@ export function formatTime(iso: string): string {
 export function formatTimeRange(startIso: string, endIso: string): string {
   return `${timeFmt.format(new Date(startIso))} – ${timeFmt.format(new Date(endIso))}`;
 }
+
+const isoDayFmt = new Intl.DateTimeFormat("en-CA", { timeZone: TZ });
+
+/** 2026-10-21, the Sydney day, with the year (for text read out of context). */
+export function formatIsoDay(iso: string): string {
+  return isoDayFmt.format(new Date(iso));
+}
