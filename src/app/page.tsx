@@ -12,6 +12,7 @@ import { HeroHeadline } from "@/components/hero-headline";
 import { MapPin } from "@phosphor-icons/react/dist/ssr";
 import { HeroMetal } from "@/components/hero-metal";
 import { MascotStage } from "@/components/mascot-stage";
+import { PartnersSection } from "@/components/partners";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { CYCLE } from "@/lib/cycle";
@@ -21,7 +22,8 @@ import { Plaza } from "./projects/plaza";
 
 export const metadata: Metadata = pageMeta("/");
 
-// The whole page is three beats: who we are, what members are building, the mascot.
+// The whole page is four beats: who we are, what members are building, who
+// backs it, the mascot.
 export default function Home() {
   return (
     <>
@@ -88,6 +90,8 @@ export default function Home() {
       </section>
 
       <PlazaSection />
+
+      <PartnersSection />
 
       <MascotStage />
     </>

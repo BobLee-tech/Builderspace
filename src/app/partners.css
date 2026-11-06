@@ -1,0 +1,456 @@
+/* Partners: the home wall (src/components/partners.tsx) and "Supported by" on
+   event pages. Partner logos keep their own colours on the site's dark glass;
+   each tile glows faintly in that brand's colour (`--tint`). */
+
+.pt-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+.pt-side b {
+  color: var(--paper);
+  font-weight: 500;
+}
+
+/* ---------- the wall ---------- */
+.pt-wall {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pt-tile {
+  --mx: -999px;
+  --my: -999px;
+  --tint: #ffffff;
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  aspect-ratio: 16 / 10;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background-image: var(--mat-frost), var(--mat-micro);
+  background-size:
+    auto,
+    5px 5px;
+  background-color: var(--panel);
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    translate 0.5s var(--spring),
+    box-shadow 0.4s var(--ease);
+}
+.pt-tile:hover {
+  translate: 0 -4px;
+  box-shadow: 0 22px 44px -24px color-mix(in srgb, var(--tint) 55%, transparent);
+}
+/* Hairline edge lit by the pointer, as on the project cards. */
+.pt-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      200px circle at var(--mx) var(--my),
+      rgba(255, 255, 255, 0.45),
+      transparent 60%
+    ),
+    var(--edge);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+/* The brand's colour behind its logo, stronger under the pointer. */
+.pt-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(
+      180px circle at var(--mx) var(--my),
+      color-mix(in srgb, var(--tint) 22%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      60% 55% at 50% 42%,
+      color-mix(in srgb, var(--tint) 9%, transparent),
+      transparent 75%
+    );
+}
+.pt-logo {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+.pt-logo img {
+  display: block;
+  height: clamp(28px, 3.4vw, 44px);
+  width: auto;
+  max-width: 76%;
+  object-fit: contain;
+  transition: scale 0.5s var(--spring);
+}
+.pt-tile:hover .pt-logo img {
+  scale: 1.05;
+}
+.pt-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.pt-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.pt-role::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tint);
+}
+
+/* The open seat: a marching dashed outline over the rest of the row. */
+.pt-open {
+  grid-column: span var(--span);
+}
+.pt-tile.open {
+  aspect-ratio: auto;
+  height: 100%;
+  grid-template-rows: auto;
+  place-items: center;
+  text-align: center;
+  background: none;
+}
+.pt-tile.open:hover {
+  box-shadow: none;
+}
+.pt-tile.open::before,
+.pt-tile.open::after {
+  display: none;
+}
+.pt-tile.open > span {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+.pt-dash {
+  position: absolute;
+  inset: 0.5px;
+  width: calc(100% - 1px);
+  height: calc(100% - 1px);
+  overflow: visible;
+  pointer-events: none;
+}
+.pt-dash rect {
+  fill: none;
+  stroke: var(--line-2);
+  stroke-width: 1;
+  stroke-dasharray: 6 6;
+  animation: pt-march 18s linear infinite;
+  transition: stroke 0.3s;
+}
+.pt-tile.open:hover .pt-dash rect {
+  stroke: var(--paper);
+}
+@keyframes pt-march {
+  to {
+    stroke-dashoffset: -240;
+  }
+}
+.pt-plus {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  background: var(--glass);
+  box-shadow: var(--sh-glass);
+  transition:
+    rotate 0.5s var(--spring),
+    background 0.3s,
+    color 0.3s;
+}
+.pt-tile.open:hover .pt-plus {
+  rotate: 90deg;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* ---------- no partners yet: the invite card ---------- */
+.pt-invite {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  min-height: 300px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--sh-glass);
+}
+.pt-invite-dark {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 16px;
+  padding: var(--pad);
+  background-image: var(--mat-micro), var(--mat-obsidian);
+  background-size:
+    5px 5px,
+    auto;
+}
+.pt-invite h3 {
+  margin: 0;
+  font-size: clamp(20px, 2.4vw, 26px);
+  line-height: 1.25;
+}
+.pt-invite p {
+  margin: 0;
+}
+.pt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pt-invite-light {
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  background-image:
+    radial-gradient(circle, rgba(0, 0, 0, 0.07) 0 0.55px, transparent 0.9px),
+    var(--mat-porcelain);
+  background-size:
+    5px 5px,
+    auto;
+}
+.pt-invite-light::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border: 1px dashed rgba(5, 5, 5, 0.22);
+  border-radius: 14px;
+}
+.pt-kiko {
+  width: min(62%, 200px);
+  filter: drop-shadow(0 18px 18px rgba(88, 56, 189, 0.22));
+  animation: pt-bob 4.2s ease-in-out infinite;
+}
+.pt-kiko img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@keyframes pt-bob {
+  50% {
+    transform: translateY(-8px) rotate(-2deg);
+  }
+}
+.pt-seat {
+  position: absolute;
+  left: 28px;
+  bottom: 24px;
+  color: rgba(5, 5, 5, 0.5);
+}
+
+/* ---------- under it: four ways to help, then the address ---------- */
+.pt-more {
+  margin-top: clamp(28px, 4vw, 44px);
+  border-top: 1px solid var(--line);
+}
+.pt-ways {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pt-ways li {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 20px 20px 20px 0;
+}
+.pt-ways li + li {
+  padding-left: 20px;
+  border-left: 1px solid var(--line);
+}
+.pt-ways svg {
+  transition: translate 0.4s var(--spring);
+}
+.pt-ways li:hover svg {
+  translate: 0 -3px;
+}
+.pt-ways b {
+  font-weight: 600;
+}
+.pt-ways .mute {
+  font-size: var(--fs-sm);
+}
+.pt-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.pt-mail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-sm);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.pt-mail a {
+  user-select: all;
+}
+.pt-mail a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.pt-copy {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  background: none;
+  color: var(--mute);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+.pt-copy:hover {
+  color: var(--paper);
+  border-color: var(--paper);
+}
+
+/* ---------- event page: one row of logos ---------- */
+.pt-support {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pt-support li {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+.pt-chip {
+  display: grid;
+  place-items: center;
+  height: 60px;
+  padding: 0 20px;
+  border-radius: 12px;
+  background-image: var(--mat-frost), var(--mat-micro);
+  background-size:
+    auto,
+    5px 5px;
+  background-color: var(--panel);
+  box-shadow: var(--sh-glass);
+}
+.pt-chip img {
+  display: block;
+  height: 28px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .pt-wall > li,
+    .pt-invite {
+      animation: rv-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+    .pt-wall > :nth-child(4n + 2) {
+      animation-range: entry 4% entry 39%;
+    }
+    .pt-wall > :nth-child(4n + 3) {
+      animation-range: entry 8% entry 43%;
+    }
+    .pt-wall > :nth-child(4n) {
+      animation-range: entry 12% entry 47%;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .pt-side {
+    align-items: flex-start;
+  }
+  .pt-ways {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pt-ways li:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .pt-ways li:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+  .pt-invite {
+    grid-template-columns: 1fr;
+  }
+  .pt-invite-light {
+    order: -1;
+    min-height: 220px;
+  }
+  .pt-kiko {
+    width: min(46%, 170px);
+  }
+}
+@media (max-width: 640px) {
+  .pt-wall {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .pt-open {
+    grid-column: span 1;
+  }
+  .pt-wall > .wide {
+    display: none;
+  }
+  .pt-tile {
+    padding: 10px;
+  }
+  .pt-meta > .tnum {
+    display: none;
+  }
+  .pt-ways li {
+    padding-right: 12px;
+  }
+  .pt-ways li + li {
+    padding-left: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pt-kiko,
+  .pt-dash rect {
+    animation: none;
+  }
+}

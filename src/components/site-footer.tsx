@@ -92,6 +92,11 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/#partners">
+                  <T zh="合作" en="Partner with us" />
+                </Link>
+              </li>
+              <li>
                 <a href="/events.ics">
                   <T zh="订阅活动日历" en="Subscribe to events" />
                   <CalendarPlus weight="light" size={14} aria-hidden />
