@@ -53,7 +53,7 @@ const PARTNERS: Partner[] = [
     tint: "#7946fc",
     role: "cohost",
     since: "T3 2026",
-    events: ["put-yourself-online"],
+    events: ["put-yourself-online", "ai-study-career-talk"],
     home: true,
   },
 ];

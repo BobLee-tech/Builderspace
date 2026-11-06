@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { getEventPage } from "./event-pages";
 import { allPartners } from "./partners";
 
 describe("partners", () => {
@@ -26,6 +27,11 @@ describe("partners", () => {
 
     it(`${p.name}: shows somewhere`, () => {
       expect(p.home || p.events.length > 0).toBe(true);
+    });
+
+    it(`${p.name}: every event it supports has a page`, () => {
+      for (const slug of p.events)
+        expect(getEventPage(slug), slug).not.toBeNull();
     });
   }
 });
