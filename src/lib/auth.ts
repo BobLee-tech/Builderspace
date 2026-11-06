@@ -309,19 +309,14 @@ export async function saveSurvey(input: SurveyInput): Promise<Result> {
   const session = await getSession();
   if (!session?.member) return fail("先生成你的卡片|Make your card first");
   if (devMode()) {
-    // Never log the name or zID, even in development.
-    console.info("[survey] dev, dropped:", {
-      ...input,
-      fullName: input.fullName && "[redacted]",
-      zid: input.zid && "[redacted]",
-    });
+    console.info("[survey] dev, dropped:", input);
     const dev = await readDev();
     await writeDev({
       email: session.email,
       member: session.member,
       survey: true,
       card: dev?.card,
-      zid: dev?.zid ?? input.zid,
+      zid: dev?.zid,
     });
     return ok(undefined);
   }
@@ -334,10 +329,10 @@ export async function saveSurvey(input: SurveyInput): Promise<Result> {
     p_referral_source: input.referralSource,
     p_next_event_interest: input.eventInterest,
     p_showcase_consent: input.showcaseConsent,
-    p_affiliation_support: input.affiliationSupport,
-    p_full_name: input.fullName,
-    p_zid: input.zid,
-    p_affiliation_consent: input.affiliationConsent,
+    p_affiliation_support: false,
+    p_full_name: null,
+    p_zid: null,
+    p_affiliation_consent: false,
   });
   if (error) {
     console.error("[auth] save survey failed", {

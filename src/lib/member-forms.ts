@@ -109,51 +109,25 @@ export function parseMemberProfile(form: FormData, email: string) {
     });
 }
 
-const dropped = <T>(value: T) => z.unknown().transform(() => value);
-
 // The second half of the old join form, now optional after the card is made.
-// Name and zID only when the member backs the club application and consents;
-// a zID left when joining is kept either way (save_join_survey).
-const surveyFields = {
+// The club-application opt-in (name and zID for Arc) closed once Arc
+// registered the club; save_join_survey still takes it, always off.
+export const surveySchema = z.object({
   stalledProject: z.enum(["yes", "no"]).nullable(),
   blockers: z.array(z.enum(BLOCKERS)).max(BLOCKERS.length),
   referralSource: z.enum(REFERRAL_SOURCES).nullable(),
   eventInterest: z.enum(EVENT_INTEREST).nullable(),
   showcaseConsent: z.boolean(),
-};
-
-export const surveySchema = z.discriminatedUnion("affiliationSupport", [
-  z.object({
-    ...surveyFields,
-    affiliationSupport: z.literal(false),
-    fullName: dropped(null),
-    zid: dropped(null),
-    affiliationConsent: dropped(false),
-  }),
-  z.object({
-    ...surveyFields,
-    affiliationSupport: z.literal(true),
-    fullName: text(80),
-    zid: zidSchema,
-    affiliationConsent: z.literal(true, {
-      error: "勾选同意后才能登记|Tick the box to register your support",
-    }),
-  }),
-]);
+});
 export type SurveyInput = z.infer<typeof surveySchema>;
 
-/** `knownZid` is the member's zID from joining; supporters then don't retype it. */
-export function parseSurvey(form: FormData, knownZid: string | null = null) {
+export function parseSurvey(form: FormData) {
   return surveySchema.safeParse({
     stalledProject: form.get("stalledProject") || null,
     blockers: form.getAll("blockers"),
     referralSource: form.get("referralSource") || null,
     eventInterest: form.get("eventInterest") || null,
     showcaseConsent: form.get("showcaseConsent") === "on",
-    affiliationSupport: form.get("affiliationSupport") === "on",
-    fullName: form.get("fullName") ?? "",
-    zid: knownZid ?? form.get("zid") ?? "",
-    affiliationConsent: form.get("affiliationConsent") === "on",
   });
 }
 
