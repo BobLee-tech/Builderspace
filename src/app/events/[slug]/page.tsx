@@ -145,7 +145,9 @@ async function EventDetail({ slug }: { slug: string }) {
         {/* Wide screens: read on the left, sign up on the right, the form
             pinned beside the intro. Narrow: intro, form, then the rest.
             Once it's over, the results run full width under the intro. */}
-        <div className={results ? "evp-grid has-results" : "evp-grid"}>
+        <div
+          className={`evp-grid${results ? " has-results" : ""}${open ? " has-form" : ""}`}
+        >
           <header className="evp-intro">
             <div className="need">
               <span className="tag fill">
@@ -403,16 +405,21 @@ async function EventDetail({ slug }: { slug: string }) {
                       </li>
                     ))}
                   </ul>
-                  <a href={calendarUrl} className="btn solid primary evp-wide">
-                    <T zh="订阅活动日历" en="Subscribe to the calendar" />{" "}
-                    <Arr />
-                  </a>
-                  <p className="evp-note mute">
-                    <T
-                      zh="日期一定，它会出现在你的日历里。"
-                      en="It shows up in your calendar once it's dated."
-                    />
-                  </p>
+                  <div className="evp-go">
+                    <a
+                      href={calendarUrl}
+                      className="btn solid primary evp-wide"
+                    >
+                      <T zh="订阅活动日历" en="Subscribe to the calendar" />{" "}
+                      <Arr />
+                    </a>
+                    <p className="evp-note mute">
+                      <T
+                        zh="日期一定，它会出现在你的日历里。"
+                        en="It shows up in your calendar once it's dated."
+                      />
+                    </p>
+                  </div>
                 </>
               )}
             </div>
@@ -536,27 +543,29 @@ function ElsewhereSignup({
           />
         </a>
       )}
-      {via && (
-        <p className="evp-note mute">
-          <T {...via.note} />
-        </p>
-      )}
-      <a
-        href={url}
-        target="_blank"
-        rel="noreferrer"
-        className="btn solid primary evp-wide"
-      >
-        {via ? (
-          <T zh={`去 ${via.name} 报名`} en={`Get a ticket on ${via.name}`} />
-        ) : (
-          <T zh="去报名" en="Sign up" />
-        )}{" "}
-        <Arr diag />
-      </a>
-      {via && (
-        <span className="mono mute evp-via">{new URL(url).hostname}</span>
-      )}
+      <div className="evp-go">
+        {via && (
+          <p className="evp-note mute">
+            <T {...via.note} />
+          </p>
+        )}
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="btn solid primary evp-wide"
+        >
+          {via ? (
+            <T zh={`去 ${via.name} 报名`} en={`Get a ticket on ${via.name}`} />
+          ) : (
+            <T zh="去报名" en="Sign up" />
+          )}{" "}
+          <Arr diag />
+        </a>
+        {via && (
+          <span className="mono mute evp-via">{new URL(url).hostname}</span>
+        )}
+      </div>
     </>
   );
 }

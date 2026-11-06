@@ -1,6 +1,7 @@
-/* Event detail page (/events/[slug]). Wide screens read on the left and sign
-   up on the right, the form pinned beside the intro; narrow screens run
-   intro, form, then the rest. Black / white / chrome only; the mascots stay
+/* Event detail page (/events/[slug]). One page top to bottom: on wide
+   screens the intro and the sign-up card share the first row at the same
+   height, and everything else runs full width under them; narrow screens run
+   intro, card, then the rest. Nothing is pinned. Black / white / chrome only; the mascots stay
    the only colour on the site. The address bar, seats bar and countdown
    chip are shared with /events (../events.css). */
 
@@ -25,15 +26,27 @@
 .evp-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(380px, 440px);
-  grid-template-areas: "intro side" "more side";
-  grid-template-rows: auto 1fr;
+  grid-template-areas: "intro side" "more more";
   column-gap: clamp(32px, 5vw, 72px);
+  align-items: stretch;
+}
+/* A sign-up form is taller than the intro; the intro keeps its own height. */
+.evp-grid.has-form {
   align-items: start;
 }
 .evp-intro {
   grid-area: intro;
   container-type: inline-size;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+}
+/* The facts sit on the row's bottom edge, level with the card's button. */
+.evp-intro .evp-kv {
+  margin-top: auto;
+}
+.evp-intro .evp-lede {
+  margin-bottom: 32px;
 }
 .evp-more {
   grid-area: more;
@@ -44,11 +57,12 @@
 }
 .evp-side {
   grid-area: side;
-  position: sticky;
-  top: 88px;
-  /* A jump to #signup leaves the page at the top here: the form is already
-     beside the title, and scrolling to it would hide the title. */
-  scroll-margin-top: 100vh;
+  display: flex;
+  flex-direction: column;
+  scroll-margin-top: 96px;
+}
+.evp-side .evp-panel {
+  flex: 1;
 }
 
 /* ---------- left: what it is, in one screen ---------- */
@@ -412,12 +426,7 @@
 
 /* ---------- once it's over: results under the intro, full width ---------- */
 .evp-grid.has-results {
-  grid-template-areas: "intro side" "results results" "more .";
-  grid-template-rows: auto;
-}
-/* The panel is short by now; pinned, it would ride over the results. */
-.evp-grid.has-results .evp-side {
-  position: static;
+  grid-template-areas: "intro side" "results results" "more more";
 }
 .evp-results {
   grid-area: results;
@@ -689,14 +698,27 @@
   justify-content: space-between;
   width: 100%;
 }
+.evp-go {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+.evp-panel > .evp-cta {
+  margin-top: auto;
+}
 .evp-poster {
+  position: relative;
   display: block;
+  flex: 1 1 200px;
+  min-height: 200px;
   overflow: hidden;
   border-radius: 12px;
   box-shadow: 0 0 0 1px var(--line-2);
-  aspect-ratio: 16 / 11;
 }
 .evp-poster img {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
@@ -708,7 +730,6 @@
   transform: scale(1.02);
 }
 .evp-via {
-  margin-top: -8px;
   font-size: var(--fs-xs);
   text-transform: none;
   letter-spacing: 0.02em;
@@ -870,6 +891,9 @@
 }
 .evx-cards.cols-3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.evx-cards.cols-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .evx-cards li {
   display: flex;
@@ -1320,7 +1344,8 @@
     justify-self: center;
   }
   .evx-cards.cols-2,
-  .evx-cards.cols-3 {
+  .evx-cards.cols-3,
+  .evx-cards.cols-4 {
     grid-template-columns: minmax(0, 1fr);
   }
   .evx-steps {
@@ -1360,5 +1385,67 @@
   }
   .evp-poster:hover img {
     transform: none;
+  }
+}
+
+/* Full width under the intro: spread the sections across the row. */
+@container (min-width: 900px) {
+  .evp-tools {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .evp-bring {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16em, 1fr));
+    column-gap: 24px;
+  }
+  .evp-bring li:last-child {
+    border-bottom: 1px dashed var(--line);
+  }
+  .evx-cards.cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .evx-steps {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  /* A part or a guest: the person on the left, their lines side by side. */
+  .evx-part .evx-lines,
+  .evx-guest .evx-lines {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-content: start;
+  }
+  .evx-part .evx-lines li,
+  .evx-guest .evx-lines li {
+    padding: 0 0 0 18px;
+    border-top: 0;
+    border-left: 1px solid var(--line);
+  }
+  .evx-part .evx-lines li:first-child,
+  .evx-guest .evx-lines li:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+  /* The five words in one row. */
+  .evx-terms {
+    flex-direction: row;
+  }
+  .evx-terms > div {
+    flex: 1 1 0;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 6px;
+    padding: 18px;
+  }
+  .evx-terms > div + div {
+    border-top: 0;
+    border-left: 1px solid var(--line);
+  }
+  /* The drawing on the left; counts, then the three layers, on the right. */
+  .evx-build {
+    grid-template-columns: minmax(0, 18em) minmax(0, 1fr);
+    grid-template-areas: "bot fleet" "bot layers";
+    grid-template-rows: auto 1fr;
+    align-items: start;
   }
 }

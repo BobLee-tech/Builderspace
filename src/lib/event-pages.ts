@@ -65,7 +65,8 @@ export type EventSection =
   | {
       kind: "cards";
       heading: Bi;
-      cols: 2 | 3;
+      /** Columns at full width; fewer as the page narrows. */
+      cols: 2 | 3 | 4;
       items: {
         mark?: string;
         label?: string;
@@ -366,16 +367,16 @@ const aiStudyCareerTalk: EventPage = {
                 en: "Make your own page, ask as you go",
               },
             },
+            {
+              title: { zh: "带上", en: "Bring" },
+              sub: {
+                zh: "电脑、充电器，和这学期的课件笔记",
+                en: "Laptop, charger and this term's notes",
+              },
+            },
           ],
         },
       ],
-    },
-  ],
-  bring: [
-    { icon: "laptop", label: { zh: "电脑和充电器", en: "Laptop and charger" } },
-    {
-      icon: "notes",
-      label: { zh: "这学期的课件和笔记", en: "This term's slides and notes" },
     },
   ],
   asksGithub: false,
@@ -510,7 +511,7 @@ const beyondChatgpt: EventPage = {
     {
       kind: "cards",
       heading: { zh: "四条赛道，选一条", en: "Pick a track" },
-      cols: 2,
+      cols: 4,
       items: [
         {
           mark: "A",
