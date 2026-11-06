@@ -107,6 +107,11 @@ export type SiteEvent = {
    * no countdown, and leaves it out of the calendar feed and search data.
    */
   dateTbc: boolean;
+  /**
+   * Set by getEvents(): the date is still TBC but the placeholder has passed,
+   * so the page's own wording ("下周", "11 月中") may be stale.
+   */
+  tbcLapsed?: boolean;
 };
 
 // Who a sign-up seat is for (event_registrations.seat_group). The form first

@@ -17,6 +17,7 @@ import { getEventDetail, getEvents } from "@/lib/data";
 import { getEventMaterials } from "@/lib/event-materials";
 import {
   eventCopy,
+  eventTbc,
   eventWhere,
   getEventPage,
   type EventPage,
@@ -106,7 +107,7 @@ async function EventDetail({ slug }: { slug: string }) {
   const results = phase === "past" ? getEventResults(event.slug) : null;
   const materials = getEventMaterials(event.slug) !== null;
   // The page's "TBC" wording, while the date isn't set.
-  const tbc = phase === "tbc" ? page?.tbc : undefined;
+  const tbc = phase === "tbc" ? eventTbc(event) : null;
 
   return (
     <section className="sec first evp">
@@ -397,22 +398,24 @@ async function EventDetail({ slug }: { slug: string }) {
               )}
               {tbc && (
                 <>
-                  <ul className="evp-todo">
-                    {tbc.status.map((st) => (
-                      <li
-                        key={st.label.en}
-                        className={st.done ? "done" : undefined}
-                      >
-                        <i aria-hidden />
-                        <span className="mono mute">
-                          <T {...st.label} />
-                        </span>
-                        <b>
-                          <T {...st.value} />
-                        </b>
-                      </li>
-                    ))}
-                  </ul>
+                  {tbc.status.length > 0 && (
+                    <ul className="evp-todo">
+                      {tbc.status.map((st) => (
+                        <li
+                          key={st.label.en}
+                          className={st.done ? "done" : undefined}
+                        >
+                          <i aria-hidden />
+                          <span className="mono mute">
+                            <T {...st.label} />
+                          </span>
+                          <b>
+                            <T {...st.value} />
+                          </b>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   <div className="evp-go">
                     <a
                       href={calendarUrl}

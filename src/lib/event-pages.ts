@@ -906,6 +906,25 @@ export function getEventPage(slug: string): EventPage | null {
   return PAGES[slug] ?? null;
 }
 
+/** For a TBC event without its own wording, or once its placeholder passed. */
+const PLAIN_TBC: EventTbc = {
+  short: { zh: "待定", en: "TBC" },
+  when: { zh: "待定", en: "TBC" },
+  whenNote: { zh: "日期定了就公布", en: "Date to be announced" },
+  status: [],
+};
+
+/**
+ * The "TBC" wording while the date isn't set: the page's own, until the
+ * placeholder date passes (it may say "下周"), then the plain one.
+ */
+export function eventTbc(event: SiteEvent): EventTbc | null {
+  if (!event.dateTbc) return null;
+  const own = PAGES[event.slug]?.tbc;
+  if (!own) return PLAIN_TBC;
+  return event.tbcLapsed ? { ...PLAIN_TBC, where: own.where } : own;
+}
+
 /**
  * Where the event is, in both languages: the row's location, or the page's
  * stand-in while the event is still being placed.

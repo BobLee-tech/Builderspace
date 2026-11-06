@@ -38,8 +38,15 @@ export async function getEvents(): Promise<SiteEvent[]> {
   cacheLife("minutes");
   cacheTag("events");
 
+  // Read in the cache, so a lapsed placeholder shows within minutes.
+  const now = Date.now();
+  const lapse = (e: SiteEvent): SiteEvent => ({
+    ...e,
+    tbcLapsed: e.dateTbc && Date.parse(e.endsAt) <= now,
+  });
+
   const db = getSupabase();
-  if (!db) return sampleEvents;
+  if (!db) return sampleEvents.map(lapse);
 
   const { data, error } = await db
     .from("events")
@@ -50,20 +57,22 @@ export async function getEvents(): Promise<SiteEvent[]> {
     .order("starts_at");
   if (error) throw error;
 
-  return data.map((e) => ({
-    slug: e.slug,
-    title: e.title,
-    kind: e.kind,
-    startsAt: e.starts_at,
-    endsAt: e.ends_at,
-    location: e.location,
-    summary: e.summary,
-    signupUrl: e.signup_url,
-    capacity: e.capacity,
-    registrationClosesAt: e.registration_closes_at,
-    seatQuotas: e.seat_quotas,
-    dateTbc: e.date_tbc,
-  }));
+  return data
+    .map((e) => ({
+      slug: e.slug,
+      title: e.title,
+      kind: e.kind,
+      startsAt: e.starts_at,
+      endsAt: e.ends_at,
+      location: e.location,
+      summary: e.summary,
+      signupUrl: e.signup_url,
+      capacity: e.capacity,
+      registrationClosesAt: e.registration_closes_at,
+      seatQuotas: e.seat_quotas,
+      dateTbc: e.date_tbc,
+    }))
+    .map(lapse);
 }
 
 export async function getEvent(slug: string): Promise<SiteEvent | null> {

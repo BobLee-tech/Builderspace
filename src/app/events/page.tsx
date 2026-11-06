@@ -6,7 +6,12 @@ import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
 import { getEventSchedule, getEventSignups, getTutorials } from "@/lib/data";
 import { allEventMaterials } from "@/lib/event-materials";
-import { eventCopy, eventWhere, getEventPage } from "@/lib/event-pages";
+import {
+  eventCopy,
+  eventTbc,
+  eventWhere,
+  getEventPage,
+} from "@/lib/event-pages";
 import { getEventResults, worksOnWall } from "@/lib/event-results";
 import { formatShortDate, formatTimeRange } from "@/lib/format";
 import { roadmapWeek } from "@/lib/roadmap";
@@ -177,7 +182,7 @@ function EventRow({
 }) {
   const page = getEventPage(event.slug);
   const cost = page?.cost;
-  const tbc = event.dateTbc ? page?.tbc : undefined;
+  const tbc = eventTbc(event);
   const copy = eventCopy(event);
   const seats = shownSeats(event, signups ?? NO_SIGNUPS);
   // A past event with results opens its page, where the wall is.
