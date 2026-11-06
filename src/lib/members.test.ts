@@ -180,57 +180,27 @@ describe("parseSurvey", () => {
   it("accepts an empty survey: every question is optional", () => {
     const result = parseSurvey(form([]));
     expect(result.success).toBe(true);
-    expect(result.data).toMatchObject({
+    expect(result.data).toEqual({
       stalledProject: null,
+      blockers: [],
       referralSource: null,
       eventInterest: null,
-      affiliationSupport: false,
-      fullName: null,
-      zid: null,
+      showcaseConsent: false,
     });
   });
 
-  it("drops a name and zID typed without opting in", () => {
+  it("ignores the old club-application fields", () => {
     const result = parseSurvey(
       form([
+        ["affiliationSupport", "on"],
         ["fullName", "Li Bo"],
         ["zid", "z1234567"],
-      ]),
-    );
-    expect(result.success).toBe(true);
-    expect(result.data).toMatchObject({ fullName: null, zid: null });
-  });
-
-  it("needs a name, a valid zID and consent from supporters", () => {
-    const missing = parseSurvey(form([["affiliationSupport", "on"]]));
-    expect(missing.success).toBe(false);
-    const ok = parseSurvey(
-      form([
-        ["affiliationSupport", "on"],
-        ["fullName", "Li Bo"],
-        ["zid", "1234567"],
         ["affiliationConsent", "on"],
       ]),
     );
-    expect(ok.success).toBe(true);
-    expect(ok.data).toMatchObject({
-      zid: "z1234567",
-      affiliationConsent: true,
-    });
-  });
-
-  it("uses the zID left when joining instead of asking again", () => {
-    const result = parseSurvey(
-      form([
-        ["affiliationSupport", "on"],
-        ["fullName", "Li Bo"],
-        ["zid", "z9999999"],
-        ["affiliationConsent", "on"],
-      ]),
-      "z1234567",
-    );
     expect(result.success).toBe(true);
-    expect(result.data).toMatchObject({ zid: "z1234567" });
+    expect(result.data).not.toHaveProperty("fullName");
+    expect(result.data).not.toHaveProperty("zid");
   });
 });
 

@@ -4,7 +4,6 @@ import { refresh, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   confirmEmailChange,
-  getMyZid,
   requestEmailChange,
   saveMyZid,
   saveSurvey,
@@ -26,7 +25,7 @@ export async function submitSurvey(
   _prev: FormState,
   form: FormData,
 ): Promise<FormState> {
-  const parsed = parseSurvey(form, await getMyZid());
+  const parsed = parseSurvey(form);
   if (!parsed.success) {
     return {
       status: "error",

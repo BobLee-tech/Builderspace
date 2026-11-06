@@ -118,7 +118,7 @@ async function Me() {
           <MyProjects projects={projects} />
           <MyStars stars={stars} />
           {askZid && <ZidForm unswEmail={unswEmail} />}
-          {!done && <SurveyForm zid={zid} />}
+          {!done && <SurveyForm />}
           <form action={logOut}>
             <button type="submit" className="linkish">
               <T zh="退出登录" en="Sign out" />
