@@ -1,6 +1,6 @@
 import { cacheLife } from "next/cache";
 import { pitchText } from "@/components/project-card";
-import { eventCopy } from "@/lib/event-pages";
+import { eventCopy, eventWhere } from "@/lib/event-pages";
 import { allEventMaterials } from "@/lib/event-materials";
 import { getEvents, getProjects } from "@/lib/data";
 import { FAQ, faqAnswer, NOT_BUILDSPACE } from "@/lib/faq";
@@ -49,7 +49,9 @@ async function llmsTxt() {
     "",
     ...events.flatMap((e) => {
       const { title, summary } = eventCopy(e);
-      const when = `${formatIsoDay(e.startsAt)} ${formatTimeRange(e.startsAt, e.endsAt)} (Sydney), ${e.location}`;
+      const when = e.dateTbc
+        ? `Date to be confirmed (Sydney), ${eventWhere(e).en}`
+        : `${formatIsoDay(e.startsAt)} ${formatTimeRange(e.startsAt, e.endsAt)} (Sydney), ${e.location}`;
       return [
         link(bi(title.zh, title.en), `/events/${e.slug}`, when),
         ...(summary ? [`  ${flat(summary.en)}`] : []),

@@ -14,6 +14,7 @@ const event: SiteEvent = {
   capacity: 40,
   registrationClosesAt: null,
   seatQuotas: null,
+  dateTbc: false,
 };
 
 const ics = buildCalendar([event], {
@@ -42,6 +43,18 @@ describe("buildCalendar", () => {
     expect(unfolded).toContain("零基础\\; 友好");
     expect(unfolded).toContain("页面\\, 零基础");
     expect(unfolded).toContain("DESCRIPTION:第一行\\n第二行");
+  });
+
+  it("leaves out events whose date isn't set", () => {
+    const withTbc = buildCalendar(
+      [event, { ...event, slug: "date-to-come", dateTbc: true }],
+      {
+        siteUrl: "https://builderspace.example",
+        generatedAt: "2026-10-12T00:00:00Z",
+      },
+    );
+    expect(withTbc).toContain("UID:vibe-coding-101@");
+    expect(withTbc).not.toContain("date-to-come");
   });
 
   it("folds lines at 75 octets without splitting characters", () => {

@@ -43,7 +43,7 @@ export async function NextUp({ slug }: { slug: string }) {
           </p>
           <h2 className="evn-title">
             <T {...title} />
-            {page && (
+            {page && page.display !== event.title && (
               <small data-l="zh" className="mono mute">
                 {page.display}
               </small>
@@ -64,7 +64,7 @@ export async function NextUp({ slug }: { slug: string }) {
               <MapPin weight="light" size={16} aria-hidden />
               {event.location}
             </li>
-            {page && (
+            {page?.cost && (
               <li>
                 <Ticket weight="light" size={16} aria-hidden />
                 <T {...page.cost} />
@@ -125,6 +125,24 @@ export async function NextUp({ slug }: { slug: string }) {
                 )}{" "}
                 <Arr />
               </Link>
+            )}
+            {phase === "external" && event.signupUrl && (
+              <a
+                href={event.signupUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="btn solid primary"
+              >
+                {page?.signupVia ? (
+                  <T
+                    zh={`去 ${page.signupVia.name} 报名`}
+                    en={`Get a ticket on ${page.signupVia.name}`}
+                  />
+                ) : (
+                  <T zh="去报名" en="Sign up" />
+                )}{" "}
+                <Arr diag />
+              </a>
             )}
             <Link href={href} className="evn-more">
               <T zh="看活动详情" en="Event details" /> →

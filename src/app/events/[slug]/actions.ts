@@ -21,6 +21,7 @@ const groupClosedMessage =
   "这场活动暂不开放这一类报名|This event isn't open to that group";
 
 const closedMessage = "报名已截止|Sign-up has closed";
+const notOpenMessage = "日期定了才开报名|Sign-up opens once the date is set";
 
 export async function registerForEvent(
   _prev: RegistrationState,
@@ -51,6 +52,10 @@ export async function registerForEvent(
     return { status: "error", message: "找不到这场活动|Event not found" };
   }
   // The database decides; this only saves a round trip once it has closed.
+  // A TBC event's deadline is a placeholder: sign-up opens with the date.
+  if (event.dateTbc) {
+    return { status: "error", message: notOpenMessage };
+  }
   if (Date.now() >= Date.parse(event.registrationClosesAt)) {
     return { status: "error", message: closedMessage };
   }
