@@ -3,7 +3,25 @@
 -- Arc）。网站调用 save_join_survey() 时这几项固定传「不支持」，函数和列都不动：
 -- Hub 的加入登记还在读 affiliation_support 和 full_name。
 --
--- 每日汇总不再写「其中支持社团申请 N 人」，其余和 20261015050000 一样。
+-- 已经登记的支持者：维护者先在 Hub 导出支持者名单，再跑这个迁移。
+-- 1. 清掉姓名、支持和同意三项（join_supporter_details 要求三项一起清）。
+-- 2. 只为这次申请留下的 zID 也清掉：20261025010000_join_zid 之前加入的支持者，
+--    zID 来自问卷（或更早的加入表单），只留下能从登录邮箱取到的那个。之后加入的
+--    人在加入时就留了 zID，问卷不会覆盖，所以保留。分界取 2026-10-26 悉尼零点，
+--    宁可多清：被清掉的 UNSW 成员在 /me 会被请求重新补填 zID，作为成员资料。
+-- 3. 每日汇总不再写「其中支持社团申请 N 人」，其余和 20261015050000 一样。
+
+update join_submissions j set
+  zid = case
+    when j.affiliation_support
+      and j.created_at < timestamptz '2026-10-26 00:00 Australia/Sydney'
+      then (select zid_from_email(u.email) from auth.users u where u.id = j.user_id)
+    else j.zid
+  end,
+  full_name = null,
+  affiliation_support = false,
+  affiliation_consent = false
+where j.affiliation_support or j.full_name is not null or j.affiliation_consent;
 
 create or replace function ops_daily_digest() returns void
 language plpgsql
