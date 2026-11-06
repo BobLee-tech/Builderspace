@@ -55,7 +55,8 @@ export function buildCalendar(
     "X-WR-TIMEZONE:Australia/Sydney",
   ];
 
-  for (const event of events) {
+  // An event without a date yet joins the feed once it has one.
+  for (const event of events.filter((e) => !e.dateTbc)) {
     const description = [event.summary, event.signupUrl]
       .filter(Boolean)
       .join("\n");

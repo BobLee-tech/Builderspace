@@ -20,11 +20,13 @@ export async function findLiveEvent(host = false): Promise<string | null> {
 
   const now = Date.now();
   const events = await getEvents();
-  const soon = events.find((e) =>
-    host
-      ? now < Date.parse(e.endsAt) + 12 * HOUR
-      : now > Date.parse(e.startsAt) - 12 * HOUR &&
-        now < Date.parse(e.endsAt) + 12 * HOUR,
+  const soon = events.find(
+    (e) =>
+      !e.dateTbc &&
+      (host
+        ? now < Date.parse(e.endsAt) + 12 * HOUR
+        : now > Date.parse(e.startsAt) - 12 * HOUR &&
+          now < Date.parse(e.endsAt) + 12 * HOUR),
   );
   return soon?.slug ?? null;
 }

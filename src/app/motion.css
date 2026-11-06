@@ -1797,6 +1797,16 @@ html.fx .top {
   background: var(--ink);
   color: var(--paper);
 }
+/* An event without a date yet: a dashed ticket in the week it's expected. */
+.wk-ev.tbc {
+  border-style: dashed;
+  border-color: var(--line-2);
+  background: transparent;
+  box-shadow: none;
+}
+.wk.now .wk-ev.tbc {
+  border-color: rgba(0, 0, 0, 0.35);
+}
 .road-marks {
   position: absolute;
   inset: 0;

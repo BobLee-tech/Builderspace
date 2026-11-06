@@ -19,7 +19,9 @@ export type RoadmapEvent = {
   slug: string;
   title: { zh: string; en: string };
   kind: EventKind;
-  date: string;
+  date: { zh: string; en: string };
+  /** The date isn't set; it sits in the week it's expected. */
+  tbc: boolean;
   week: number;
 };
 
@@ -92,10 +94,11 @@ export function Roadmap({ events }: { events: RoadmapEvent[] }) {
                       <Link
                         key={e.slug}
                         href={`/events/${e.slug}`}
-                        className="wk-ev"
+                        className={e.tbc ? "wk-ev tbc" : "wk-ev"}
                       >
                         <span className="mono">
-                          {e.date} · <T {...EVENT_KIND_LABEL[e.kind]} />
+                          <T {...e.date} /> ·{" "}
+                          <T {...EVENT_KIND_LABEL[e.kind]} />
                         </span>
                         <span className="wk-ev-t">
                           <T {...e.title} />

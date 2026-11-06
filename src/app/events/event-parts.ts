@@ -1,15 +1,20 @@
 // Bits shared by the events page and the event detail page.
 import {
   ChatText,
+  Clock,
   Code,
   DownloadSimple,
   HandWaving,
   ForkKnife,
   GithubLogo,
   Laptop,
+  Notebook,
+  Package,
+  PlayCircle,
   QrCode,
   Sparkle,
   UsersThree,
+  Wrench,
 } from "@phosphor-icons/react/dist/ssr";
 import type { Icon } from "@phosphor-icons/react";
 import { getEventPage, type EventIcon } from "@/lib/event-pages";
@@ -26,6 +31,11 @@ export const EVENT_ICONS: Record<EventIcon, Icon> = {
   live: QrCode,
   intent: HandWaving,
   download: DownloadSimple,
+  clock: Clock,
+  play: PlayCircle,
+  box: Package,
+  wrench: Wrench,
+  notes: Notebook,
 };
 
 /** The seat groups an event takes, with their quotas, in display order. */

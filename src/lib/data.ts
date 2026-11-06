@@ -17,6 +17,7 @@ import { teamPersonOf, type TeamPerson, type TeamRow } from "./team";
 import {
   NO_MEDIA,
   NO_SIGNUPS,
+  type EventPhase,
   type EventSignups,
   type Lang,
   type OwnerCard,
@@ -43,7 +44,7 @@ export async function getEvents(): Promise<SiteEvent[]> {
   const { data, error } = await db
     .from("events")
     .select(
-      "slug,title,kind,starts_at,ends_at,location,summary,signup_url,capacity,registration_closes_at,seat_quotas",
+      "slug,title,kind,starts_at,ends_at,location,summary,signup_url,capacity,registration_closes_at,seat_quotas,date_tbc",
     )
     .eq("published", true)
     .order("starts_at");
@@ -61,6 +62,7 @@ export async function getEvents(): Promise<SiteEvent[]> {
     capacity: e.capacity,
     registrationClosesAt: e.registration_closes_at,
     seatQuotas: e.seat_quotas,
+    dateTbc: e.date_tbc,
   }));
 }
 
@@ -148,7 +150,10 @@ export async function getTeam(): Promise<TeamPerson[]> {
   return (data as TeamRow[]).flatMap((row) => teamPersonOf(row, url) ?? []);
 }
 
-/** Splits events around "now"; refreshed with the cache, so at most minutes stale. */
+/**
+ * Splits events around "now"; refreshed with the cache, so at most minutes
+ * stale. An event whose date isn't set stays upcoming until it has one.
+ */
 export async function getEventSchedule(): Promise<{
   upcoming: SiteEvent[];
   past: SiteEvent[];
@@ -160,8 +165,10 @@ export async function getEventSchedule(): Promise<{
   const events = await getEvents();
   const now = Date.now();
   return {
-    upcoming: events.filter((e) => Date.parse(e.endsAt) > now),
-    past: events.filter((e) => Date.parse(e.endsAt) <= now).reverse(),
+    upcoming: events.filter((e) => e.dateTbc || Date.parse(e.endsAt) > now),
+    past: events
+      .filter((e) => !e.dateTbc && Date.parse(e.endsAt) <= now)
+      .reverse(),
   };
 }
 
@@ -173,7 +180,7 @@ export async function getEventSchedule(): Promise<{
 export async function getEventDetail(slug: string): Promise<{
   event: SiteEvent;
   signups: EventSignups;
-  phase: "open" | "closed" | "past" | "external";
+  phase: EventPhase;
 } | null> {
   "use cache";
   cacheLife("minutes");
@@ -194,8 +201,9 @@ export async function getEventDetail(slug: string): Promise<{
   return {
     event,
     signups: signups[slug] ?? NO_SIGNUPS,
-    phase:
-      now >= Date.parse(event.endsAt)
+    phase: event.dateTbc
+      ? "tbc"
+      : now >= Date.parse(event.endsAt)
         ? "past"
         : closes === null
           ? "external"

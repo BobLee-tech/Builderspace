@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -14,7 +15,13 @@ import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { getEventDetail, getEvents } from "@/lib/data";
 import { getEventMaterials } from "@/lib/event-materials";
-import { eventCopy, getEventPage, type EventTool } from "@/lib/event-pages";
+import {
+  eventCopy,
+  eventWhere,
+  getEventPage,
+  type EventPage,
+  type EventTool,
+} from "@/lib/event-pages";
 import { getEventResults } from "@/lib/event-results";
 import { JsonLd } from "@/components/json-ld";
 import { bi, biText, breadcrumbLd, eventLd, pageMeta } from "@/lib/seo";
@@ -40,6 +47,7 @@ import {
   titleEms,
 } from "../event-parts";
 import { EventResultsSection } from "./results";
+import { EventSections } from "./sections";
 import { SignupDock, SignupFocus } from "./signup-dock";
 import { SignupForm } from "./signup-form";
 import "../events.css";
@@ -97,23 +105,27 @@ async function EventDetail({ slug }: { slug: string }) {
   const open = phase === "open" && event.registrationClosesAt !== null;
   const results = phase === "past" ? getEventResults(event.slug) : null;
   const materials = getEventMaterials(event.slug) !== null;
+  // The page's "TBC" wording, while the date isn't set.
+  const tbc = phase === "tbc" ? page?.tbc : undefined;
 
   return (
     <section className="sec first evp">
-      <JsonLd
-        data={eventLd({
-          path: `/events/${event.slug}`,
-          name: bi(title.zh, title.en),
-          description: summary && biText(summary.zh, summary.en),
-          startsAt: event.startsAt,
-          endsAt: event.endsAt,
-          location: event.location,
-          free: page?.free ?? false,
-          phase,
-          full,
-          signupUrl: event.signupUrl,
-        })}
-      />
+      {phase !== "tbc" && (
+        <JsonLd
+          data={eventLd({
+            path: `/events/${event.slug}`,
+            name: bi(title.zh, title.en),
+            description: summary && biText(summary.zh, summary.en),
+            startsAt: event.startsAt,
+            endsAt: event.endsAt,
+            location: event.location,
+            free: page?.free ?? false,
+            phase,
+            full,
+            signupUrl: event.signupUrl,
+          })}
+        />
+      )}
       <JsonLd
         data={breadcrumbLd([
           { name: "活动 Events", path: "/events" },
@@ -126,7 +138,7 @@ async function EventDetail({ slug }: { slug: string }) {
           <span className="evp-rule" aria-hidden />
           <span className="mute">
             {EVENT_KIND_LABEL[event.kind].en} ·{" "}
-            {formatShortDate(event.startsAt)} · SYD
+            {tbc ? <T {...tbc.short} /> : formatShortDate(event.startsAt)} · SYD
           </span>
         </div>
 
@@ -139,7 +151,7 @@ async function EventDetail({ slug }: { slug: string }) {
               <span className="tag fill">
                 <T {...EVENT_KIND_LABEL[event.kind]} />
               </span>
-              {page && (
+              {page?.cost && (
                 <span className="tag">
                   <T {...page.cost} />
                 </span>
@@ -149,6 +161,11 @@ async function EventDetail({ slug }: { slug: string }) {
                   <T {...h} />
                 </span>
               ))}
+              {tbc && (
+                <span className="tag dash">
+                  <T zh="时间待定" en="Date TBC" />
+                </span>
+              )}
             </div>
             {(["zh", "en"] as const).map((l) => (
               <h1
@@ -161,7 +178,7 @@ async function EventDetail({ slug }: { slug: string }) {
                 {title[l]}
               </h1>
             ))}
-            {page && (
+            {page && page.display !== event.title && (
               <p data-l="zh" className="evp-en mono mute">
                 {page.display}
               </p>
@@ -178,21 +195,37 @@ async function EventDetail({ slug }: { slug: string }) {
                 <dt className="mono mute">
                   <T zh="时间" en="When" />
                 </dt>
-                <dd>
-                  {formatDate(event.startsAt)}
-                  <small className="mute">
-                    {formatTimeRange(event.startsAt, event.endsAt)}
-                  </small>
-                </dd>
+                {tbc ? (
+                  <dd>
+                    <T {...tbc.when} />
+                    <small className="mute">
+                      <T {...tbc.whenNote} />
+                    </small>
+                  </dd>
+                ) : (
+                  <dd>
+                    {formatDate(event.startsAt)}
+                    <small className="mute">
+                      {formatTimeRange(event.startsAt, event.endsAt)}
+                    </small>
+                  </dd>
+                )}
               </div>
               <div>
                 <MapPin weight="light" size={18} aria-hidden />
                 <dt className="mono mute">
                   <T zh="地点" en="Where" />
                 </dt>
-                <dd>{event.location}</dd>
+                <dd>
+                  <T {...eventWhere(event)} />
+                  {page?.whereNote && (
+                    <small className="mute">
+                      <T {...page.whereNote} />
+                    </small>
+                  )}
+                </dd>
               </div>
-              {page && (
+              {page?.cost && (
                 <div>
                   <Ticket weight="light" size={18} aria-hidden />
                   <dt className="mono mute">
@@ -208,29 +241,51 @@ async function EventDetail({ slug }: { slug: string }) {
                   </dd>
                 </div>
               )}
-              <div>
-                <UsersThree weight="light" size={18} aria-hidden />
-                <dt className="mono mute">
-                  <T zh="名额" en="Seats" />
-                </dt>
-                <dd>
-                  {capacity === null ? (
-                    <T zh="不限" en="Open" />
-                  ) : (
+              {capacity !== null && (
+                <div>
+                  <UsersThree weight="light" size={18} aria-hidden />
+                  <dt className="mono mute">
+                    <T zh="名额" en="Seats" />
+                  </dt>
+                  <dd>
                     <T zh={`${capacity} 人`} en={`${capacity}`} />
-                  )}
-                  {groups.length > 0 && (
-                    <small className="mute">
-                      {groups.map(([g, n], i) => (
-                        <span key={g}>
-                          {i > 0 && " · "}
-                          <T {...SEAT_GROUP_LABEL[g]} /> {n}
-                        </span>
-                      ))}
-                    </small>
-                  )}
-                </dd>
-              </div>
+                    {groups.length > 0 && (
+                      <small className="mute">
+                        {groups.map(([g, n], i) => (
+                          <span key={g}>
+                            {i > 0 && " · "}
+                            <T {...SEAT_GROUP_LABEL[g]} /> {n}
+                          </span>
+                        ))}
+                      </small>
+                    )}
+                    {page?.seatsNote && (
+                      <small className="mute">
+                        <T {...page.seatsNote} />
+                      </small>
+                    )}
+                  </dd>
+                </div>
+              )}
+              {page?.facts?.map((f) => {
+                const Glyph = ICONS[f.icon];
+                return (
+                  <div key={f.label.en}>
+                    <Glyph weight="light" size={18} aria-hidden />
+                    <dt className="mono mute">
+                      <T {...f.label} />
+                    </dt>
+                    <dd>
+                      <T {...f.value} />
+                      {f.note && (
+                        <small className="mute">
+                          <T {...f.note} />
+                        </small>
+                      )}
+                    </dd>
+                  </div>
+                );
+              })}
             </dl>
             {!results && page?.tools?.length ? (
               <Tools tools={page.tools} />
@@ -249,9 +304,13 @@ async function EventDetail({ slug }: { slug: string }) {
                       ? "Sign-up closed."
                       : phase === "past"
                         ? "That's a wrap."
-                        : "See you there."}
+                        : phase === "tbc"
+                          ? "Date TBC."
+                          : "See you there."}
                 </h2>
-                {phase !== "past" && <TimeLeft to={event.startsAt} chip />}
+                {phase !== "past" && phase !== "tbc" && (
+                  <TimeLeft to={event.startsAt} chip />
+                )}
               </div>
               {open && (
                 <>
@@ -324,15 +383,37 @@ async function EventDetail({ slug }: { slug: string }) {
                   </p>
                 ))}
               {phase === "external" && event.signupUrl && (
-                <a
-                  href={event.signupUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn solid primary"
-                  style={{ alignSelf: "start" }}
-                >
-                  <T zh="去报名" en="Sign up" /> <Arr diag />
-                </a>
+                <ElsewhereSignup url={event.signupUrl} page={page} />
+              )}
+              {tbc && (
+                <>
+                  <ul className="evp-todo">
+                    {tbc.status.map((st) => (
+                      <li
+                        key={st.label.en}
+                        className={st.done ? "done" : undefined}
+                      >
+                        <i aria-hidden />
+                        <span className="mono mute">
+                          <T {...st.label} />
+                        </span>
+                        <b>
+                          <T {...st.value} />
+                        </b>
+                      </li>
+                    ))}
+                  </ul>
+                  <a href={calendarUrl} className="btn solid primary evp-wide">
+                    <T zh="订阅活动日历" en="Subscribe to the calendar" />{" "}
+                    <Arr />
+                  </a>
+                  <p className="evp-note mute">
+                    <T
+                      zh="日期一定，它会出现在你的日历里。"
+                      en="It shows up in your calendar once it's dated."
+                    />
+                  </p>
+                </>
               )}
             </div>
           </aside>
@@ -346,50 +427,62 @@ async function EventDetail({ slug }: { slug: string }) {
             ) : null}
             {page && (
               <>
-                <div className="evp-sec">
-                  <h2 className="evp-sec-h mono mute">
-                    <T zh="离场时你会有" en="You leave with" />
-                  </h2>
-                  <AddressBar handles={page.handles} />
-                  <ul className="evp-points">
-                    {page.points.map((pt) => {
-                      const Glyph = ICONS[pt.icon];
-                      return (
-                        <li key={pt.title.en}>
-                          <Glyph weight="light" size={22} aria-hidden />
-                          <b>
-                            <T {...pt.title} />
-                          </b>
-                          <span className="mute">
-                            <T {...pt.sub} />
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-                <div className="evp-sec">
-                  <h2 className="evp-sec-h mono mute">
-                    <T zh="带上" en="Bring" />
-                  </h2>
-                  <ul className="evp-bring">
-                    {page.bring.map((b) => {
-                      const Glyph = ICONS[b.icon];
-                      return (
-                        <li key={b.label.en}>
-                          <Glyph weight="light" size={18} aria-hidden />
-                          <T {...b.label} />
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
+                {(page.handles || page.points) && (
+                  <div className="evp-sec">
+                    <h2 className="evp-sec-h mono mute">
+                      <T
+                        {...(page.pointsHeading ?? {
+                          zh: "离场时你会有",
+                          en: "You leave with",
+                        })}
+                      />
+                    </h2>
+                    {page.handles && <AddressBar handles={page.handles} />}
+                    {page.points && (
+                      <ul className="evp-points">
+                        {page.points.map((pt) => {
+                          const Glyph = ICONS[pt.icon];
+                          return (
+                            <li key={pt.title.en}>
+                              <Glyph weight="light" size={22} aria-hidden />
+                              <b>
+                                <T {...pt.title} />
+                              </b>
+                              <span className="mute">
+                                <T {...pt.sub} />
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                )}
+                {page.sections && <EventSections sections={page.sections} />}
+                {page.bring && (
+                  <div className="evp-sec">
+                    <h2 className="evp-sec-h mono mute">
+                      <T zh="带上" en="Bring" />
+                    </h2>
+                    <ul className="evp-bring">
+                      {page.bring.map((b) => {
+                        const Glyph = ICONS[b.icon];
+                        return (
+                          <li key={b.label.en}>
+                            <Glyph weight="light" size={18} aria-hidden />
+                            <T {...b.label} />
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
                 <p className="mono mute evp-hosts">
                   <T {...page.hosts} />
                 </p>
               </>
             )}
-            {phase !== "past" && (
+            {phase !== "past" && phase !== "tbc" && (
               <a
                 href={calendarUrl}
                 className="btn ghost"
@@ -413,6 +506,58 @@ async function EventDetail({ slug }: { slug: string }) {
         />
       )}
     </section>
+  );
+}
+
+/** Sign-up on another site: the poster, a line on what that site holds, the button. */
+function ElsewhereSignup({
+  url,
+  page,
+}: {
+  url: string;
+  page: EventPage | null;
+}) {
+  const via = page?.signupVia;
+  return (
+    <>
+      {page?.poster && (
+        <a
+          href={page.poster.src}
+          target="_blank"
+          rel="noreferrer"
+          className="evp-poster"
+        >
+          <Image
+            src={page.poster.src}
+            alt={page.poster.alt}
+            width={page.poster.width}
+            height={page.poster.height}
+            sizes="(max-width: 900px) 100vw, 440px"
+          />
+        </a>
+      )}
+      {via && (
+        <p className="evp-note mute">
+          <T {...via.note} />
+        </p>
+      )}
+      <a
+        href={url}
+        target="_blank"
+        rel="noreferrer"
+        className="btn solid primary evp-wide"
+      >
+        {via ? (
+          <T zh={`去 ${via.name} 报名`} en={`Get a ticket on ${via.name}`} />
+        ) : (
+          <T zh="去报名" en="Sign up" />
+        )}{" "}
+        <Arr diag />
+      </a>
+      {via && (
+        <span className="mono mute evp-via">{new URL(url).hostname}</span>
+      )}
+    </>
   );
 }
 

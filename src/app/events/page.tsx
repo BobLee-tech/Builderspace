@@ -6,7 +6,7 @@ import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
 import { getEventSchedule, getEventSignups, getTutorials } from "@/lib/data";
 import { allEventMaterials } from "@/lib/event-materials";
-import { eventCopy, getEventPage } from "@/lib/event-pages";
+import { eventCopy, eventWhere, getEventPage } from "@/lib/event-pages";
 import { getEventResults, worksOnWall } from "@/lib/event-results";
 import { formatShortDate, formatTimeRange } from "@/lib/format";
 import { roadmapWeek } from "@/lib/roadmap";
@@ -42,8 +42,10 @@ export default async function EventsPage() {
     ...allEventMaterials().map(([slug]) => slug),
   ]);
   const calendarUrl = `${siteUrl.replace(/^https?:/, "webcal:")}/events.ics`;
-  const [next, ...later] = upcoming;
-  // The next event has its own ticket up top; the list holds the rest.
+  // The next dated event has its own ticket up top; the list holds the rest,
+  // undated ones included.
+  const next = upcoming.find((e) => !e.dateTbc);
+  const later = upcoming.filter((e) => e !== next);
   const kinds = [...new Set([...later, ...past].map((e) => e.kind))];
   const onStrip = [...upcoming, ...past].flatMap((e) => {
     const week = roadmapWeek(e.startsAt);
@@ -54,7 +56,13 @@ export default async function EventsPage() {
             slug: e.slug,
             title: eventCopy(e).title,
             kind: e.kind,
-            date: formatShortDate(e.startsAt),
+            date: e.dateTbc
+              ? { zh: "待定", en: "TBC" }
+              : {
+                  zh: formatShortDate(e.startsAt),
+                  en: formatShortDate(e.startsAt),
+                },
+            tbc: e.dateTbc,
             week,
           },
         ];
@@ -100,7 +108,7 @@ export default async function EventsPage() {
           </div>
         </div>
 
-        {!next && (
+        {upcoming.length === 0 && (
           <p className="empty">
             <T
               zh="下一场活动筹备中，进群第一时间收到通知。"
@@ -167,7 +175,9 @@ function EventRow({
   /** Head-count when people sign up on the site. */
   signups?: EventSignups;
 }) {
-  const cost = getEventPage(event.slug)?.cost;
+  const page = getEventPage(event.slug);
+  const cost = page?.cost;
+  const tbc = event.dateTbc ? page?.tbc : undefined;
   const copy = eventCopy(event);
   const seats = shownSeats(event, signups ?? NO_SIGNUPS);
   // A past event with results opens its page, where the wall is.
@@ -176,12 +186,21 @@ function EventRow({
   const body = (
     <>
       <span className="ev-i">{String(n).padStart(2, "0")}</span>
-      <div className="ev-date">
-        {formatShortDate(event.startsAt)}
-        <small className="mute">
-          {formatTimeRange(event.startsAt, event.endsAt)}
-        </small>
-      </div>
+      {event.dateTbc ? (
+        <div className="ev-date tbc">
+          {tbc ? <T {...tbc.short} /> : <T zh="待定" en="TBC" />}
+          <small className="mute">
+            <T zh="时间待定" en="Date TBC" />
+          </small>
+        </div>
+      ) : (
+        <div className="ev-date">
+          {formatShortDate(event.startsAt)}
+          <small className="mute">
+            {formatTimeRange(event.startsAt, event.endsAt)}
+          </small>
+        </div>
+      )}
       <div className="ev-main">
         <div className="need">
           <span className="tag">
@@ -195,6 +214,11 @@ function EventRow({
           {works > 0 && (
             <span className="tag">
               <T zh={`${works} 个作品`} en={`${works} works`} />
+            </span>
+          )}
+          {event.dateTbc && (
+            <span className="tag dash">
+              <T zh="时间待定" en="Date TBC" />
             </span>
           )}
           {!past && event.registrationClosesAt && (
@@ -221,7 +245,7 @@ function EventRow({
         )}
       </div>
       <p className="ev-where mute">
-        {event.location}
+        <T {...eventWhere(event)} />
         {cost && (
           <>
             {" · "}
@@ -239,7 +263,7 @@ function EventRow({
     id: event.slug,
     className: `ev ${past && !results && !materials ? "past" : ""}`,
     "data-kind": event.kind,
-    "data-date": formatShortDate(event.startsAt),
+    "data-date": event.dateTbc ? "TBC" : formatShortDate(event.startsAt),
   };
   if (results) {
     return (
