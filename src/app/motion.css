@@ -2363,6 +2363,33 @@ html[data-lang="en"] .d-title[data-size-en="sm"] {
   margin: 0;
   font-size: var(--fs-sm);
 }
+.d-repo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin: 18px 0 0;
+  color: var(--mute);
+}
+.d-repo > span,
+.d-repo-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.d-repo-name {
+  color: var(--paper);
+  text-transform: none;
+  overflow-wrap: anywhere;
+}
+a.d-repo-name:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.d-repo svg {
+  flex: none;
+}
 .d-toc {
   display: flex;
   flex-direction: column;

@@ -19,6 +19,7 @@ import { memberCode } from "@/lib/members";
 import { MeCard } from "@/app/me/me-card";
 import { AskToJoin, Comments } from "./comments";
 import { ContactCopy, DetailToc } from "./detail-aside";
+import { RepoLine } from "./repo-line";
 import { StarButton } from "./star-button";
 import { UpdateForm } from "./update-form";
 import { Arr } from "@/components/fx/arr";
@@ -146,7 +147,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
     getProjectComments(slug),
   ]);
   if (!result) notFound();
-  const { project, updates } = result;
+  const { project, updates, repo } = result;
   const { media } = project;
   const owner = ownerCardOf(project);
   const name = projectText(project, "name");
@@ -250,6 +251,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
               )}
               <TranslatedMark lang={project.translated} className="d-tr" />
             </div>
+            {repo && <RepoLine repo={repo} url={project.repoUrl} />}
           </div>
           <figure className="d-cover">
             {!hasMedia && <CoverMaterial seed={coverSeed(project.slug)} />}
