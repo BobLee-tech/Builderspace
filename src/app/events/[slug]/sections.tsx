@@ -104,9 +104,11 @@ function Section({ s }: { s: EventSection }) {
               <i className="sw hands" aria-hidden />
               <T zh="动手时间" en="Hands-on" />
             </span>
-            <span>
-              <T {...s.note} />
-            </span>
+            {s.note && (
+              <span>
+                <T {...s.note} />
+              </span>
+            )}
           </p>
         </>
       );
@@ -136,9 +138,11 @@ function Section({ s }: { s: EventSection }) {
               <i className="sw ring" aria-hidden />
               <T {...s.legend.room} />
             </span>
-            <span>
-              <T {...s.legend.note} />
-            </span>
+            {s.legend.note && (
+              <span>
+                <T {...s.legend.note} />
+              </span>
+            )}
           </p>
         </>
       );
@@ -268,9 +272,11 @@ function Lines({ items }: { items: EventLine[] }) {
           <b>
             <T {...it.title} />
           </b>
-          <span className="mute">
-            <T {...it.sub} />
-          </span>
+          {it.sub && (
+            <span className="mute">
+              <T {...it.sub} />
+            </span>
+          )}
         </li>
       ))}
     </ul>

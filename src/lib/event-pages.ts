@@ -50,7 +50,7 @@ export type EventTbc = {
 export type EventPerson = { initial: string; name: string; role: Bi };
 
 /** A short item: a title, one line under it, an optional mono marker. */
-export type EventLine = { mark?: string; title: Bi; sub: Bi };
+export type EventLine = { mark?: string; title: Bi; sub?: Bi };
 
 /**
  * Blocks under the intro, in order. Each holds short lines only; the page
@@ -83,14 +83,14 @@ export type EventSection =
   | {
       kind: "flow";
       heading: Bi;
-      note: Bi;
+      note?: Bi;
       steps: { label: Bi; minutes: number; hands?: boolean; rest?: boolean }[];
     }
   /** A numbered build path; `room` steps are drawn hollow. */
   | {
       kind: "steps";
       heading: Bi;
-      legend: { robot: Bi; room: Bi; note: Bi };
+      legend: { robot: Bi; room: Bi; note?: Bi };
       steps: { title: Bi; sub: Bi; room?: boolean }[];
     }
   /** What gets built: one Collector drawn as parts, with the counts. */
@@ -396,7 +396,6 @@ const beyondChatgpt: EventPage = {
       icon: "clock",
       label: { zh: "时长", en: "Length" },
       value: { zh: "约 3 小时", en: "About 3 hours" },
-      note: { zh: "先看，再分组动手", en: "Watch, then build in teams" },
     },
     {
       icon: "people",
@@ -472,7 +471,7 @@ const beyondChatgpt: EventPage = {
   sections: [
     {
       kind: "terms",
-      heading: { zh: "五个词，各管一件事", en: "Five words, five jobs" },
+      heading: { zh: "概念", en: "Concepts" },
       items: [
         {
           term: "Agent",
@@ -513,7 +512,7 @@ const beyondChatgpt: EventPage = {
     },
     {
       kind: "cards",
-      heading: { zh: "分四组，选一组", en: "Four groups, pick one" },
+      heading: { zh: "分组", en: "Teams" },
       cols: 4,
       items: [
         {
@@ -559,8 +558,7 @@ const beyondChatgpt: EventPage = {
     },
     {
       kind: "flow",
-      heading: { zh: "大致流程 · 约 3 小时", en: "Rough flow · about 3 hours" },
-      note: { zh: "草案，以当天为准", en: "Draft; final on the day" },
+      heading: { zh: "流程", en: "Flow" },
       steps: [
         { label: { zh: "开场", en: "Intro" }, minutes: 10 },
         { label: { zh: "概念", en: "Concepts" }, minutes: 15 },
@@ -747,14 +745,10 @@ const theCollectors: EventPage = {
     },
     {
       kind: "steps",
-      heading: {
-        zh: "搭建流程 · 照着搭建手册来",
-        en: "Build path · from the recipe book",
-      },
+      heading: { zh: "搭建流程", en: "Build steps" },
       legend: {
         robot: { zh: "装一台机器人", en: "One robot" },
         room: { zh: "装房间里的部分", en: "The room around it" },
-        note: { zh: "顺序以当天为准", en: "Order may change on the day" },
       },
       steps: [
         {
@@ -870,10 +864,6 @@ const theCollectors: EventPage = {
           title: {
             zh: "数字艺术、游戏、产品设计",
             en: "Digital art, games, product design",
-          },
-          sub: {
-            zh: "做伦理、数字系统和观众主动权交汇处的体验",
-            en: "Where ethics, digital systems and audience agency meet",
           },
         },
         {
