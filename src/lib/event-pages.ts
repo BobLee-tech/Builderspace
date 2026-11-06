@@ -285,12 +285,12 @@ const aiStudyCareerTalk: EventPage = {
   },
   seatsNote: { zh: "先到先得", en: "First come, first served" },
   highlights: [
-    { zh: "与 ViberSpace 联办", en: "With ViberSpace" },
+    { zh: "与 ViberSpace（USYD）联办", en: "With ViberSpace (USYD)" },
     { zh: "带电脑", en: "Bring a laptop" },
   ],
   hosts: {
-    zh: "主办 ViberSpace（悉大 Vibe Coding Club）× BuilderSpace（UNSW）",
-    en: "Hosted by ViberSpace (USYD Vibe Coding Club) and BuilderSpace (UNSW)",
+    zh: "主办 ViberSpace（USYD）× BuilderSpace（UNSW）",
+    en: "Hosted by ViberSpace (USYD) and BuilderSpace (UNSW)",
   },
   signupVia: {
     name: "Humanitix",
@@ -351,8 +351,8 @@ const aiStudyCareerTalk: EventPage = {
           title: { zh: "AI 复习工作坊", en: "AI study workshop" },
           who: {
             initial: "V",
-            name: "ViberSpace",
-            role: { zh: "悉大 Vibe Coding Club", en: "USYD Vibe Coding Club" },
+            name: "ViberSpace (USYD)",
+            role: { zh: "联办社团", en: "Co-hosting club" },
           },
           items: [
             {
