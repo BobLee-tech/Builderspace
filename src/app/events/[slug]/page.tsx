@@ -298,17 +298,25 @@ async function EventDetail({ slug }: { slug: string }) {
             <div className="evp-panel surf">
               <div className="evp-panel-top">
                 <h2 className="evp-h2">
-                  {phase === "open"
-                    ? full
-                      ? "Waitlist open."
-                      : "Save a seat."
-                    : phase === "closed"
-                      ? "Sign-up closed."
-                      : phase === "past"
-                        ? "That's a wrap."
-                        : phase === "tbc"
-                          ? "Date TBC."
-                          : "See you there."}
+                  {phase === "open" ? (
+                    full ? (
+                      "Waitlist open."
+                    ) : (
+                      "Save a seat."
+                    )
+                  ) : phase === "closed" ? (
+                    "Sign-up closed."
+                  ) : phase === "past" ? (
+                    "That's a wrap."
+                  ) : phase === "tbc" ? (
+                    tbc?.heading ? (
+                      <T {...tbc.heading} />
+                    ) : (
+                      "Date TBC."
+                    )
+                  ) : (
+                    "See you there."
+                  )}
                 </h2>
                 {phase !== "past" && phase !== "tbc" && (
                   <TimeLeft to={event.startsAt} chip />

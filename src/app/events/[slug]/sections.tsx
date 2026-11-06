@@ -57,7 +57,7 @@ function Section({ s }: { s: EventSection }) {
                     </span>
                   )}
                 </b>
-                <span className={c.mark ? "mute evx-out" : "mute"}>
+                <span className="mute">
                   <T {...c.sub} />
                 </span>
               </span>

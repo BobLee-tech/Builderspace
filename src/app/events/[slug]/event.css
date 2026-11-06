@@ -933,10 +933,6 @@
 .evx-card-t > span:last-child {
   font-size: var(--fs-sm);
 }
-.evx-out::before {
-  content: "→ ";
-  color: var(--paper);
-}
 .evx-maybe {
   margin-left: 8px;
   padding: 0 7px;

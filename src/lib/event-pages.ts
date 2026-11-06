@@ -42,6 +42,8 @@ export type EventTbc = {
   where?: Bi;
   /** What's settled (done) and what isn't, in the side card. */
   status: { done: boolean; label: Bi; value: Bi }[];
+  /** The side card's heading; "Date TBC." by default. */
+  heading?: Bi;
 };
 
 /** Someone on the page: the guest, a host, a club. */
@@ -412,6 +414,7 @@ const beyondChatgpt: EventPage = {
     en: "Hosted by BuilderSpace (UNSW)",
   },
   tbc: {
+    heading: { zh: "下周见。", en: "See you next week." },
     short: { zh: "下周", en: "Next week" },
     when: { zh: "下周", en: "Next week" },
     whenNote: { zh: "具体时间规划中", en: "Exact time TBC" },
@@ -510,52 +513,46 @@ const beyondChatgpt: EventPage = {
     },
     {
       kind: "cards",
-      heading: { zh: "四条赛道，选一条", en: "Pick a track" },
+      heading: { zh: "分四组，选一组", en: "Four groups, pick one" },
       cols: 4,
       items: [
         {
           mark: "A",
-          label: "Agent + Harness",
-          title: {
-            zh: "让 AI 推进一个真实任务",
-            en: "Let AI move a real task",
-          },
+          label: "Agent",
+          title: { zh: "让 AI 改一个网站", en: "Have AI edit a website" },
           sub: {
-            zh: "改前改后对比 + 执行记录",
-            en: "Before / after + the run log",
+            zh: "说清要改哪里，看它自己动手",
+            en: "Say what to change, watch it work",
           },
         },
         {
           mark: "B",
           label: "MCP",
           title: {
-            zh: "让 AI 读到外部真实信息",
-            en: "Let AI read real outside data",
+            zh: "让 AI 查 GitHub 和网站",
+            en: "Have AI check GitHub and the site",
           },
           sub: {
-            zh: "带来源的优先级列表或部署诊断",
-            en: "A sourced priority list or deploy diagnosis",
+            zh: "它读真数据，你来定先做什么",
+            en: "It reads real data, you pick what's first",
           },
         },
         {
           mark: "C",
           label: "Skill",
-          title: {
-            zh: "把做法变成可复用的方法",
-            en: "Turn a method into a Skill",
-          },
+          title: { zh: "教 AI 一套做法", en: "Teach AI a routine" },
           sub: {
-            zh: "SKILL.md + 两次使用对比",
-            en: "SKILL.md + two runs compared",
+            zh: "写一次说明，下次直接用",
+            en: "Write it down once, reuse it",
           },
         },
         {
           mark: "D",
-          label: "Automation + Plugin",
-          title: { zh: "让一件事持续重复", en: "Make a job repeat itself" },
+          label: "Automation",
+          title: { zh: "让 AI 定期帮你找活动", en: "Have AI look for events" },
           sub: {
-            zh: "可复用的检索条件 + 两次结果",
-            en: "A reusable search + two results",
+            zh: "比如每周搜一次悉尼的 AI 比赛",
+            en: "Say, Sydney AI hackathons every week",
           },
         },
       ],
