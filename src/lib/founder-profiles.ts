@@ -220,8 +220,8 @@ export const FOUNDER_PROFILES: Record<string, FounderProfile> = {
         lines: [
           t("负责官网和数据", "Runs the website and data"),
           t(
-            "主持与 USYD Vibe Coding Society 合办的第一场 Workshop",
-            "Hosted the first workshop co-run with USYD Vibe Coding Society",
+            "主持与 ViberSpace（USYD）合办的第一场 Workshop",
+            "Hosted the first workshop co-run with ViberSpace (USYD)",
           ),
         ],
       },
