@@ -221,6 +221,22 @@ export const NO_MEDIA: ProjectMedia = {
   videoSeconds: null,
 };
 
+/**
+ * What GitHub says about a project's public repo (project_repos, synced hourly
+ * by github_sync_run() in 20261108000000_project_repos.sql).
+ */
+export type RepoStats = {
+  /** owner/repo */
+  repo: string;
+  stars: number;
+  language: string | null;
+  pushedAt: string | null;
+  archived: boolean;
+  /** Commits on the default branch in the week before the last sync, at most 100. */
+  commits7d: number | null;
+  syncedAt: string;
+};
+
 export type ProjectUpdate = {
   kind: UpdateKind;
   body: string;

@@ -10,6 +10,7 @@ import {
   NO_MEDIA,
   type Project,
   type PublicCard,
+  type RepoStats,
   type SiteEvent,
   type Tutorial,
   type VolunteerPosition,
@@ -66,6 +67,19 @@ export const sampleProjects: Project[] = [
     translated: "en",
   },
 ];
+
+/** Repo stats for the sample project, so the page shows the Repo card. */
+export const sampleRepos: Record<string, RepoStats> = {
+  coursemate: {
+    repo: "example/coursemate",
+    stars: 12,
+    language: "TypeScript",
+    pushedAt: "2026-10-09T09:30:00+11:00",
+    archived: false,
+    commits7d: 8,
+    syncedAt: "2026-10-10T12:00:00+11:00",
+  },
+};
 
 export const sampleTutorials: Tutorial[] = [];
 export const samplePicks: WeeklyPick[] = [];

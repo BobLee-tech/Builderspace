@@ -12,6 +12,7 @@ import {
   STATUS_LABEL,
   UPDATE_KIND_LABEL,
   type Project,
+  type RepoStats,
 } from "@/lib/types";
 import { countKind } from "@/lib/comments";
 import { clip, displayLength, PITCH_MAX } from "@/lib/text-length";
@@ -19,6 +20,7 @@ import { memberCode } from "@/lib/members";
 import { MeCard } from "@/app/me/me-card";
 import { AskToJoin, Comments } from "./comments";
 import { ContactCopy, DetailToc } from "./detail-aside";
+import { RepoLine } from "./repo-line";
 import { StarButton } from "./star-button";
 import { UpdateForm } from "./update-form";
 import { Arr } from "@/components/fx/arr";
@@ -127,6 +129,13 @@ function titleSize(name: string) {
   return units <= 5 ? "xl" : units <= 9 ? "lg" : units <= 16 ? "md" : "sm";
 }
 
+/** The later of the project's own edits and the last push to its repo. */
+function lastActive(updatedAt: string, repo: RepoStats | null) {
+  return repo?.pushedAt && Date.parse(repo.pushedAt) > Date.parse(updatedAt)
+    ? repo.pushedAt
+    : updatedAt;
+}
+
 /** The Star button with this visitor's own star; reads the session. */
 async function ProjectStar({ slug, count }: { slug: string; count: number }) {
   const [session, stars] = await Promise.all([getSession(), getMyStars()]);
@@ -146,7 +155,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
     getProjectComments(slug),
   ]);
   if (!result) notFound();
-  const { project, updates } = result;
+  const { project, updates, repo } = result;
   const { media } = project;
   const owner = ownerCardOf(project);
   const name = projectText(project, "name");
@@ -250,6 +259,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
               )}
               <TranslatedMark lang={project.translated} className="d-tr" />
             </div>
+            {repo && <RepoLine repo={repo} url={project.repoUrl} />}
           </div>
           <figure className="d-cover">
             {!hasMedia && <CoverMaterial seed={coverSeed(project.slug)} />}
@@ -284,7 +294,7 @@ async function ProjectDetail({ slug }: { slug: string }) {
             <dt className="mono mute">
               <T zh="最近更新" en="Last update" />
             </dt>
-            <dd>{formatShortDate(project.updatedAt)}</dd>
+            <dd>{formatShortDate(lastActive(project.updatedAt, repo))}</dd>
           </div>
           <div>
             <dt className="mono mute">

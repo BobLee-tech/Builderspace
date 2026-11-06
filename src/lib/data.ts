@@ -9,6 +9,7 @@ import {
   samplePicks,
   sampleProjects,
   samplePublicCards,
+  sampleRepos,
   sampleEvents,
   sampleTeam,
   sampleTutorials,
@@ -24,6 +25,7 @@ import {
   type ProjectComment,
   type ProjectUpdate,
   type PublicCard,
+  type RepoStats,
   type SiteEvent,
   type Tutorial,
   type WeeklyPick,
@@ -462,9 +464,36 @@ export async function getProjects(): Promise<Project[]> {
   return toProjects(db, data as unknown as ProjectRow[]);
 }
 
+type RepoRow = {
+  repo: string;
+  stars: number | null;
+  language: string | null;
+  pushed_at: string | null;
+  archived: boolean;
+  commits_7d: number | null;
+  synced_at: string | null;
+};
+
+// One-to-one, so PostgREST embeds an object; an array is taken too.
+function toRepo(row: RepoRow | RepoRow[] | null | undefined): RepoStats | null {
+  const r = Array.isArray(row) ? row[0] : row;
+  if (!r?.synced_at || r.stars === null) return null;
+  return {
+    repo: r.repo,
+    stars: r.stars,
+    language: r.language,
+    pushedAt: r.pushed_at,
+    archived: r.archived,
+    commits7d: r.commits_7d,
+    syncedAt: r.synced_at,
+  };
+}
+
 export async function getProject(slug: string): Promise<{
   project: Project;
   updates: ProjectUpdate[];
+  /** The public GitHub repo, once github_sync_run() has read it. */
+  repo: RepoStats | null;
 } | null> {
   "use cache";
   cacheLife("minutes");
@@ -473,13 +502,16 @@ export async function getProject(slug: string): Promise<{
   const db = getSupabase();
   if (!db) {
     const project = sampleProjects.find((p) => p.slug === slug);
-    return project ? { project, updates: [] } : null;
+    return project
+      ? { project, updates: [], repo: sampleRepos[slug] ?? null }
+      : null;
   }
 
   const { data, error } = await db
     .from("projects")
     .select(
-      `${PROJECT_COLUMNS},project_updates(kind,body,body_en,original_lang,url,occurred_at)`,
+      `${PROJECT_COLUMNS},project_updates(kind,body,body_en,original_lang,url,occurred_at),` +
+        "project_repos(repo,stars,language,pushed_at,archived,commits_7d,synced_at)",
     )
     .eq("slug", slug)
     .order("occurred_at", {
@@ -499,6 +531,7 @@ export async function getProject(slug: string): Promise<{
       url: string | null;
       occurred_at: string;
     }[];
+    project_repos: RepoRow | RepoRow[] | null;
   };
   const [project] = await toProjects(db, [row]);
   return {
@@ -511,6 +544,7 @@ export async function getProject(slug: string): Promise<{
       url: u.url,
       occurredAt: u.occurred_at,
     })),
+    repo: toRepo(row.project_repos),
   };
 }
 
