@@ -47,11 +47,10 @@ export default async function EventsPage() {
     ...allEventMaterials().map(([slug]) => slug),
   ]);
   const calendarUrl = `${siteUrl.replace(/^https?:/, "webcal:")}/events.ics`;
-  // The next dated event has its own ticket up top; the list holds the rest,
-  // undated ones included.
+  // The next dated event also gets its own ticket up top; the list holds
+  // every event, that one and undated ones included.
   const next = upcoming.find((e) => !e.dateTbc);
-  const later = upcoming.filter((e) => e !== next);
-  const kinds = [...new Set([...later, ...past].map((e) => e.kind))];
+  const kinds = [...new Set([...upcoming, ...past].map((e) => e.kind))];
   const onStrip = [...upcoming, ...past].flatMap((e) => {
     const week = roadmapWeek(e.startsAt);
     return week < 0
@@ -121,9 +120,9 @@ export default async function EventsPage() {
             />
           </p>
         )}
-        {later.length + past.length > 0 && (
+        {upcoming.length + past.length > 0 && (
           <EventList kinds={kinds}>
-            {later.map((event, i) => (
+            {upcoming.map((event, i) => (
               <EventRow
                 key={event.slug}
                 event={event}
@@ -135,7 +134,7 @@ export default async function EventsPage() {
               <EventRow
                 key={event.slug}
                 event={event}
-                n={later.length + i + 1}
+                n={upcoming.length + i + 1}
                 past
                 materials={withMaterials.has(event.slug)}
               />
