@@ -707,7 +707,6 @@ html.fx .top {
     .fields,
     .timeline li,
     .road,
-    .dist,
     .dg,
     .empty {
       animation: rv-in linear both;
@@ -1124,68 +1123,6 @@ html.fx .top {
 }
 .st-paused {
   background: var(--line-2);
-}
-
-/* status distribution bar */
-.dist {
-  display: flex;
-  height: 46px;
-  margin-top: 32px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  overflow: hidden;
-  isolation: isolate;
-}
-.dist > div {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 14px;
-  min-width: 0;
-  border-right: 1px solid var(--line);
-  font-size: 12.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  transition: flex-grow 0.8s var(--ease);
-}
-.dist > div:last-child {
-  border-right: 0;
-}
-.dist > div::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.5;
-}
-.dist .d-recruiting::before {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.18),
-    rgba(255, 255, 255, 0.04)
-  );
-}
-.dist .d-building::before {
-  background: repeating-linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.1) 0 1px,
-    transparent 1px 4px
-  );
-}
-.dist .d-demoed::before {
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.14) 0 1px,
-    transparent 1px 5px
-  );
-}
-.dist .d-paused::before {
-  background: rgba(255, 255, 255, 0.03);
-}
-.dist b {
-  font-family: var(--f-display);
-  font-weight: 600;
 }
 
 /* sticky filter toolbar + grid/list toggle */
@@ -4225,21 +4162,6 @@ a.d-repo-name:hover {
   .toolbar .filters .label {
     flex: none;
     white-space: nowrap;
-  }
-  /* Four proportional segments don't fit a phone: show them as a 2×2 grid. */
-  .dist {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    height: auto;
-  }
-  .dist > div {
-    height: 40px;
-  }
-  .dist > div:nth-child(2n) {
-    border-right: 0;
-  }
-  .dist > div:nth-child(-n + 2) {
-    border-bottom: 1px solid var(--line);
   }
   .tb-right {
     margin-left: 0;
