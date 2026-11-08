@@ -638,7 +638,7 @@ html.fx .top {
   background:
     radial-gradient(
       200px circle at var(--mx) var(--my),
-      rgba(255, 255, 255, 0.4),
+      rgba(255, 255, 255, calc(var(--spot, 0) * 0.4)),
       transparent 60%
     ),
     var(--edge);
@@ -708,7 +708,6 @@ html.fx .top {
     .timeline li,
     .road,
     .dist,
-    .path li,
     .dg,
     .empty {
       animation: rv-in linear both;
@@ -3022,53 +3021,7 @@ a.d-repo-name:hover {
   }
 }
 
-/* ---------- learn: terminal, path, digest rows ---------- */
-.path {
-  list-style: none;
-  margin: 36px 0 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  position: relative;
-}
-.path::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 19px;
-  height: 1px;
-  background: var(--line-2);
-}
-.path li {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-right: 16px;
-}
-.path li > span {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line-2);
-  background: var(--ink);
-  font-size: 12px;
-  position: relative;
-  margin-bottom: 8px;
-  transition:
-    background 0.4s,
-    color 0.4s;
-}
-.path li:hover > span {
-  background: var(--paper);
-  color: var(--ink);
-}
-.path b {
-  font-size: 17px;
-}
+/* ---------- learn: terminal, digest rows ---------- */
 .lcard {
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -4301,13 +4254,6 @@ a.d-repo-name:hover {
   .pgrid.as-list .pcard-foot {
     display: none;
   }
-  .path {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px 0;
-  }
-  .path::before {
-    display: none;
-  }
   .join2 {
     grid-template-columns: 1fr;
   }
@@ -4551,7 +4497,7 @@ html.fx:not(.booted) .top {
   background:
     radial-gradient(
       260px circle at var(--mx) var(--my),
-      rgba(255, 255, 255, 0.55),
+      rgba(255, 255, 255, calc(var(--spot, 0) * 0.55)),
       transparent 65%
     ),
     var(--edge);
@@ -4609,10 +4555,6 @@ html.fx:not(.booted) .top {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-.strip dt b {
-  font-weight: 400;
-  color: #5d5d63;
 }
 .pcard-foot > span {
   display: inline-flex;

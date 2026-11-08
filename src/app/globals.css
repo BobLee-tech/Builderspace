@@ -448,10 +448,12 @@ main {
 }
 .strip dl {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* The next event's title is the long one. */
+  grid-template-columns: minmax(0, 1.7fr) repeat(3, minmax(0, 1fr));
   margin-block: 0;
 }
 .strip dl > div {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -466,6 +468,36 @@ main {
 .strip dd {
   margin: 0;
   font-weight: 500;
+}
+/* The whole cell is the link. */
+.strip-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.strip-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.strip-link:focus-visible {
+  outline: none;
+}
+.strip-link:focus-visible::after {
+  outline: 1px solid var(--paper);
+  outline-offset: -3px;
+}
+.strip-link svg {
+  flex: none;
+  align-self: center;
+  opacity: 0.4;
+  transition:
+    translate 0.35s var(--ease),
+    opacity 0.35s var(--ease);
+}
+.strip dl > div:hover .strip-link svg {
+  translate: 4px 0;
+  opacity: 1;
 }
 
 /* ---------- tags ---------- */

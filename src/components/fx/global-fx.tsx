@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { ChromeRing } from "./chrome-ring";
 import {
+  createEased,
   frameLoop,
   hasFinePointer,
   prefersReducedMotion,
@@ -11,7 +12,7 @@ import {
   spring,
 } from "./motion";
 
-const SPOT = ".pcard, .box, .lcard, .form, .pillars, .surf, .ccard, .pt-tile";
+const SPOT = ".pcard, .box, .lcard, .form, .pillars, .surf, .ccard";
 // The ring wraps only button-like controls; other links and clickable cards
 // keep a round ring that grows a little. It steps aside while you type.
 const CLICKABLE = "a, button, label.chip, summary";
@@ -44,6 +45,25 @@ const SIZE = 46,
   HOVER = 1.2,
   PAD = 12,
   PRESS = 0.9;
+
+/**
+ * A lit surface's `--spot`, 0–1: it fades in under the pointer and out after
+ * it, while `--mx` / `--my` stay put, so the light dies where it was.
+ */
+const spots = new WeakMap<
+  HTMLElement,
+  ReturnType<typeof createEased<"spot">>
+>();
+function spotFade(el: HTMLElement) {
+  let fade = spots.get(el);
+  if (!fade) {
+    fade = createEased({ spot: 0 }, (v) =>
+      el.style.setProperty("--spot", (v.spot / 100).toFixed(3)),
+    );
+    spots.set(el, fade);
+  }
+  return fade;
+}
 
 /** The control to wrap under `target`, if it is a button-sized button. */
 function wrapTarget(target: Element) {
@@ -134,10 +154,8 @@ export function GlobalFx() {
           : 0;
       }
       const spot = target?.closest<HTMLElement>(SPOT) ?? null;
-      if (lit && lit !== spot) {
-        lit.style.removeProperty("--mx");
-        lit.style.removeProperty("--my");
-      }
+      if (lit && lit !== spot) spotFade(lit).rest();
+      if (spot && spot !== lit) spotFade(spot).aim({ spot: 100 });
       if (spot !== lit) litRect = null;
       lit = spot;
       if (spot) {
@@ -247,8 +265,7 @@ export function GlobalFx() {
       frame.cancel();
       stopCursor?.();
       chrome?.dispose();
-      lit?.style.removeProperty("--mx");
-      lit?.style.removeProperty("--my");
+      if (lit) spotFade(lit).reset();
       root.classList.remove("has-cursor", "cur-live", "cur-text", "cur-chrome");
     });
     return () => cleanups.forEach((f) => f());

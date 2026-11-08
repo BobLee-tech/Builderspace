@@ -385,19 +385,6 @@ export function JoinFlow({
             onCard={(form) => setCard(readCard(form))}
           />
         )}
-
-        <p className="mute small why">
-          <b>
-            <T
-              zh="为什么是验证码，不是登录链接？"
-              en="Why a code and not a sign-in link?"
-            />
-          </b>{" "}
-          <T
-            zh="很多同学在微信里打开网站，邮件里的链接会跳到另一个浏览器，登录状态对不上；6 位码在哪个浏览器都能输。"
-            en="Many of us open the site inside WeChat, where an email link opens another browser and the sign-in gets lost. A code works in any browser."
-          />
-        </p>
       </div>
     </div>
   );
@@ -422,21 +409,15 @@ function MailHint({ email }: { email: string }) {
       </div>
     );
   }
+  if (!looksDone) return null;
   return (
     <div className="mail-hint" aria-live="polite">
       <span className="ic">i</span>
       <span>
-        {looksDone ? (
-          <T
-            zh="其他邮箱也能加入。用学校邮箱加入的同学是认证成员。"
-            en="Any email works. Members who join with a school email are verified."
-          />
-        ) : (
-          <T
-            zh="推荐用学校邮箱（如 z1234567@ad.unsw.edu.au），验证后是认证成员。没有也没关系，任何邮箱都能加入。"
-            en="A school email (like z1234567@ad.unsw.edu.au) makes you a verified member. Any email works too."
-          />
-        )}
+        <T
+          zh="其他邮箱也能加入。用学校邮箱加入的同学是认证成员。"
+          en="Any email works. Members who join with a school email are verified."
+        />
       </span>
     </div>
   );

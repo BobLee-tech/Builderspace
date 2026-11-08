@@ -1,8 +1,9 @@
 import {
+  ArrowRight,
+  CalendarBlank,
+  Cube,
+  SignIn,
   UsersThree,
-  Translate,
-  Coin,
-  GitBranch,
 } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -16,8 +17,11 @@ import { PartnersSection } from "@/components/partners";
 import { SampleNotice } from "@/components/sample-notice";
 import { T } from "@/components/t";
 import { CYCLE } from "@/lib/cycle";
-import { getProjects } from "@/lib/data";
+import { getEventSchedule, getMemberCount, getProjects } from "@/lib/data";
+import { eventCopy } from "@/lib/event-pages";
+import { formatShortDate } from "@/lib/format";
 import { pageMeta } from "@/lib/seo";
+import { memberCount } from "@/lib/team";
 import { Plaza } from "./projects/plaza";
 
 export const metadata: Metadata = pageMeta("/");
@@ -72,22 +76,7 @@ export default function Home() {
 
       <Ticker />
 
-      <section className="strip" aria-label="At a glance / 一眼看懂">
-        <dl className="wrap">
-          {FACTS.map((f) => (
-            <div key={f.label.en}>
-              <dt className="mono mute">
-                <f.icon weight="light" size={15} aria-hidden />
-                <b>{String(FACTS.indexOf(f) + 1).padStart(2, "0")}</b>
-                <T {...f.label} />
-              </dt>
-              <dd>
-                <T {...f.value} />
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <Strip />
 
       <PlazaSection />
 
@@ -97,32 +86,6 @@ export default function Home() {
     </>
   );
 }
-
-const FACTS = [
-  {
-    icon: UsersThree,
-    label: { zh: "谁可以来", en: "Who" },
-    value: {
-      zh: "所有 UNSW 学生 · 零基础也行",
-      en: "Any UNSW student · beginners welcome",
-    },
-  },
-  {
-    icon: Translate,
-    label: { zh: "工作语言", en: "Languages" },
-    value: { zh: "English + 中文", en: "English + 中文" },
-  },
-  {
-    icon: Coin,
-    label: { zh: "费用", en: "Cost" },
-    value: { zh: "免费", en: "Free" },
-  },
-  {
-    icon: GitBranch,
-    label: { zh: "作品归属", en: "Your work" },
-    value: { zh: "归你和队友", en: "Stays yours" },
-  },
-];
 
 const TICKER_BIG = [
   "Build Night",
@@ -166,6 +129,69 @@ function Ticker() {
         </div>
       </TickerFx>
     </div>
+  );
+}
+
+/** Under the hero: the next thing to do here, each cell a way in. */
+async function Strip() {
+  const [{ upcoming }, members, projects] = await Promise.all([
+    getEventSchedule(),
+    getMemberCount(),
+    getProjects(),
+  ]);
+  const next = upcoming.find((e) => !e.dateTbc);
+  const when = next && formatShortDate(next.startsAt);
+  const title = next && eventCopy(next).title;
+  const cells = [
+    {
+      icon: CalendarBlank,
+      href: next ? `/events/${next.slug}` : "/events",
+      label: { zh: "下一场", en: "Next event" },
+      value:
+        when && title
+          ? { zh: `${when} · ${title.zh}`, en: `${when} · ${title.en}` }
+          : { zh: "即将公布", en: "Coming soon" },
+    },
+    {
+      icon: UsersThree,
+      href: "/people",
+      label: { zh: "成员", en: "Members" },
+      value: memberCount(members ?? 0),
+    },
+    {
+      icon: Cube,
+      href: "#plaza",
+      label: { zh: "在做的项目", en: "Projects" },
+      value: { zh: `${projects.length} 个`, en: String(projects.length) },
+    },
+    {
+      icon: SignIn,
+      href: "/join",
+      label: { zh: "加入", en: "Join" },
+      value: { zh: "免费 · 零基础也行", en: "Free · beginners welcome" },
+    },
+  ];
+  return (
+    <section className="strip" aria-label="At a glance / 一眼看懂">
+      <dl className="wrap">
+        {cells.map((c) => (
+          <div key={c.label.en}>
+            <dt className="mono mute">
+              <c.icon weight="light" size={15} aria-hidden />
+              <T {...c.label} />
+            </dt>
+            <dd>
+              <Link href={c.href} className="strip-link">
+                <span>
+                  <T {...c.value} />
+                </span>
+                <ArrowRight weight="light" size={15} aria-hidden />
+              </Link>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 
