@@ -160,19 +160,23 @@
 .has-cursor textarea {
   cursor: text;
 }
-/* The video player is a modal <dialog> (and can go fullscreen), so it sits in
-   the top layer above the cursor: with `cursor: none` the pointer
-   vanished there. Use the system cursor inside it and hide ours until it
-   closes. */
-.has-cursor .vlb {
+/* A modal <dialog> (the video player, the card zooms on /people and project
+   pages, the poster) and anything fullscreen sit in the top layer, above
+   the custom cursor whatever its z-index, so with `cursor: none` the pointer
+   vanished over them. Inside one, use the system cursor and hide ours until
+   it closes. */
+.has-cursor dialog:modal,
+.has-cursor dialog:modal::backdrop,
+.has-cursor :fullscreen {
   cursor: auto;
 }
-.has-cursor .vlb button {
+.has-cursor dialog:modal :is(a, button, label, summary),
+.has-cursor :fullscreen :is(a, button, label, summary) {
   cursor: pointer;
 }
-.has-cursor:has(.vlb[open]) .cur,
-.has-cursor:has(.vlb[open]) .cur-ring,
-.has-cursor:has(.vlb[open]) .cur-gl {
+.has-cursor:has(dialog:modal, :fullscreen) .cur,
+.has-cursor:has(dialog:modal, :fullscreen) .cur-ring,
+.has-cursor:has(dialog:modal, :fullscreen) .cur-gl {
   opacity: 0;
 }
 
