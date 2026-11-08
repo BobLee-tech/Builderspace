@@ -89,6 +89,12 @@ export function getEventResults(slug: string): EventResults | null {
   return RESULTS[slug] ?? null;
 }
 
+/** How many came, from the results' "came" head-count; null before it's in. */
+export function cameCount(slug: string): number | null {
+  const stat = RESULTS[slug]?.stats?.find((s) => s.label.en === "came");
+  return stat?.value ?? null;
+}
+
 /** Every event's results, for the checks in event-results.test.ts. */
 export const allEventResults = () => Object.entries(RESULTS);
 
