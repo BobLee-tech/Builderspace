@@ -85,7 +85,7 @@ const PARTNERS: Partner[] = [
     since: "T3 2026",
     events: ["put-yourself-online", "ai-study-career-talk"],
     home: true,
-    // From their Humanitix organiser page; waiting for their OK.
+    // From their Humanitix organiser page.
     intro: {
       kind: { zh: "学生社群", en: "Student community" },
       base: { zh: "悉尼大学", en: "University of Sydney" },
@@ -131,6 +131,7 @@ const PARTNERS: Partner[] = [
         url: "https://events.humanitix.com/host/usyd-vibe-coding-club",
         label: { zh: "Humanitix 主页", en: "On Humanitix" },
       },
+      confirmed: "2026-11-08",
     },
   },
 ];

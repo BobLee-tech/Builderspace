@@ -256,28 +256,35 @@ export function PartnerSeat({
     void d.offsetWidth;
     d.classList.add("lit");
     if (prefersReducedMotion()) return;
-    const t = setTimeout(
-      () => void burst("partner", d.querySelector(".ps-seal"), d),
-      640,
-    );
+    const t = setTimeout(() => {
+      // Closed before the seal landed: nobody is left to see it.
+      if (!closing.current)
+        void burst("partner", d.querySelector(".ps-seal"), d);
+    }, 640);
     return () => clearTimeout(t);
   }, [step]);
 
-  // The mail app takes focus: ask when the reader comes back. If nothing
-  // opened, the page keeps its focus, so ask anyway after a moment.
+  // The mail app takes focus: ask when the reader comes back (phones may only
+  // report the page becoming visible again). If nothing opened, the page keeps
+  // its focus, so ask anyway after a moment.
   const waitForReturn = () => {
     unwait.current?.();
     const ask = () => {
       unwait.current?.();
       setStep("check");
     };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") ask();
+    };
     const t = setTimeout(() => {
       if (document.hasFocus()) ask();
     }, 1200);
     addEventListener("focus", ask, { once: true });
+    document.addEventListener("visibilitychange", onVisible);
     unwait.current = () => {
       clearTimeout(t);
       removeEventListener("focus", ask);
+      document.removeEventListener("visibilitychange", onVisible);
       unwait.current = null;
     };
   };

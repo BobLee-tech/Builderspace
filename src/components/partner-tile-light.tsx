@@ -34,8 +34,10 @@ export function PartnerTileLight() {
 
     let px: number | null = null;
     let py = 0;
+    let visible = false;
     const update = () => {
-      const away = px === null || document.querySelector("dialog:modal");
+      const away =
+        px === null || !visible || document.querySelector("dialog:modal");
       for (const t of tiles) {
         let lit = 0;
         if (!away) {
@@ -58,20 +60,30 @@ export function PartnerTileLight() {
       if (e.pointerType !== "mouse" || prefersReducedMotion()) return;
       px = e.clientX;
       py = e.clientY;
-      update();
+      if (visible) update();
     };
     const onOut = () => {
       px = null;
       update();
     };
     const onScroll = () => {
-      if (px !== null) update();
+      if (visible && px !== null) update();
     };
+    // Off screen there's nothing to light, so skip measuring on every move.
+    const io = new IntersectionObserver(
+      ([en]) => {
+        visible = en.isIntersecting;
+        update();
+      },
+      { rootMargin: `${RANGE}px` },
+    );
+    io.observe(tiles[0].el.closest(".pt-wall") ?? tiles[0].el);
     const root = document.documentElement;
     document.addEventListener("pointermove", onMove, { passive: true });
     root.addEventListener("pointerleave", onOut);
     addEventListener("scroll", onScroll, { passive: true });
     return () => {
+      io.disconnect();
       document.removeEventListener("pointermove", onMove);
       root.removeEventListener("pointerleave", onOut);
       removeEventListener("scroll", onScroll);

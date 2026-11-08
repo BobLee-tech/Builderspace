@@ -174,7 +174,12 @@ export async function PartnersSection() {
                 <T zh="第一个席位开放中" en="First seat open" />
               )}
             </span>
-            <a href="#pt-contact" className="btn ghost" data-seat>
+            <a
+              href="#pt-contact"
+              className="btn ghost"
+              data-seat
+              aria-haspopup="dialog"
+            >
               <T zh="成为合作方" en="Partner with us" />
               <Arr />
             </a>
@@ -348,7 +353,12 @@ function Invite() {
           ))}
         </span>
         <span>
-          <a href={MAILTO} className="btn solid primary" data-seat>
+          <a
+            href={MAILTO}
+            className="btn solid primary"
+            data-seat
+            aria-haspopup="dialog"
+          >
             <T zh="聊聊合作" en="Talk to us" />
             <Arr />
           </a>
