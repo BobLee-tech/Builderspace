@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { prefersReducedMotion } from "./motion";
 
-export type CelebrationKind = "join" | "project";
+export type CelebrationKind = "join" | "project" | "partner";
 
 // Black / white / chrome, with the mascot's orange as the only colour.
 const SILVER = ["#ffffff", "#e6e6ea", "#b9b9c0", "#7d7d85", "#3d3d42"];
@@ -23,13 +23,19 @@ function viewportOrigin(el: Element | null | undefined) {
 /**
  * One burst of confetti on a full-screen overlay that removes itself when the
  * last particle lands. The library is only fetched after a successful submit.
+ * From inside a modal <dialog> pass it as `host`: the dialog sits in the top
+ * layer, above anything appended to <body>.
  */
-async function burst(kind: CelebrationKind, from: Element | null | undefined) {
+export async function burst(
+  kind: CelebrationKind,
+  from: Element | null | undefined,
+  host: Element = document.body,
+) {
   const { default: confetti } = await import("canvas-confetti");
   const canvas = document.createElement("canvas");
   canvas.className = "celebrate-canvas";
   canvas.setAttribute("aria-hidden", "true");
-  document.body.append(canvas);
+  host.append(canvas);
   const fire = confetti.create(canvas, { resize: true, useWorker: true });
   const small = innerWidth < 761;
   const n = (count: number) => Math.round(small ? count * 0.6 : count);
@@ -66,6 +72,34 @@ async function burst(kind: CelebrationKind, from: Element | null | undefined) {
       origin: viewportOrigin(from),
       colors: MASCOT,
       shapes: ["circle"],
+    });
+  } else if (kind === "partner") {
+    // Silver only: the seat card has no mascot to borrow a colour from.
+    const look = { colors: SILVER, shapes: ["square"] as confetti.Shape[] };
+    const side = { spread: 55, startVelocity: small ? 44 : 56 };
+    shot({
+      particleCount: n(90),
+      spread: 75,
+      startVelocity: 42,
+      gravity: 1.15,
+      scalar: 0.85,
+      origin: viewportOrigin(from),
+      colors: SILVER,
+      shapes: ["square", "circle"],
+    });
+    shot({
+      ...side,
+      ...look,
+      particleCount: n(60),
+      angle: 60,
+      origin: { x: 0, y: 0.9 },
+    });
+    shot({
+      ...side,
+      ...look,
+      particleCount: n(60),
+      angle: 120,
+      origin: { x: 1, y: 0.9 },
     });
   } else {
     const origin = viewportOrigin(from);

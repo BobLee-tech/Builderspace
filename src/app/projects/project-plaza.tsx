@@ -62,22 +62,6 @@ export function ProjectPlaza({
 
   return (
     <>
-      <div className="dist" aria-label="Status mix / 项目状态分布">
-        {STATUSES.map((s) => (
-          <div
-            key={s}
-            className={`d-${s}`}
-            style={{ flex: `${Math.max(count(s), 0.4)} 1 0` }}
-          >
-            <StatusDot status={s} />
-            <b>{count(s)}</b>
-            <span className="mute">
-              <T {...STATUS_LABEL[s]} />
-            </span>
-          </div>
-        ))}
-      </div>
-
       <div className="toolbar">
         <div className="tb-filters">
           <div

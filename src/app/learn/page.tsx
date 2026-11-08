@@ -20,13 +20,6 @@ export const metadata: Metadata = pageMeta("/learn", {
   ),
 });
 
-const PATH = [
-  { zh: "需求拆解", en: "Break it down" },
-  { zh: "代码审阅", en: "Review the code" },
-  { zh: "测试", en: "Test it" },
-  { zh: "部署", en: "Ship it" },
-];
-
 export default async function LearnPage() {
   const [tutorials, picks, events] = await Promise.all([
     getTutorials(),
@@ -44,7 +37,7 @@ export default async function LearnPage() {
           <PageHead
             path="learn"
             eyebrow={{ zh: "资源 / Resources", en: "Resources" }}
-            title={["Write with AI.", "Read every line."]}
+            title={["Grab a kit.", "Ship it."]}
             aside={[
               {
                 k: { zh: "工作坊", en: "Workshops" },
@@ -60,25 +53,7 @@ export default async function LearnPage() {
               },
             ]}
           />
-          <p className="lede">
-            <T
-              zh="教的是软件开发，AI 只是工具。每期都走同一条路："
-              en="We teach software; AI is just the tool. Every session takes the same path:"
-            />
-          </p>
-
-          <ol className="path" aria-label="Learning path / 学习路径">
-            {PATH.map((step, i) => (
-              <li key={step.en}>
-                <span className="mono">{String(i + 1).padStart(2, "0")}</span>
-                <b>
-                  <T {...step} />
-                </b>
-              </li>
-            ))}
-          </ol>
-
-          <div className="lgrid" style={{ marginTop: 40 }}>
+          <div className="lgrid">
             <article className="lcard">
               <div className="term">
                 <div className="term-bar">

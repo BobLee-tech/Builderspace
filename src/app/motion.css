@@ -638,7 +638,7 @@ html.fx .top {
   background:
     radial-gradient(
       200px circle at var(--mx) var(--my),
-      rgba(255, 255, 255, 0.4),
+      rgba(255, 255, 255, calc(var(--spot, 0) * 0.4)),
       transparent 60%
     ),
     var(--edge);
@@ -707,8 +707,6 @@ html.fx .top {
     .fields,
     .timeline li,
     .road,
-    .dist,
-    .path li,
     .dg,
     .empty {
       animation: rv-in linear both;
@@ -1125,68 +1123,6 @@ html.fx .top {
 }
 .st-paused {
   background: var(--line-2);
-}
-
-/* status distribution bar */
-.dist {
-  display: flex;
-  height: 46px;
-  margin-top: 32px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  overflow: hidden;
-  isolation: isolate;
-}
-.dist > div {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 14px;
-  min-width: 0;
-  border-right: 1px solid var(--line);
-  font-size: 12.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  transition: flex-grow 0.8s var(--ease);
-}
-.dist > div:last-child {
-  border-right: 0;
-}
-.dist > div::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.5;
-}
-.dist .d-recruiting::before {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.18),
-    rgba(255, 255, 255, 0.04)
-  );
-}
-.dist .d-building::before {
-  background: repeating-linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.1) 0 1px,
-    transparent 1px 4px
-  );
-}
-.dist .d-demoed::before {
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.14) 0 1px,
-    transparent 1px 5px
-  );
-}
-.dist .d-paused::before {
-  background: rgba(255, 255, 255, 0.03);
-}
-.dist b {
-  font-family: var(--f-display);
-  font-weight: 600;
 }
 
 /* sticky filter toolbar + grid/list toggle */
@@ -3022,53 +2958,7 @@ a.d-repo-name:hover {
   }
 }
 
-/* ---------- learn: terminal, path, digest rows ---------- */
-.path {
-  list-style: none;
-  margin: 36px 0 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  position: relative;
-}
-.path::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 19px;
-  height: 1px;
-  background: var(--line-2);
-}
-.path li {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-right: 16px;
-}
-.path li > span {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line-2);
-  background: var(--ink);
-  font-size: 12px;
-  position: relative;
-  margin-bottom: 8px;
-  transition:
-    background 0.4s,
-    color 0.4s;
-}
-.path li:hover > span {
-  background: var(--paper);
-  color: var(--ink);
-}
-.path b {
-  font-size: 17px;
-}
+/* ---------- learn: terminal, digest rows ---------- */
 .lcard {
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -4273,21 +4163,6 @@ a.d-repo-name:hover {
     flex: none;
     white-space: nowrap;
   }
-  /* Four proportional segments don't fit a phone: show them as a 2×2 grid. */
-  .dist {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    height: auto;
-  }
-  .dist > div {
-    height: 40px;
-  }
-  .dist > div:nth-child(2n) {
-    border-right: 0;
-  }
-  .dist > div:nth-child(-n + 2) {
-    border-bottom: 1px solid var(--line);
-  }
   .tb-right {
     margin-left: 0;
     width: 100%;
@@ -4299,13 +4174,6 @@ a.d-repo-name:hover {
   }
   .pgrid.as-list .pcard-need,
   .pgrid.as-list .pcard-foot {
-    display: none;
-  }
-  .path {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px 0;
-  }
-  .path::before {
     display: none;
   }
   .join2 {
@@ -4551,7 +4419,7 @@ html.fx:not(.booted) .top {
   background:
     radial-gradient(
       260px circle at var(--mx) var(--my),
-      rgba(255, 255, 255, 0.55),
+      rgba(255, 255, 255, calc(var(--spot, 0) * 0.55)),
       transparent 65%
     ),
     var(--edge);
@@ -4609,10 +4477,6 @@ html.fx:not(.booted) .top {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-.strip dt b {
-  font-weight: 400;
-  color: #5d5d63;
 }
 .pcard-foot > span {
   display: inline-flex;

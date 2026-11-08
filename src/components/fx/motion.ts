@@ -201,6 +201,64 @@ export const frameLoop = createFrameLoop();
 export const follow = (rate: number, dt: number) =>
   1 - Math.pow(1 - rate, dt * 60);
 
+/**
+ * A set of numbers that eases toward a goal on a frame loop, painting each
+ * step. A pointer effect aims it at the pointer, and on leave at `rest`, so the
+ * effect glides back instead of snapping: never remove its CSS variables or
+ * restart its animation when the pointer goes. `follow` and `settle` are the
+ * per-frame rates toward the pointer and back to rest.
+ */
+export function createEased<K extends string>(
+  rest: Record<K, number>,
+  paint: (value: Readonly<Record<K, number>>) => void,
+  { follow: toward = 0.16, settle = 0.05, loop = frameLoop } = {},
+) {
+  const value = { ...rest };
+  const keys = Object.keys(rest) as K[];
+  let goal = rest;
+  let settling = false;
+  let stop: (() => void) | null = null;
+  const job: FrameJob = (dt) => {
+    const k = follow(settling ? settle : toward, dt);
+    let moving = false;
+    for (const key of keys) {
+      const d = goal[key] - value[key];
+      value[key] += d * k;
+      if (Math.abs(d) > 0.05) moving = true;
+      else value[key] = goal[key];
+    }
+    paint(value);
+    if (!moving) stop = null;
+    return moving;
+  };
+  return {
+    /**
+     * Ease toward `to` (the pointer); `rest()` eases back. `slow` takes the
+     * settle rate, for a fade that holds its place instead of going to rest.
+     */
+    aim(to: Record<K, number>, slow = to === rest) {
+      goal = to;
+      settling = slow;
+      stop ??= loop.add(job);
+    },
+    rest() {
+      this.aim(rest);
+    },
+    /** Jump to rest with no easing (e.g. when the effect first shows). */
+    reset() {
+      stop?.();
+      stop = null;
+      goal = rest;
+      Object.assign(value, rest);
+      paint(value);
+    },
+    stop() {
+      stop?.();
+      stop = null;
+    },
+  };
+}
+
 /** Width of one complete ticker copy, including the inter-copy gap. */
 export function tickerPeriod(firstOffset: number, nextCopyOffset: number) {
   return Math.max(0, nextCopyOffset - firstOffset);

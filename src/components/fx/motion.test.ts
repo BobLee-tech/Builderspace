@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  createEased,
   createFrameLoop,
   follow,
   ringTarget,
@@ -109,6 +110,61 @@ describe("shared frame loop", () => {
     const stop = loop.add(() => true);
     stop();
     expect(cancelled).toBe(42);
+  });
+});
+
+describe("eased pointer values", () => {
+  const manualLoop = () => {
+    let cb: FrameRequestCallback | null = null;
+    let now = 0;
+    const loop = createFrameLoop(
+      (f) => {
+        cb = f;
+        return 1;
+      },
+      () => {
+        cb = null;
+      },
+    );
+    const tick = (frames: number) => {
+      for (let i = 0; i < frames && cb; i++) {
+        const f = cb;
+        cb = null;
+        f((now += 1000 / 60));
+      }
+    };
+    return { loop, tick, idle: () => cb === null };
+  };
+
+  it("glides back to rest on leave instead of snapping", () => {
+    const { loop, tick, idle } = manualLoop();
+    const seen: number[] = [];
+    const light = createEased({ x: 0 }, (v) => seen.push(v.x), { loop });
+    light.aim({ x: 100 });
+    tick(120);
+    expect(seen.at(-1)).toBe(100);
+    expect(idle()).toBe(true);
+
+    seen.length = 0;
+    light.rest();
+    tick(1);
+    // one frame later it has only started back: no jump to 0
+    expect(seen[0]).toBeGreaterThan(80);
+    tick(400);
+    expect(seen.at(-1)).toBe(0);
+    expect(seen.every((v, i) => i === 0 || v <= seen[i - 1])).toBe(true);
+    expect(idle()).toBe(true);
+  });
+
+  it("jumps to rest on reset and stops its frames", () => {
+    const { loop, tick, idle } = manualLoop();
+    let x = -1;
+    const light = createEased({ x: 0 }, (v) => (x = v.x), { loop });
+    light.aim({ x: 50 });
+    tick(3);
+    light.reset();
+    expect(x).toBe(0);
+    expect(idle()).toBe(true);
   });
 });
 

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { biText, pageMeta } from "@/lib/seo";
 import { PageHead } from "@/components/page-head";
 import { SampleNotice } from "@/components/sample-notice";
-import { SpecRow } from "@/components/spec-row";
 import { getProjects } from "@/lib/data";
 import { ROLE_LABEL, type Role } from "@/lib/types";
 import { Plaza } from "./plaza";
@@ -46,25 +45,6 @@ export default async function ProjectsPage() {
             {
               k: { zh: "最多项目在寻找的角色", en: "Most needed" },
               v: topRole ? ROLE_LABEL[topRole] : { zh: "—", en: "—" },
-            },
-          ]}
-        />
-        <SpecRow
-          items={[
-            {
-              k: { zh: "每张卡", en: "Each card" },
-              v: {
-                zh: "问题 · 目标用户 · 进度 · 在寻找的角色",
-                en: "Problem · users · progress · roles needed",
-              },
-            },
-            {
-              k: { zh: "公开", en: "Goes live" },
-              v: { zh: "人工审核后", en: "After review" },
-            },
-            {
-              k: { zh: "更新", en: "Updates" },
-              v: { zh: "发起人每两周一次", en: "Every two weeks" },
             },
           ]}
         />

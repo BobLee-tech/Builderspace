@@ -38,14 +38,6 @@
   color: var(--mute);
   cursor: default;
 }
-.why {
-  padding-left: 14px;
-  border-left: 1px solid var(--line-2);
-}
-.why b {
-  color: var(--paper);
-  font-weight: 500;
-}
 .row-actions {
   display: flex;
   flex-wrap: wrap;

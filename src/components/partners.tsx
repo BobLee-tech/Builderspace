@@ -1,7 +1,6 @@
 import type { CSSProperties } from "react";
 import {
   Buildings,
-  EnvelopeSimple,
   Handshake,
   Key,
   Microphone,
@@ -9,7 +8,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { Arr } from "@/components/fx/arr";
 import { T } from "@/components/t";
-import { getEvents } from "@/lib/data";
+import { getEvents, getMemberCount } from "@/lib/data";
 import { eventCopy } from "@/lib/event-pages";
 import { cameCount } from "@/lib/event-results";
 import {
@@ -20,8 +19,11 @@ import {
   ROLE_LABEL,
   type Partner,
 } from "@/lib/partners";
-import { CopyText } from "./copy-text";
+import { MEMBERS_NEAR, roughly } from "@/lib/team";
+import { PartnerEmail } from "./partner-email";
 import { PartnerIntros, type PartnerView } from "./partner-intro";
+import { PartnerSeat, type SeatStat } from "./partner-seat";
+import { PartnerTileLight } from "./partner-tile-light";
 import "@/app/partners.css";
 
 const MAILTO = `mailto:${PARTNER_EMAIL}?subject=${encodeURIComponent("Partnering with BuilderSpace")}`;
@@ -29,6 +31,7 @@ const MAILTO = `mailto:${PARTNER_EMAIL}?subject=${encodeURIComponent("Partnering
 const WAYS = [
   {
     icon: Buildings,
+    way: "venue",
     title: { zh: "场地", en: "Venue" },
     sub: {
       zh: "一晚的房间、网络和插座",
@@ -37,6 +40,7 @@ const WAYS = [
   },
   {
     icon: Key,
+    way: "credits",
     title: { zh: "工具额度", en: "Tool credits" },
     sub: {
       zh: "给成员个人的 AI 与云服务兑换码",
@@ -45,6 +49,7 @@ const WAYS = [
   },
   {
     icon: Microphone,
+    way: "speaker",
     title: { zh: "嘉宾与导师", en: "Speakers & mentors" },
     sub: {
       zh: "来讲一次真实的做产品经验",
@@ -53,6 +58,7 @@ const WAYS = [
   },
   {
     icon: Handshake,
+    way: "cohost",
     title: { zh: "联合主办", en: "Co-host" },
     sub: { zh: "和你的社团一起办一场", en: "Run one with your society" },
   },
@@ -90,12 +96,36 @@ async function introViews(list: Partner[]): Promise<PartnerView[]> {
 }
 
 /**
+ * The two facts on the partner seat card: how many members, and that the club
+ * is Arc-affiliated, worded as in the footer.
+ */
+async function seatProof(): Promise<SeatStat[]> {
+  const members = await getMemberCount();
+  return [
+    {
+      // Worded as on /people: the club counts more than the site's sign-ups.
+      ...(members !== null && members >= MEMBERS_NEAR
+        ? { value: roughly(members) }
+        : {
+            pre: { zh: "近", en: "Nearly" },
+            value: String(MEMBERS_NEAR),
+          }),
+      label: { zh: "成员", en: "Members" },
+    },
+    {
+      value: "UNSW Arc",
+      label: { zh: "正式社团", en: "Affiliated club" },
+    },
+  ];
+}
+
+/**
  * Home: who backs the club (src/lib/partners.ts), after the plaza. With no
  * partners yet it's one invite card; either way it ends with how to help.
  */
 export async function PartnersSection() {
   const list = homePartners();
-  const intros = await introViews(list);
+  const [intros, proof] = await Promise.all([introViews(list), seatProof()]);
   const n = list.length;
   // Four across (two on phones); one open seat stretches over the rest of
   // the last row, and phones drop it when their row of two is full.
@@ -144,7 +174,7 @@ export async function PartnersSection() {
                 <T zh="第一个席位开放中" en="First seat open" />
               )}
             </span>
-            <a href="#pt-contact" className="btn ghost">
+            <a href="#pt-contact" className="btn ghost" data-seat>
               <T zh="成为合作方" en="Partner with us" />
               <Arr />
             </a>
@@ -163,7 +193,12 @@ export async function PartnersSection() {
                 className={n % 2 ? "pt-open" : "pt-open wide"}
                 style={{ "--span": open } as CSSProperties}
               >
-                <a href="#pt-contact" className="pt-tile open">
+                <a
+                  href="#pt-contact"
+                  className="pt-tile open"
+                  data-seat
+                  aria-haspopup="dialog"
+                >
                   <svg className="pt-dash" aria-hidden>
                     <rect width="100%" height="100%" rx="16" />
                   </svg>
@@ -185,35 +220,33 @@ export async function PartnersSection() {
         ) : (
           <Invite />
         )}
+        {n > 0 && <PartnerTileLight />}
         {intros.length > 0 && <PartnerIntros partners={intros} />}
+        <PartnerSeat seat={String(n + 1).padStart(2, "0")} stats={proof} />
 
         <div className="pt-more" id="pt-contact">
           <ul className="pt-ways">
             {WAYS.map((w) => (
-              <li key={w.title.en}>
-                <w.icon weight="light" size={22} aria-hidden />
-                <b>
-                  <T {...w.title} />
-                </b>
-                <span className="mute">
-                  <T {...w.sub} />
-                </span>
+              <li key={w.way}>
+                <button
+                  type="button"
+                  className="pt-way"
+                  data-seat
+                  data-way={w.way}
+                  aria-haspopup="dialog"
+                >
+                  <w.icon weight="light" size={22} aria-hidden />
+                  <b>
+                    <T {...w.title} />
+                  </b>
+                  <span className="mute">
+                    <T {...w.sub} />
+                  </span>
+                </button>
               </li>
             ))}
           </ul>
-          <div className="pt-row">
-            <span className="mute">
-              <T
-                zh="任何一种，都是在帮成员把项目做上线。"
-                en="Any one of these helps members ship."
-              />
-            </span>
-            <span className="pt-mail mono">
-              <EnvelopeSimple weight="light" size={16} aria-hidden />
-              <a href={MAILTO}>{PARTNER_EMAIL}</a>
-              <CopyText text={PARTNER_EMAIL} />
-            </span>
-          </div>
+          <PartnerEmail email={PARTNER_EMAIL} href={MAILTO} />
         </div>
       </div>
     </section>
@@ -315,7 +348,7 @@ function Invite() {
           ))}
         </span>
         <span>
-          <a href={MAILTO} className="btn solid primary">
+          <a href={MAILTO} className="btn solid primary" data-seat>
             <T zh="聊聊合作" en="Talk to us" />
             <Arr />
           </a>
