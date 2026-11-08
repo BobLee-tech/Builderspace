@@ -19,7 +19,7 @@ import { T } from "@/components/t";
 import { CYCLE } from "@/lib/cycle";
 import { getEventSchedule, getMemberCount, getProjects } from "@/lib/data";
 import { eventCopy } from "@/lib/event-pages";
-import { formatShortDate } from "@/lib/format";
+import { dateStamp, formatShortDate } from "@/lib/format";
 import { pageMeta } from "@/lib/seo";
 import { memberCount } from "@/lib/team";
 import { Plaza } from "./projects/plaza";
@@ -140,16 +140,23 @@ async function Strip() {
     getProjects(),
   ]);
   const next = upcoming.find((e) => !e.dateTbc);
-  const when = next && formatShortDate(next.startsAt);
+  const stamp = next && dateStamp(next.startsAt);
   const title = next && eventCopy(next).title;
+  const active = projects.filter(
+    (p) => p.status === "recruiting" || p.status === "building",
+  ).length;
   const cells = [
     {
       icon: CalendarBlank,
       href: next ? `/events/${next.slug}` : "/events",
       label: { zh: "下一场", en: "Next event" },
       value:
-        when && title
-          ? { zh: `${when} · ${title.zh}`, en: `${when} · ${title.en}` }
+        next && stamp && title
+          ? {
+              zh: `${formatShortDate(next.startsAt)} · ${title.zh}`,
+              // Day first: 11/08 reads as August in Sydney.
+              en: `${stamp.day} ${stamp.month.en} · ${title.en}`,
+            }
           : { zh: "即将公布", en: "Coming soon" },
     },
     {
@@ -161,8 +168,8 @@ async function Strip() {
     {
       icon: Cube,
       href: "#plaza",
-      label: { zh: "在做的项目", en: "Projects" },
-      value: { zh: `${projects.length} 个`, en: String(projects.length) },
+      label: { zh: "在做的项目", en: "Active projects" },
+      value: { zh: `${active} 个`, en: String(active) },
     },
     {
       icon: SignIn,
@@ -191,6 +198,9 @@ async function Strip() {
           </div>
         ))}
       </dl>
+      <div className="wrap">
+        <SampleNotice />
+      </div>
     </section>
   );
 }
