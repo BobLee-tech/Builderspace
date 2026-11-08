@@ -9,14 +9,19 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { Arr } from "@/components/fx/arr";
 import { T } from "@/components/t";
+import { getEvents } from "@/lib/data";
+import { eventCopy } from "@/lib/event-pages";
+import { cameCount } from "@/lib/event-results";
 import {
   eventPartners,
   homePartners,
+  introShown,
   PARTNER_EMAIL,
   ROLE_LABEL,
   type Partner,
 } from "@/lib/partners";
 import { CopyText } from "./copy-text";
+import { PartnerIntros, type PartnerView } from "./partner-intro";
 import "@/app/partners.css";
 
 const MAILTO = `mailto:${PARTNER_EMAIL}?subject=${encodeURIComponent("Partnering with BuilderSpace")}`;
@@ -54,11 +59,43 @@ const WAYS = [
 ];
 
 /**
+ * What the intro needs for each of `list` that has one to show: its events
+ * from the events table (title, date, seats) and event results (head-count).
+ */
+async function introViews(list: Partner[]): Promise<PartnerView[]> {
+  const withIntro = list.filter(introShown);
+  if (!withIntro.length) return [];
+  const events = await getEvents();
+  return withIntro.map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    logo: p.logo,
+    tint: p.tint,
+    role: ROLE_LABEL[p.role],
+    since: p.since,
+    url: p.url,
+    intro: p.intro!,
+    draft: !p.intro!.confirmed,
+    events: events
+      .filter((e) => p.events.includes(e.slug))
+      .map((e) => ({
+        slug: e.slug,
+        title: eventCopy(e).title,
+        startsAt: e.startsAt,
+        came: cameCount(e.slug),
+        seats: e.capacity,
+        did: p.intro!.did[e.slug] ?? null,
+      })),
+  }));
+}
+
+/**
  * Home: who backs the club (src/lib/partners.ts), after the plaza. With no
  * partners yet it's one invite card; either way it ends with how to help.
  */
-export function PartnersSection() {
+export async function PartnersSection() {
   const list = homePartners();
+  const intros = await introViews(list);
   const n = list.length;
   // Four across (two on phones); one open seat stretches over the rest of
   // the last row, and phones drop it when their row of two is full.
@@ -148,6 +185,7 @@ export function PartnersSection() {
         ) : (
           <Invite />
         )}
+        {intros.length > 0 && <PartnerIntros partners={intros} />}
 
         <div className="pt-more" id="pt-contact">
           <ul className="pt-ways">
@@ -193,11 +231,28 @@ function PartnerTile({ partner: p }: { partner: Partner }) {
         <span className="pt-role">
           <T {...ROLE_LABEL[p.role]} />
         </span>
-        <span className="mute tnum">{p.since}</span>
+        <span className="mute tnum pt-since">{p.since}</span>
+        {introShown(p) && (
+          <span className="pt-go">
+            <T zh="介绍 →" en="About →" />
+          </span>
+        )}
       </span>
     </>
   );
   const style = { "--tint": p.tint } as CSSProperties;
+  if (introShown(p))
+    return (
+      <button
+        type="button"
+        className="pt-tile"
+        style={style}
+        data-partner={p.slug}
+        aria-haspopup="dialog"
+      >
+        {body}
+      </button>
+    );
   return p.url ? (
     <a
       href={p.url}
@@ -280,9 +335,10 @@ function Invite() {
 }
 
 /** Event page: one row of the partners who helped with this event. */
-export function EventSupport({ slug }: { slug: string }) {
+export async function EventSupport({ slug }: { slug: string }) {
   const list = eventPartners(slug);
   if (!list.length) return null;
+  const intros = await introViews(list);
   return (
     <div className="evp-sec">
       <h2 className="evp-sec-h mono mute">
@@ -291,7 +347,17 @@ export function EventSupport({ slug }: { slug: string }) {
       <ul className="pt-support">
         {list.map((p) => (
           <li key={p.name}>
-            {p.url ? (
+            {introShown(p) ? (
+              <button
+                type="button"
+                className="pt-chip"
+                data-partner={p.slug}
+                aria-haspopup="dialog"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- the partner's own SVG */}
+                <img src={p.logo} alt={p.name} />
+              </button>
+            ) : p.url ? (
               <a
                 href={p.url}
                 target="_blank"
@@ -313,6 +379,7 @@ export function EventSupport({ slug }: { slug: string }) {
           </li>
         ))}
       </ul>
+      {intros.length > 0 && <PartnerIntros partners={intros} />}
     </div>
   );
 }
