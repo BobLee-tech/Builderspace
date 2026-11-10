@@ -60,7 +60,7 @@ export const sampleEvents: SiteEvent[] = [
     endsAt: "2026-11-13T13:30:00+11:00",
     location: "UNSW MCIC",
     summary: "语音说需求，看 Codex 现场改网页，再分组做一个能演示的改动。",
-    signupUrl: null,
+    signupUrl: "https://campus.hellorubric.com/?eid=94176",
     capacity: null,
     registrationClosesAt: null,
     seatQuotas: null,

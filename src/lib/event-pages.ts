@@ -384,7 +384,7 @@ const aiStudyCareerTalk: EventPage = {
   asksGithub: false,
 };
 
-// Fri 13 Nov at MCIC. The programme follows the run-of-show draft: one
+// Fri 13 Nov at MCIC, sign-up on Rubric. The programme follows the run-of-show draft: one
 // live demo on a shared Workboard starter, then teams extend it.
 const beyondChatgpt: EventPage = {
   display: "Beyond ChatGPT",
@@ -411,6 +411,13 @@ const beyondChatgpt: EventPage = {
   hosts: {
     zh: "主办 BuilderSpace（UNSW）",
     en: "Hosted by BuilderSpace (UNSW)",
+  },
+  signupVia: {
+    name: "Rubric",
+    note: {
+      zh: "在 Rubric 报名，名额以 Rubric 为准",
+      en: "Sign up on Rubric; it holds the seats",
+    },
   },
   pointsHeading: { zh: "你会做什么", en: "What you'll do" },
   points: [
