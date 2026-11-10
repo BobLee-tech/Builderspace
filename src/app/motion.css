@@ -3569,7 +3569,7 @@ a.d-repo-name:hover {
   width: 100%;
 }
 .mc-top .logo {
-  font: 800 2.95cqw var(--f-display);
+  font: 600 3.9cqw var(--f-logo);
   letter-spacing: -0.02em;
 }
 .mc-face .mono {

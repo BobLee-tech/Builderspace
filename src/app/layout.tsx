@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Noto_Sans_SC, Unbounded } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Noto_Sans_SC,
+  Outfit,
+  Unbounded,
+} from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Dock } from "@/components/dock";
@@ -24,6 +30,12 @@ const unbounded = Unbounded({
   variable: "--font-unbounded",
 });
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+// The logo's wordmark face (logo v3): only the name next to the mark uses it.
+const outfit = Outfit({
+  subsets: ["latin"],
+  weight: "600",
+  variable: "--font-outfit",
+});
 const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
@@ -56,7 +68,7 @@ export default function RootLayout({ children, sheet }: LayoutProps<"/">) {
       lang="zh-CN"
       // Lets Next switch smooth scrolling off while it changes route.
       data-scroll-behavior="smooth"
-      className={`${unbounded.variable} ${geist.variable} ${geistMono.variable} ${notoSc.variable}`}
+      className={`${unbounded.variable} ${geist.variable} ${geistMono.variable} ${outfit.variable} ${notoSc.variable}`}
       // The boot script may set data-lang/lang before React hydrates.
       suppressHydrationWarning
     >
