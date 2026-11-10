@@ -173,6 +173,333 @@
   border-radius: 16px;
   font-size: 17px;
 }
+/* The day's live demo, replayed (workboard-demo.tsx). data-stage runs
+   0 listening → 1 request heard → 2 agent working → 3 tags on → 4 every
+   task ticked; the server renders 4. Delays sit only on the entering states, so going back to 0
+   everything fades out together. */
+.wb {
+  margin: 0;
+  border: 1px solid var(--line-2);
+  border-radius: 18px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)),
+    var(--panel);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 48px -28px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+}
+.wb-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.wb-dots {
+  display: flex;
+  gap: 6px;
+}
+.wb-dots i {
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+}
+.wb-name {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.wb-state {
+  display: grid;
+  margin-left: auto;
+  color: var(--mute);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+.wb-state > span,
+.wb-count > span {
+  grid-area: 1 / 1;
+  justify-self: end;
+  transition: opacity var(--dur-2);
+}
+.wb-state .wb-after {
+  color: var(--paper);
+}
+.wb:not([data-stage="3"], [data-stage="4"]) .wb-state .wb-after,
+.wb:is([data-stage="3"], [data-stage="4"]) .wb-state .wb-before,
+.wb:not([data-stage="4"]) .wb-count .wb-after,
+.wb[data-stage="4"] .wb-count .wb-before {
+  opacity: 0;
+}
+.wb[data-stage="4"] .wb-count .wb-after {
+  transition-delay: 1s;
+}
+.wb-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+}
+.wb-talk,
+.wb-board {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+.wb-talk {
+  gap: 10px;
+  border-right: 1px solid var(--line);
+}
+.wb-who {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--mute);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+.wb-who + .wb-who,
+.wb-ask + .wb-who {
+  margin-top: 8px;
+}
+/* MosMos listening: four bars that move only in stage 0. */
+.wb-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 12px;
+  margin-left: 4px;
+}
+.wb-wave i {
+  width: 2px;
+  height: 3px;
+  border-radius: 1px;
+  background: var(--paper);
+  opacity: 0.35;
+  transition:
+    height var(--dur-2),
+    opacity var(--dur-2);
+}
+.wb[data-stage="0"] .wb-wave i {
+  opacity: 1;
+  animation: wbWave 0.9s ease-in-out infinite alternate;
+}
+.wb[data-stage="0"] .wb-wave i:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.wb[data-stage="0"] .wb-wave i:nth-child(3) {
+  animation-delay: -0.6s;
+}
+.wb[data-stage="0"] .wb-wave i:nth-child(4) {
+  animation-delay: -0.45s;
+}
+@keyframes wbWave {
+  to {
+    height: 12px;
+  }
+}
+.wb-ask {
+  margin: 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--line-2);
+  font-size: var(--fs-md);
+  line-height: 1.6;
+  transition:
+    opacity var(--dur-3) var(--ease-out),
+    filter var(--dur-3) var(--ease-out);
+}
+.wb[data-stage="0"] .wb-ask {
+  opacity: 0.12;
+  filter: blur(3px);
+}
+.wb-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-sm);
+}
+.wb-steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity var(--dur-2);
+}
+.wb-steps svg {
+  flex: none;
+  padding: 2px;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  transition:
+    opacity var(--dur-2),
+    transform var(--dur-2) var(--ease-out);
+}
+.wb:is([data-stage="0"], [data-stage="1"]) .wb-steps li {
+  opacity: 0.3;
+}
+.wb:is([data-stage="0"], [data-stage="1"]) .wb-steps svg {
+  opacity: 0;
+  transform: scale(0.4);
+}
+.wb[data-stage="2"] .wb-steps li,
+.wb[data-stage="2"] .wb-steps svg {
+  transition-delay: calc(var(--i) * 700ms);
+}
+.wb-board {
+  gap: 16px;
+}
+.wb-tasks {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wb-tasks li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: var(--fs-sm);
+}
+.wb-tasks li + li {
+  border-top: 1px solid var(--line);
+}
+.wb-box {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 5px;
+}
+.wb-box {
+  transition:
+    border-color var(--dur-2),
+    background var(--dur-2);
+}
+.wb-box svg {
+  opacity: 0;
+  transition: opacity var(--dur-2);
+}
+.wb-task {
+  transition: color var(--dur-2);
+}
+/* Ticked: the done task always, the rest once the board reaches 4, one
+   after another. */
+.wb-tasks li.done .wb-box,
+.wb[data-stage="4"] .wb-box {
+  border-color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
+}
+.wb-tasks li.done .wb-box svg,
+.wb[data-stage="4"] .wb-box svg {
+  opacity: 1;
+}
+.wb-tasks li.done .wb-task,
+.wb[data-stage="4"] .wb-task {
+  color: var(--mute);
+  text-decoration: line-through;
+}
+.wb[data-stage="4"] li:not(.done) :is(.wb-box, .wb-box svg, .wb-task) {
+  transition-delay: calc(var(--j) * 450ms + 200ms);
+}
+.wb-task {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* Priority without colour: solid, outlined, dashed. */
+.wb-tag {
+  flex: none;
+  padding: 3px 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  transition:
+    opacity var(--dur-2),
+    transform var(--dur-2) var(--ease-out);
+}
+.wb-tag.high {
+  border-color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
+}
+.wb-tag.medium {
+  border-color: rgba(244, 244, 242, 0.6);
+}
+.wb-tag.low {
+  border-style: dashed;
+  color: var(--mute);
+}
+.wb:not([data-stage="3"], [data-stage="4"]) .wb-tag {
+  opacity: 0;
+  transform: translateX(8px);
+}
+.wb[data-stage="3"] .wb-tag {
+  transition-delay: calc(var(--i) * 140ms);
+}
+.wb-prog {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  color: var(--mute);
+}
+.wb-count {
+  display: grid;
+  letter-spacing: 0.04em;
+}
+.wb-meter {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.wb-meter i {
+  display: block;
+  width: var(--pct);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--paper);
+  transition: width var(--dur-3) var(--ease-out);
+}
+.wb[data-stage="4"] .wb-meter i {
+  width: 100%;
+  transition-delay: 0.3s;
+  transition-duration: 1.1s;
+}
+@media (max-width: 640px) {
+  .wb-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .wb-talk {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .wb-talk,
+  .wb-board {
+    padding: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wb *,
+  .wb *::before {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
 /* The pages used on the day: the first thing under the intro. */
 .evp-tools {
   display: grid;

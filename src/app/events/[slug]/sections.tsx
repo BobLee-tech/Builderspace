@@ -80,22 +80,28 @@ function Section({ s }: { s: EventSection }) {
       );
     case "flow": {
       const total = s.steps.reduce((n, st) => n + st.minutes, 0);
+      const clock = s.start ? clockTimes(s.start, s.steps) : null;
       return (
         <>
           <ol
             className="evx-flow"
             aria-label={`${Math.round(total / 6) / 10} h`}
           >
-            {s.steps.map((st) => (
+            {s.steps.map((st, i) => (
               <li
                 key={st.label.en}
                 className={st.hands ? "hands" : st.rest ? "rest" : undefined}
                 style={{ flexGrow: st.minutes }}
+                title={`${st.minutes}′`}
               >
                 <b>
                   <T {...st.label} />
                 </b>
-                <span className="mono mute">{st.minutes}′</span>
+                {clock ? (
+                  <time className="mono mute">{clock[i]}</time>
+                ) : (
+                  <span className="mono mute">{st.minutes}′</span>
+                )}
               </li>
             ))}
           </ol>
@@ -107,6 +113,14 @@ function Section({ s }: { s: EventSection }) {
             {s.note && (
               <span>
                 <T {...s.note} />
+              </span>
+            )}
+            {clock && (
+              <span>
+                <T
+                  zh={`${clock[clock.length - 1]} 结束`}
+                  en={`Ends ${clock[clock.length - 1]}`}
+                />
               </span>
             )}
           </p>
@@ -280,5 +294,18 @@ function Lines({ items }: { items: EventLine[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+/**
+ * Each step's start as a clock time, from the first one ("10:30"), then the
+ * end of the last.
+ */
+function clockTimes(start: string, steps: { minutes: number }[]): string[] {
+  const [h, m] = start.split(":").map(Number);
+  const at = [h * 60 + m];
+  for (const st of steps) at.push(at[at.length - 1] + st.minutes);
+  return at.map(
+    (t) => `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`,
   );
 }

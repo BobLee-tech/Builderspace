@@ -52,6 +52,7 @@ import { EventResultsSection } from "./results";
 import { EventSections } from "./sections";
 import { SignupDock, SignupFocus } from "./signup-dock";
 import { SignupForm } from "./signup-form";
+import { WorkboardDemo } from "./workboard-demo";
 import "../events.css";
 import "./event.css";
 
@@ -447,7 +448,7 @@ async function EventDetail({ slug }: { slug: string }) {
             ) : null}
             {page && (
               <>
-                {(page.handles || page.points) && (
+                {(page.handles || page.workboard || page.points) && (
                   <div className="evp-sec">
                     <h2 className="evp-sec-h mono mute">
                       <T
@@ -458,6 +459,7 @@ async function EventDetail({ slug }: { slug: string }) {
                       />
                     </h2>
                     {page.handles && <AddressBar handles={page.handles} />}
+                    {page.workboard && <WorkboardDemo demo={page.workboard} />}
                     {page.points && (
                       <ul className="evp-points">
                         {page.points.map((pt) => {

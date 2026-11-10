@@ -7,6 +7,7 @@ import { SampleNotice } from "@/components/sample-notice";
 import { getEventSchedule, getEventSignups, getTutorials } from "@/lib/data";
 import { allEventMaterials } from "@/lib/event-materials";
 import {
+  featuredEvent,
   eventCopy,
   eventTbc,
   eventWhere,
@@ -47,9 +48,9 @@ export default async function EventsPage() {
     ...allEventMaterials().map(([slug]) => slug),
   ]);
   const calendarUrl = `${siteUrl.replace(/^https?:/, "webcal:")}/events.ics`;
-  // The next dated event also gets its own ticket up top; the list holds
-  // every event, that one and undated ones included.
-  const next = upcoming.find((e) => !e.dateTbc);
+  // The next dated event (or a featured one) also gets its own ticket up
+  // top; the list holds every event, that one and undated ones included.
+  const next = featuredEvent(upcoming);
   const kinds = [...new Set([...upcoming, ...past].map((e) => e.kind))];
   const onStrip = [...upcoming, ...past].flatMap((e) => {
     const week = roadmapWeek(e.startsAt);
@@ -80,7 +81,7 @@ export default async function EventsPage() {
           eyebrow={{ zh: "活动 / Events · T3 2026", en: "Events · T3 2026" }}
         />
         {/* The next event stands in for the header readouts. */}
-        {next && <NextUp slug={next.slug} />}
+        {next && <NextUp slug={next.event.slug} first={next.first} />}
         <div style={{ marginTop: 16 }}>
           <SampleNotice />
         </div>

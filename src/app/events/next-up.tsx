@@ -16,11 +16,18 @@ import { doto } from "./doto";
 import { eventIsFull, shownSeats } from "./event-parts";
 
 /**
- * The next event as a ticket at the top of /events: what it is in one line,
+ * The next (or featured) event as a ticket at the top of /events: what it is in one line,
  * when, where and what it costs, then seats and one way in. The whole ticket
  * opens the event; the sign-up button goes straight to the form.
  */
-export async function NextUp({ slug }: { slug: string }) {
+export async function NextUp({
+  slug,
+  first = true,
+}: {
+  slug: string;
+  /** It's also the next event; otherwise it's featured ahead of others. */
+  first?: boolean;
+}) {
   const detail = await getEventDetail(slug);
   if (!detail) return null;
   const { event, signups, phase } = detail;
@@ -38,8 +45,12 @@ export async function NextUp({ slug }: { slug: string }) {
         <div className="evn-main">
           <p className="evn-top mono">
             <span className="evp-live" aria-hidden />
-            <T zh="下一场" en="Next up" /> ·{" "}
-            <T {...EVENT_KIND_LABEL[event.kind]} />
+            {first ? (
+              <T zh="下一场" en="Next up" />
+            ) : (
+              <T zh="主推" en="Featured" />
+            )}{" "}
+            · <T {...EVENT_KIND_LABEL[event.kind]} />
           </p>
           <h2 className="evn-title">
             <T {...title} />
