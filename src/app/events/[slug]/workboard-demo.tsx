@@ -6,13 +6,17 @@ import { prefersReducedMotion } from "@/components/fx/motion";
 import { T } from "@/components/t";
 import type { WorkboardDemo as Demo } from "@/lib/event-pages";
 
-/** How long each stage holds: listening, request heard, agent working, done. */
-const HOLD_MS = [1400, 1600, 2600, 4200];
+/**
+ * How long each stage holds: listening, request heard, agent working, tags
+ * on, every task ticked.
+ */
+const HOLD_MS = [1400, 1600, 2600, 1800, 4000];
 const DONE = HOLD_MS.length - 1;
 
 /**
  * The day's live demo, replayed: a request is said out loud, the agent ticks
- * off its steps, and the starter's tasks get the change. The server renders
+ * off its steps, the starter's tasks get the change, then every task is
+ * ticked so the board ends finished. The server renders
  * the finished board, so it reads right before any script runs and stays
  * that way for people who prefer reduced motion. The loop only runs while
  * the board is on screen; going back to the start, the tags fade out rather
@@ -46,8 +50,9 @@ export function WorkboardDemo({ demo }: { demo: Demo }) {
     };
   }, []);
 
+  const total = demo.tasks.length;
   const done = demo.tasks.filter((t) => t.done).length;
-  const pct = Math.round((done / demo.tasks.length) * 100);
+  const pct = Math.round((done / total) * 100);
 
   return (
     <figure ref={ref} className="wb" data-stage={stage}>
@@ -100,10 +105,15 @@ export function WorkboardDemo({ demo }: { demo: Demo }) {
               <li
                 key={t.title.en}
                 className={t.done ? "done" : undefined}
-                style={{ "--i": i } as React.CSSProperties}
+                style={
+                  {
+                    "--i": i,
+                    "--j": demo.tasks.slice(0, i).filter((x) => !x.done).length,
+                  } as React.CSSProperties
+                }
               >
                 <span className="wb-box" aria-hidden>
-                  {t.done && <Check weight="bold" size={11} />}
+                  <Check weight="bold" size={11} />
                 </span>
                 <span className="wb-task">
                   <T {...t.title} />
@@ -115,11 +125,20 @@ export function WorkboardDemo({ demo }: { demo: Demo }) {
             ))}
           </ul>
           <div className="wb-prog">
-            <span className="wb-meter" aria-hidden>
-              <i style={{ width: `${pct}%` }} />
+            <span
+              className="wb-meter"
+              aria-hidden
+              style={{ "--pct": `${pct}%` } as React.CSSProperties}
+            >
+              <i />
             </span>
-            <span className="mono">
-              {done}/{demo.tasks.length} · {pct}%
+            <span className="wb-count mono">
+              <span className="wb-before">
+                {done}/{total} · {pct}%
+              </span>
+              <span className="wb-after">
+                {total}/{total} · 100%
+              </span>
             </span>
           </div>
         </div>
