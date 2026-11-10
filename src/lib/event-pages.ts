@@ -436,6 +436,12 @@ const beyondChatgpt: EventPage = {
     zh: "主办 BuilderSpace（UNSW）",
     en: "Hosted by BuilderSpace (UNSW)",
   },
+  poster: {
+    src: "/events/beyond-chatgpt/poster.jpg",
+    width: 1280,
+    height: 1707,
+    alt: "Beyond ChatGPT 海报：11.13 周五 10:30–13:30，UNSW MCIC，扫码在 Rubric 报名",
+  },
   signupVia: {
     name: "Rubric",
     note: {
