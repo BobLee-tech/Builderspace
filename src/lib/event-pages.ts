@@ -79,11 +79,15 @@ export type EventSection =
     }
   /** Terms and what each one does, one row each. */
   | { kind: "terms"; heading: Bi; items: { term: string; sub: Bi }[] }
-  /** A rough run of the day, drawn to scale by minutes. */
+  /**
+   * A rough run of the day, drawn to scale by minutes. With `start`
+   * ("10:30", Sydney time), each step shows its clock time.
+   */
   | {
       kind: "flow";
       heading: Bi;
       note?: Bi;
+      start?: string;
       steps: { label: Bi; minutes: number; hands?: boolean; rest?: boolean }[];
     }
   /** A numbered build path; `room` steps are drawn hollow. */
@@ -116,6 +120,19 @@ export type EventSection =
       items: EventLine[];
       link?: { href: string; label: Bi };
     };
+
+/**
+ * The day's live demo, replayed above the promises: a request said out loud,
+ * the agent's steps, then the starter's tasks with the change applied.
+ */
+export type WorkboardDemo = {
+  /** Who takes the spoken request, and who does the work. */
+  voice: string;
+  agent: string;
+  ask: Bi;
+  steps: Bi[];
+  tasks: { title: Bi; done: boolean; tag: string }[];
+};
 
 /** A page people open on the day, linked from the event page. */
 export type EventTool = {
@@ -157,6 +174,8 @@ export type EventPage = {
   signupVia?: { name: string; note: Bi };
   /** The event's poster, in public/events/<slug>/, beside the sign-up button. */
   poster?: { src: string; width: number; height: number; alt: string };
+  /** The live demo replayed above the promises (see WorkboardDemo). */
+  workboard?: WorkboardDemo;
   /** Usernames the address bar in the hero types out, in turn. */
   handles?: string[];
   /** Short promises (three); under the address bar when there is one. */
@@ -419,6 +438,36 @@ const beyondChatgpt: EventPage = {
       en: "Sign up on Rubric; it holds the seats",
     },
   },
+  workboard: {
+    voice: "MosMos",
+    agent: "Codex",
+    ask: {
+      zh: "给每条任务加上 High、Medium、Low 优先级，别弄坏现有功能。",
+      en: "Give every task a High, Medium or Low priority. Don't break anything.",
+    },
+    steps: [
+      { zh: "读 index.html", en: "Read index.html" },
+      { zh: "加上优先级标签", en: "Add priority tags" },
+      { zh: "检查添加、勾选、进度", en: "Check add, tick, progress" },
+    ],
+    tasks: [
+      {
+        title: { zh: "准备 AI Workshop Demo", en: "Prep the workshop demo" },
+        done: true,
+        tag: "High",
+      },
+      {
+        title: { zh: "整理活动任务", en: "Sort the event tasks" },
+        done: false,
+        tag: "Medium",
+      },
+      {
+        title: { zh: "安排小组实践", en: "Plan the team build" },
+        done: false,
+        tag: "Low",
+      },
+    ],
+  },
   pointsHeading: { zh: "你会做什么", en: "What you'll do" },
   points: [
     {
@@ -534,7 +583,7 @@ const beyondChatgpt: EventPage = {
     {
       kind: "flow",
       heading: { zh: "流程", en: "Flow" },
-      note: { zh: "10:30 开始，13:30 结束", en: "10:30 to 13:30" },
+      start: "10:30",
       steps: [
         { label: { zh: "开场", en: "Intro" }, minutes: 10 },
         { label: { zh: "概念", en: "Concepts" }, minutes: 20 },
