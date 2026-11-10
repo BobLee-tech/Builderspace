@@ -470,13 +470,13 @@ const beyondChatgpt: EventPage = {
         title: { zh: "整理活动任务", en: "Sort the event tasks" },
         tag: "Medium",
         ask: {
-          zh: "把这段会议纪要里的待办整理出来，加到看板上。",
-          en: "Pull the to-dos out of these meeting notes and add them to the board.",
+          zh: "把这段会议纪要里的待办整理出来，标上负责人和截止时间。",
+          en: "Pull the to-dos out of these meeting notes, with owners and dates.",
         },
         steps: [
           { zh: "读会议纪要", en: "Read the notes" },
           { zh: "找出负责人和截止时间", en: "Find owners and dates" },
-          { zh: "加进看板", en: "Add them to the board" },
+          { zh: "把这条标成完成", en: "Mark this one done" },
         ],
       },
       {
@@ -489,7 +489,7 @@ const beyondChatgpt: EventPage = {
         steps: [
           { zh: "读报名名单", en: "Read the sign-ups" },
           { zh: "按兴趣分成四组", en: "Group them by interest" },
-          { zh: "把分组写进看板", en: "Put the teams on the board" },
+          { zh: "把这条标成完成", en: "Mark this one done" },
         ],
       },
     ],

@@ -287,7 +287,10 @@
   flex-direction: column;
   gap: 10px;
   grid-area: 1 / 1;
-  transition: opacity var(--dur-2);
+  /* visibility rides along so the round going out fades too. */
+  transition:
+    opacity var(--dur-2),
+    visibility var(--dur-2);
 }
 .wb-round:not([data-on]) {
   opacity: 0;
