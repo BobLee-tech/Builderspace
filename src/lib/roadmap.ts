@@ -9,18 +9,20 @@ export const ROADMAP_DAYS = 56;
 /**
  * The school calendar for each week (`term`) and anything already settled
  * that isn't an event (`plan`). Events themselves come from the events table
- * and land in their week; a later week with neither reads "TBD".
+ * and land in their week; a later week with neither reads "TBD", unless it's
+ * `bare` (left blank).
  */
 export const ROADMAP_WEEKS: {
   label: string;
   off?: boolean;
+  bare?: boolean;
   term?: Bi;
   plan?: Bi;
 }[] = [
   { label: "W1", plan: { zh: "预热 · 官网上线", en: "Warm-up · site live" } },
   { label: "W2", off: true, term: { zh: "停课周", en: "Flex week" } },
-  { label: "W3" },
-  { label: "W4" },
+  { label: "W3", bare: true },
+  { label: "W4", bare: true },
   { label: "W5" },
   { label: "W6" },
   { label: "W7", off: true, term: { zh: "复习周", en: "Study week" } },
