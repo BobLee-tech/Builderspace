@@ -384,87 +384,58 @@ const aiStudyCareerTalk: EventPage = {
   asksGithub: false,
 };
 
-// Next week; date and room still to be set. The programme follows the
-// planning doc and is marked as a draft.
+// Fri 13 Nov at MCIC. The programme follows the run-of-show draft: one
+// live demo on a shared Workboard starter, then teams extend it.
 const beyondChatgpt: EventPage = {
   display: "Beyond ChatGPT",
   summaryEn:
-    "Got something to make but not sure where to start? See how far AI can take it.",
+    "Speak a request, watch Codex change a web app live, then extend it in teams.",
   free: false,
   facts: [
     {
       icon: "clock",
       label: { zh: "时长", en: "Length" },
-      value: { zh: "约 3 小时", en: "About 3 hours" },
+      value: { zh: "3 小时", en: "3 hours" },
     },
     {
       icon: "people",
       label: { zh: "适合", en: "For" },
       value: { zh: "对 AI 好奇的人", en: "Anyone curious about AI" },
-      note: { zh: "经验不多也行", en: "Little experience is fine" },
+      note: { zh: "新手也行", en: "Beginners welcome" },
     },
   ],
   highlights: [
     { zh: "动手", en: "Hands-on" },
-    { zh: "约 3 小时", en: "About 3 hours" },
+    { zh: "带电脑", en: "Bring a laptop" },
   ],
   hosts: {
     zh: "主办 BuilderSpace（UNSW）",
     en: "Hosted by BuilderSpace (UNSW)",
   },
-  tbc: {
-    heading: { zh: "下周见。", en: "See you next week." },
-    short: { zh: "下周", en: "Next week" },
-    when: { zh: "下周", en: "Next week" },
-    whenNote: { zh: "具体时间规划中", en: "Exact time TBC" },
-    where: { zh: "待定", en: "TBC" },
-    status: [
-      {
-        done: true,
-        label: { zh: "内容", en: "Content" },
-        value: { zh: "讲义和四个 Demo", en: "Slides and four demos" },
-      },
-      {
-        done: false,
-        label: { zh: "日期", en: "Date" },
-        value: { zh: "下周，待定", en: "Next week, TBC" },
-      },
-      {
-        done: false,
-        label: { zh: "地点", en: "Room" },
-        value: { zh: "待定", en: "TBC" },
-      },
-      {
-        done: false,
-        label: { zh: "报名", en: "Sign-up" },
-        value: { zh: "日期定了就开", en: "Opens with the date" },
-      },
-    ],
-  },
   pointsHeading: { zh: "你会做什么", en: "What you'll do" },
   points: [
     {
       icon: "play",
-      title: { zh: "看真实 Demo", en: "Real demos" },
+      title: { zh: "看 AI 真动手", en: "Watch AI do the work" },
       sub: {
-        zh: "GitHub、Vercel、Gmail、定时任务，现场跑通",
-        en: "GitHub, Vercel, Gmail and a daily job, run live",
+        zh: "Codex 现场读文件、改网页、自己检查",
+        en: "Codex reads files, edits a page, checks it, live",
+      },
+    },
+    {
+      icon: "sparkle",
+      title: { zh: "用说的写代码", en: "Code by voice" },
+      sub: {
+        zh: "MosMos 语音说需求，直接交给 Codex",
+        en: "Say it in MosMos, hand it to Codex",
       },
     },
     {
       icon: "people",
-      title: { zh: "分组动手", en: "Build in teams" },
+      title: { zh: "分组改进", en: "Extend it in teams" },
       sub: {
-        zh: "每组一个能跑的环境，完成一个小挑战",
-        en: "Each team gets a working setup and one challenge",
-      },
-    },
-    {
-      icon: "box",
-      title: { zh: "带走成果", en: "Leave with proof" },
-      sub: {
-        zh: "截图、链接，或一个能复用的 Skill",
-        en: "A screenshot, a link or a reusable Skill",
+        zh: "同一个 Starter，每组做一个能演示的改动",
+        en: "One starter, one change each team can show",
       },
     },
   ],
@@ -476,22 +447,22 @@ const beyondChatgpt: EventPage = {
         {
           term: "Agent",
           sub: {
-            zh: "围绕目标规划、调工具、看结果，再接着做",
-            en: "Plans toward a goal, calls tools, checks, keeps going",
+            zh: "围绕目标决定下一步，看结果，再接着做",
+            en: "Decides the next step toward a goal, checks, keeps going",
           },
         },
         {
           term: "Harness",
           sub: {
-            zh: "替 Agent 管上下文、文件、命令和权限",
-            en: "Runs the context, files, commands and permissions",
+            zh: "替 Agent 管文件、命令、上下文和权限",
+            en: "Runs the files, commands, context and permissions",
           },
         },
         {
           term: "MCP",
           sub: {
-            zh: "把外部数据和工具接进来",
-            en: "Plugs in outside data and tools",
+            zh: "把 GitHub 这类外部数据接进来",
+            en: "Plugs in outside data such as GitHub",
           },
         },
         {
@@ -502,56 +473,53 @@ const beyondChatgpt: EventPage = {
           },
         },
         {
-          term: "Plugin",
+          term: "Automation",
           sub: {
-            zh: "把一组能力打包、分发、启用",
-            en: "Packs a set of abilities to share and switch on",
+            zh: "让同一件事按计划自己重复",
+            en: "Repeats the same job on a schedule",
           },
         },
       ],
     },
     {
       kind: "cards",
-      heading: { zh: "分组", en: "Teams" },
+      heading: { zh: "分组 · 四选一", en: "Teams · pick one" },
       cols: 4,
       items: [
         {
           mark: "A",
           label: "Agent",
-          title: { zh: "让 AI 改一个网站", en: "Have AI edit a website" },
+          title: { zh: "给网页加功能", en: "Add a feature" },
           sub: {
-            zh: "说清要改哪里，看它自己动手",
-            en: "Say what to change, watch it work",
+            zh: "搜索、负责人或筛选，选一个",
+            en: "Search, owners or filters: pick one",
           },
         },
         {
           mark: "B",
-          label: "MCP",
-          title: {
-            zh: "让 AI 查 GitHub 和网站",
-            en: "Have AI check GitHub and the site",
-          },
+          label: "MosMos",
+          title: { zh: "会议纪要变任务", en: "Notes into tasks" },
           sub: {
-            zh: "它读真数据，你来定先做什么",
-            en: "It reads real data, you pick what's first",
+            zh: "从一段会议记录里提取待办",
+            en: "Pull to-dos out of meeting notes",
           },
         },
         {
           mark: "C",
           label: "Skill",
-          title: { zh: "教 AI 一套做法", en: "Teach AI a routine" },
+          title: { zh: "写一个 Skill", en: "Write a Skill" },
           sub: {
-            zh: "写一次说明，下次直接用",
-            en: "Write it down once, reuse it",
+            zh: "定好规则，换两份输入试一试",
+            en: "Set the rules, test on two inputs",
           },
         },
         {
           mark: "D",
-          label: "Automation",
-          title: { zh: "让 AI 定期帮你找活动", en: "Have AI look for events" },
+          label: "MCP",
+          title: { zh: "接 GitHub Issues", en: "Pull in GitHub Issues" },
           sub: {
-            zh: "比如每周搜一次悉尼的 AI 比赛",
-            en: "Say, Sydney AI hackathons every week",
+            zh: "进阶可选：Issue 直接变看板任务",
+            en: "Advanced: Issues become board tasks",
           },
         },
       ],
@@ -559,24 +527,28 @@ const beyondChatgpt: EventPage = {
     {
       kind: "flow",
       heading: { zh: "流程", en: "Flow" },
+      note: { zh: "10:30 开始，13:30 结束", en: "10:30 to 13:30" },
       steps: [
         { label: { zh: "开场", en: "Intro" }, minutes: 10 },
-        { label: { zh: "概念", en: "Concepts" }, minutes: 15 },
-        { label: { zh: "四个 Demo", en: "4 demos" }, minutes: 30 },
-        { label: { zh: "分组", en: "Teams" }, minutes: 15 },
+        { label: { zh: "概念", en: "Concepts" }, minutes: 20 },
+        { label: { zh: "语音演示", en: "Live demo" }, minutes: 15 },
+        { label: { zh: "MCP · Skill", en: "MCP · Skill" }, minutes: 15 },
         {
-          label: { zh: "挑战 · 一轮", en: "Round 1" },
-          minutes: 45,
+          label: { zh: "休息", en: "Break" },
+          minutes: 10,
+          rest: true,
+        },
+        {
+          label: { zh: "分组动手", en: "Build" },
+          minutes: 55,
           hands: true,
         },
-        { label: { zh: "休息", en: "Break" }, minutes: 10, rest: true },
+        { label: { zh: "分享", en: "Show" }, minutes: 20 },
         {
-          label: { zh: "挑战 · 二轮", en: "Round 2" },
-          minutes: 30,
+          label: { zh: "自由开发 · 交流", en: "Open build" },
+          minutes: 35,
           hands: true,
         },
-        { label: { zh: "展示", en: "Show" }, minutes: 20 },
-        { label: { zh: "收尾", en: "Wrap" }, minutes: 5 },
       ],
     },
   ],
@@ -585,8 +557,8 @@ const beyondChatgpt: EventPage = {
     {
       icon: "sparkle",
       label: {
-        zh: "一个想做的东西（没有也行）",
-        en: "Something you want to make (optional)",
+        zh: "一件想让 AI 帮忙的事（没有也行）",
+        en: "A task you'd like AI to help with (optional)",
       },
     },
   ],
