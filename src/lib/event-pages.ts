@@ -122,16 +122,15 @@ export type EventSection =
     };
 
 /**
- * The day's live demo, replayed above the promises: a request said out loud,
- * the agent's steps, then the starter's tasks with the change applied.
+ * The day's live demo, replayed above the promises: the starter's tasks, each
+ * done in its own round — a request said out loud, the agent's steps, then
+ * the task ticked. The first round also puts the tags on.
  */
 export type WorkboardDemo = {
   /** Who takes the spoken request, and who does the work. */
   voice: string;
   agent: string;
-  ask: Bi;
-  steps: Bi[];
-  tasks: { title: Bi; done: boolean; tag: string }[];
+  tasks: { title: Bi; tag: string; ask: Bi; steps: Bi[] }[];
 };
 
 /** A page people open on the day, linked from the event page. */
@@ -437,6 +436,12 @@ const beyondChatgpt: EventPage = {
     zh: "主办 BuilderSpace（UNSW）",
     en: "Hosted by BuilderSpace (UNSW)",
   },
+  poster: {
+    src: "/events/beyond-chatgpt/poster.jpg",
+    width: 1280,
+    height: 1707,
+    alt: "Beyond ChatGPT 海报：11.13 周五 10:30–13:30，UNSW MCIC，扫码在 Rubric 报名",
+  },
   signupVia: {
     name: "Rubric",
     note: {
@@ -447,30 +452,45 @@ const beyondChatgpt: EventPage = {
   workboard: {
     voice: "MosMos",
     agent: "Codex",
-    ask: {
-      zh: "给每条任务加上 High、Medium、Low 优先级，别弄坏现有功能。",
-      en: "Give every task a High, Medium or Low priority. Don't break anything.",
-    },
-    steps: [
-      { zh: "读 index.html", en: "Read index.html" },
-      { zh: "加上优先级标签", en: "Add priority tags" },
-      { zh: "检查添加、勾选、进度", en: "Check add, tick, progress" },
-    ],
     tasks: [
       {
         title: { zh: "准备 AI Workshop Demo", en: "Prep the workshop demo" },
-        done: true,
         tag: "High",
+        ask: {
+          zh: "给每条任务加上 High、Medium、Low 优先级，别弄坏现有功能。",
+          en: "Give every task a High, Medium or Low priority. Don't break anything.",
+        },
+        steps: [
+          { zh: "读 index.html", en: "Read index.html" },
+          { zh: "加上优先级标签", en: "Add priority tags" },
+          { zh: "检查添加、勾选、进度", en: "Check add, tick, progress" },
+        ],
       },
       {
         title: { zh: "整理活动任务", en: "Sort the event tasks" },
-        done: false,
         tag: "Medium",
+        ask: {
+          zh: "把这段会议纪要里的待办整理出来，标上负责人和截止时间。",
+          en: "Pull the to-dos out of these meeting notes, with owners and dates.",
+        },
+        steps: [
+          { zh: "读会议纪要", en: "Read the notes" },
+          { zh: "找出负责人和截止时间", en: "Find owners and dates" },
+          { zh: "把这条标成完成", en: "Mark this one done" },
+        ],
       },
       {
         title: { zh: "安排小组实践", en: "Plan the team build" },
-        done: false,
         tag: "Low",
+        ask: {
+          zh: "按 A 到 D 四个方向，把报名的人分成小组。",
+          en: "Split everyone who signed up into teams A to D.",
+        },
+        steps: [
+          { zh: "读报名名单", en: "Read the sign-ups" },
+          { zh: "按兴趣分成四组", en: "Group them by interest" },
+          { zh: "把这条标成完成", en: "Mark this one done" },
+        ],
       },
     ],
   },
