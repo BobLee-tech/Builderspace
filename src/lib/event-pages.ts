@@ -158,6 +158,11 @@ export type EventPage = {
   cost?: Bi;
   /** No charge to attend; the event's search data says so. */
   free: boolean;
+  /**
+   * Takes the ticket at the top of /events while it's upcoming, even when
+   * another event comes first (see featuredEvent).
+   */
+  featured?: boolean;
   costNote?: Bi;
   /** A line under the location, e.g. the building. */
   whereNote?: Bi;
@@ -407,6 +412,7 @@ const aiStudyCareerTalk: EventPage = {
 // live demo on a shared Workboard starter, then teams extend it.
 const beyondChatgpt: EventPage = {
   display: "Beyond ChatGPT",
+  featured: true,
   summaryEn:
     "Speak a request, watch Codex change a web app live, then extend it in teams.",
   free: false,
@@ -979,4 +985,18 @@ export function eventCopy(event: {
         ? null
         : { zh: event.summary, en: page?.summaryEn ?? event.summary },
   };
+}
+
+/**
+ * The event for the ticket at the top of /events: a featured upcoming one
+ * with a date, else the next dated one. `first` says whether it is also the
+ * next event, so the ticket can say "Next up" or "Featured".
+ */
+export function featuredEvent<E extends SiteEvent>(
+  upcoming: E[],
+): { event: E; first: boolean } | null {
+  const dated = upcoming.filter((e) => !e.dateTbc);
+  const event =
+    dated.find((e) => getEventPage(e.slug)?.featured) ?? dated[0] ?? null;
+  return event ? { event, first: event === dated[0] } : null;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { eventTbc } from "./event-pages";
+import { eventTbc, featuredEvent } from "./event-pages";
 import type { SiteEvent } from "./types";
 
 const event: SiteEvent = {
@@ -35,5 +35,26 @@ describe("eventTbc", () => {
 
   it("has plain wording for an event page without its own", () => {
     expect(eventTbc({ ...event, slug: "no-page" })?.when.zh).toBe("待定");
+  });
+});
+
+describe("featuredEvent", () => {
+  const dated = { ...event, dateTbc: false };
+  const talk = { ...dated, slug: "ai-study-career-talk" };
+  const featured = { ...dated, slug: "beyond-chatgpt" };
+
+  it("puts a featured event ahead of an earlier one", () => {
+    expect(featuredEvent([talk, featured])).toEqual({
+      event: featured,
+      first: false,
+    });
+  });
+
+  it("is the next dated event when none is featured", () => {
+    expect(featuredEvent([event, talk])).toEqual({ event: talk, first: true });
+  });
+
+  it("is nothing without a dated event", () => {
+    expect(featuredEvent([event])).toBeNull();
   });
 });
