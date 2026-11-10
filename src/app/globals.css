@@ -17,6 +17,8 @@
   --f-display:
     var(--font-unbounded), var(--font-noto-sc), system-ui, sans-serif;
   --f-body: var(--font-geist), var(--font-noto-sc), system-ui, sans-serif;
+  /* the wordmark beside the mark: Outfit 600, -0.02em (logo v3) */
+  --f-logo: var(--font-outfit), var(--font-geist), system-ui, sans-serif;
   --f-mono:
     var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
 
@@ -185,14 +187,15 @@ main {
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-family: var(--f-display);
-  font-weight: 800;
-  font-size: var(--fs-md);
-  letter-spacing: -0.01em;
+  gap: 8px;
+  font-family: var(--f-logo);
+  font-weight: 600;
+  font-size: 21px;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 .logo img {
-  width: 30px;
+  width: 40px;
   height: auto;
 }
 .nav {
