@@ -27,7 +27,7 @@ export type RoadmapEvent = {
 
 /**
  * Eight-week strip: each week shows its events (linked), something already
- * settled, or "TBD". "Today" is placed on the client.
+ * settled, or "TBD" (blank for a `bare` week). "Today" is placed on the client.
  */
 export function Roadmap({ events }: { events: RoadmapEvent[] }) {
   const [now, setNow] = useState<number | null>(null);
@@ -109,7 +109,7 @@ export function Roadmap({ events }: { events: RoadmapEvent[] }) {
                     <span className="pill">
                       <T {...w.plan} />
                     </span>
-                  ) : (
+                  ) : w.bare ? null : (
                     <span className="pill tbd">
                       <T zh="待定" en="TBD" />
                     </span>
